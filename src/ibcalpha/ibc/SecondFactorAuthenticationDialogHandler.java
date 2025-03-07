@@ -21,6 +21,8 @@ package ibcalpha.ibc;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.ListModel;
@@ -46,6 +48,13 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
         }
     }
 
+    private void setCredential(final Window window, 
+                                        final String credentialName,
+                                        final int credentialIndex, 
+                                        final String value) throws IbcException {
+        if (! SwingUtils.setTextField(window, credentialIndex, value)) throw new IbcException(credentialName);
+    }
+
     @Override
     public void handleWindow(Window window, int eventID) {
         if (eventID == WindowEvent.WINDOW_OPENED) {
@@ -54,7 +63,11 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
             } else if (secondFactorDeviceSelectionRequired(window)) {
                 selectSecondFactorDevice(window);
             } else {
-                LoginManager.loginManager().setLoginState(LoginManager.LoginState.TWO_FA_IN_PROGRESS);
+                try {
+                    doValidate2FA(window);
+                } catch (IbcException e) {
+                    Utils.logError("could not set credential: " + e.getMessage());
+                }
             }
         } else if (eventID == WindowEvent.WINDOW_CLOSED) {
             if (LoginManager.loginManager().readonlyLoginRequired()) {
@@ -63,6 +76,16 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
             }
             LoginManager.loginManager().secondFactorAuthenticationDialogClosed();
         }
+    }
+
+    private void doValidate2FA(final Window window) throws IbcException {
+        LoginManager.loginManager().setLoginState(LoginManager.LoginState.TWO_FA_IN_PROGRESS);
+        setCredential(window, "IBAPI 2FA ", 0, "123456");        
+        
+        GuiDeferredExecutor.instance().execute(() -> {
+            Utils.logToConsole("Second factor authentication dialog submitted");
+            SwingUtils.clickButton(window, "OK");
+        });
     }
 
     @Override
@@ -116,5 +139,4 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
         }
         Utils.logError("could not find second factor device '" + secondFactorDevice + "' in the list");
     }
-    
 }
