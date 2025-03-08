@@ -40,7 +40,6 @@ public class IbcVersionInfo {
 
     <target name="compile" depends="resolve-deps,init" description="compile the source ">
         <mkdir dir="${target}/classes"/>
-        <!-- Créer un classpath Ivy à partir des dépendances résolues -->
         <ivy:cachepath pathid="ivy.classpath"/>
         <javac srcdir="${src}" destdir="${target}/classes" source="8" target="8" includeantruntime="false">
             <classpath>
@@ -52,7 +51,9 @@ public class IbcVersionInfo {
     </target>
 
     <target name="jar" depends="compile" description="generate the jar">
-        <jar jarfile="${resources}/IBC.jar" basedir="${target}/classes"/>
+        <jar jarfile="${resources}/IBC.jar" basedir="${target}/classes">
+            <zipgroupfileset dir="lib" includes="*.jar"/>
+        </jar>
     </target>
 
     <target name="dist" depends="jar" description="generate the distribution zip">
