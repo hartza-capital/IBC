@@ -3,6 +3,7 @@ dist
 nbproject
 bin
 build
+resources/*.jar
 makedocs/*/*.aux
 makedocs/*/*.log
 makedocs/*/*.tex
