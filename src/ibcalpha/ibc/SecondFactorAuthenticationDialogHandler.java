@@ -21,9 +21,14 @@ package ibcalpha.ibc;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.ListModel;
+
+import dev.samstevens.totp.code.CodeGenerator;
+import dev.samstevens.totp.code.DefaultCodeGenerator;
 
 public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
     private SecondFactorAuthenticationDialogHandler() {};
@@ -46,6 +51,13 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
         }
     }
 
+    private void setCredential(final Window window, 
+                                        final String credentialName,
+                                        final int credentialIndex, 
+                                        final String value) throws IbcException {
+        if (! SwingUtils.setTextField(window, credentialIndex, value)) throw new IbcException(credentialName);
+    }
+
     @Override
     public void handleWindow(Window window, int eventID) {
         if (eventID == WindowEvent.WINDOW_OPENED) {
@@ -54,7 +66,12 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
             } else if (secondFactorDeviceSelectionRequired(window)) {
                 selectSecondFactorDevice(window);
             } else {
-                LoginManager.loginManager().setLoginState(LoginManager.LoginState.TWO_FA_IN_PROGRESS);
+                try {
+                    // if 2FA is required, generate the TOTP and set it in the dialog
+                    doValidate2FA(window);
+                } catch (IbcException e) {
+                    Utils.logError("could not set credential: " + e.getMessage());
+                }
             }
         } else if (eventID == WindowEvent.WINDOW_CLOSED) {
             if (LoginManager.loginManager().readonlyLoginRequired()) {
@@ -63,6 +80,34 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
             }
             LoginManager.loginManager().secondFactorAuthenticationDialogClosed();
         }
+    }
+
+    private void doValidate2FA(final Window window) throws IbcException {
+        CodeGenerator codeGenerator = new DefaultCodeGenerator();
+        
+        // Set the login state to TWO_FA_IN_PROGRESS
+        LoginManager.loginManager().setLoginState(LoginManager.LoginState.TWO_FA_IN_PROGRESS);
+
+        // 2FA secret is required to generate the TOTP
+        String secret = Settings.settings().getString("Ib2FA", "");
+        if (secret.length() == 0) {
+            Utils.logError("You should specify the required 2FA secret using the Ib2FA setting in config.ini");
+            return;
+        }
+
+        // Generate the TOTP and set it in the dialog
+        try {
+            String totp = codeGenerator.generate(secret, System.currentTimeMillis() / 30000);
+            setCredential(window, "IBAPI 2FA", 0, totp);
+        } catch (Exception e) {
+            Utils.logError("could not generate TOTP: " + e.getMessage());
+        }
+        
+        // Submit the dialog
+        GuiDeferredExecutor.instance().execute(() -> {
+            Utils.logToConsole("Second factor authentication dialog submitted");
+            SwingUtils.clickButton(window, "OK");
+        });
     }
 
     @Override
@@ -116,5 +161,4 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
         }
         Utils.logError("could not find second factor device '" + secondFactorDevice + "' in the list");
     }
-    
 }
