@@ -91,14 +91,14 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
         // 2FA secret is required to generate the TOTP
         String secret = Settings.settings().getString("Ib2FA", "");
         if (secret.length() == 0) {
-            Utils.logError("You should specify the required 2FA secret using the 2FASecret setting in config.ini");
+            Utils.logError("You should specify the required 2FA secret using the Ib2FA setting in config.ini");
             return;
         }
 
         // Generate the TOTP and set it in the dialog
         try {
-            String totp = codeGenerator.generate(secret, System.currentTimeMillis());
-            setCredential(window, "IBAPI 2FA ", 0, totp);
+            String totp = codeGenerator.generate(secret, System.currentTimeMillis() / 30000);
+            setCredential(window, "IBAPI 2FA", 0, totp);
         } catch (Exception e) {
             Utils.logError("could not generate TOTP: " + e.getMessage());
         }
