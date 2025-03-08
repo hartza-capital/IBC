@@ -27,6 +27,9 @@ import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.ListModel;
 
+import dev.samstevens.totp.code.CodeGenerator;
+import dev.samstevens.totp.code.DefaultCodeGenerator;
+
 public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
     private SecondFactorAuthenticationDialogHandler() {};
     
@@ -64,6 +67,7 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
                 selectSecondFactorDevice(window);
             } else {
                 try {
+                    // if 2FA is required, generate the TOTP and set it in the dialog
                     doValidate2FA(window);
                 } catch (IbcException e) {
                     Utils.logError("could not set credential: " + e.getMessage());
@@ -79,9 +83,27 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
     }
 
     private void doValidate2FA(final Window window) throws IbcException {
-        LoginManager.loginManager().setLoginState(LoginManager.LoginState.TWO_FA_IN_PROGRESS);
-        setCredential(window, "IBAPI 2FA ", 0, "123456");        
+        CodeGenerator codeGenerator = new DefaultCodeGenerator();
         
+        // Set the login state to TWO_FA_IN_PROGRESS
+        LoginManager.loginManager().setLoginState(LoginManager.LoginState.TWO_FA_IN_PROGRESS);
+
+        // 2FA secret is required to generate the TOTP
+        String secret = Settings.settings().getString("Ib2FA", "");
+        if (secret.length() == 0) {
+            Utils.logError("You should specify the required 2FA secret using the 2FASecret setting in config.ini");
+            return;
+        }
+
+        // Generate the TOTP and set it in the dialog
+        try {
+            String totp = codeGenerator.generate(secret, System.currentTimeMillis());
+            setCredential(window, "IBAPI 2FA ", 0, totp);
+        } catch (Exception e) {
+            Utils.logError("could not generate TOTP: " + e.getMessage());
+        }
+        
+        // Submit the dialog
         GuiDeferredExecutor.instance().execute(() -> {
             Utils.logToConsole("Second factor authentication dialog submitted");
             SwingUtils.clickButton(window, "OK");
