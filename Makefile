@@ -3,7 +3,7 @@
 # Environment: IBC_BIN must be set to TWS jar files directory
 
 # Variables
-VERSION := 3.21.2a
+VERSION := 3.23.0
 SRC_DIR := src
 RESOURCES_DIR := resources
 TARGET_DIR := target
