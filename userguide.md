@@ -428,8 +428,8 @@ here is a list of the settings that you are most likely to need to change:
 
 | Setting                        | Notes                                       |
 | ------------------------------ | --------------------------------------------|
-| IbLoginID                      | You must set this to your IBKR username     |
-| Password                       | You must set this to your IBKR password     |
+| IbLoginId                      | You must set this to your IBKR username     |
+| IbPassword                     | You must set this to your IBKR password     |
 | TradingMode                    | You must set this to `paper` if you want to |
 |                                | use your paper-trading account. Otherwise   |
 |                                | you can omit the setting entirely or set it |
