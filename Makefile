@@ -67,6 +67,17 @@ check-env:
 	@echo "Java version: $$(java -version 2>&1 | head -1)"
 	@echo "Ant version: $$(ant -version 2>&1 | head -1)"
 
+# Rebase on upstream repository
+.PHONY: rebase-upstream
+rebase-upstream:
+	@echo "Setting up upstream remote..."
+	@git remote | grep -q '^upstream$$' || git remote add upstream git@github.com:IbcAlpha/IBC.git
+	@echo "Fetching upstream repository..."
+	git fetch upstream
+	@echo "Rebasing master on upstream/master..."
+	git rebase upstream/master
+	@echo "Rebase complete!"
+
 # Install built JAR to resources
 .PHONY: install
 install: jar
@@ -117,6 +128,7 @@ help:
 	@echo "  install     - Install JAR to resources"
 	@echo "  status      - Show build status"
 	@echo "  check-env   - Check environment setup"
+	@echo "  rebase-upstream - Rebase on upstream IbcAlpha/IBC repository"
 	@echo "  help        - Show this help"
 	@echo ""
 	@echo "Environment variables:"
