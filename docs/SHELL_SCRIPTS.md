@@ -17,22 +17,22 @@ Two startup scripts are provided, covering two applications (TWS and Gateway) on
 
 Each startup script exposes the same set of variables at the top of the file. Edit only that section — the rest of the script must not be modified.
 
-| Variable               | Default value                              | What it does                                                                                                                                                     |
-| ---------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `TWS_MAJOR_VRSN`       | `1019`                                     | Major version number of the installed TWS or Gateway. Find it under Help > About in the application.                                                             |
-| `IBC_INI`              | `~/ibc/config.ini`                         | Path to the IBC configuration file (`config.ini`). Keep this inside an encrypted personal folder.                                                                |
-| `TRADING_MODE`         | _(empty)_                                  | `live` or `paper`. When empty, the value falls back to `TradingMode` in `config.ini`, then defaults to `live`.                                                   |
-| `TWOFA_TIMEOUT_ACTION` | `exit`                                     | What IBC does when IBKR Mobile 2FA times out without completing login. `exit` terminates IBC; `restart` relaunches it and repeats the authentication sequence.   |
-| `IBC_PATH`             | `/opt/ibc`                                 | Directory containing the IBC installation (the `scripts/` subfolder must be present here).                                                                       |
-| `TWS_PATH`             | `~/Jts`                                    | Installation directory of TWS or Gateway. The official installer always uses this path; there is rarely a reason to change it.                                   |
-| `TWS_SETTINGS_PATH`    | _(empty)_                                  | Where TWS/Gateway stores its settings. Defaults to `TWS_PATH` when empty. Must match `IbDir` in `config.ini` if that setting is used, or auto-restart will fail. |
-| `LOG_PATH`             | `~/ibc/logs`                               | Directory for IBC diagnostic logs. Leave empty to log to the terminal; remove the line entirely to suppress all logging (not recommended).                       |
-| `TWSUSERID`            | _(empty)_                                  | IBKR username. Prefer setting credentials inside `config.ini` in a protected location rather than here.                                                          |
-| `TWSPASSWORD`          | _(empty)_                                  | IBKR password in plain text. Same security warning as `TWSUSERID`.                                                                                               |
-| `FIXUSERID`            | _(empty)_                                  | FIX Gateway username. Only relevant when `FIX=yes` is set in `config.ini`. Present in gateway scripts only.                                                      |
-| `FIXPASSWORD`          | _(empty)_                                  | FIX Gateway password. Only relevant when `FIX=yes` is set in `config.ini`. Present in gateway scripts only.                                                      |
-| `JAVA_PATH`            | _(empty)_                                  | Path to a custom Java installation. The TWS/Gateway installer bundles its own JVM; leave this empty unless you have a specific reason to override it.            |
-| `HIDE`                 | _(empty)_                                  | Set to `YES` or `TRUE` (case-insensitive) to iconify the diagnostic window on launch. Has no effect when running with `-inline`. Linux only.                     |
+| Variable               | Default value      | What it does                                                                                                                                                     |
+| ---------------------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TWS_MAJOR_VRSN`       | `1019`             | Major version number of the installed TWS or Gateway. Find it under Help > About in the application.                                                             |
+| `IBC_INI`              | `~/ibc/config.ini` | Path to the IBC configuration file (`config.ini`). Keep this inside an encrypted personal folder.                                                                |
+| `TRADING_MODE`         | _(empty)_          | `live` or `paper`. When empty, the value falls back to `TradingMode` in `config.ini`, then defaults to `live`.                                                   |
+| `TWOFA_TIMEOUT_ACTION` | `exit`             | What IBC does when IBKR Mobile 2FA times out without completing login. `exit` terminates IBC; `restart` relaunches it and repeats the authentication sequence.   |
+| `IBC_PATH`             | `/opt/ibc`         | Directory containing the IBC installation (the `scripts/` subfolder must be present here).                                                                       |
+| `TWS_PATH`             | `~/Jts`            | Installation directory of TWS or Gateway. The official installer always uses this path; there is rarely a reason to change it.                                   |
+| `TWS_SETTINGS_PATH`    | _(empty)_          | Where TWS/Gateway stores its settings. Defaults to `TWS_PATH` when empty. Must match `IbDir` in `config.ini` if that setting is used, or auto-restart will fail. |
+| `LOG_PATH`             | `~/ibc/logs`       | Directory for IBC diagnostic logs. Leave empty to log to the terminal; remove the line entirely to suppress all logging (not recommended).                       |
+| `TWSUSERID`            | _(empty)_          | IBKR username. Prefer setting credentials inside `config.ini` in a protected location rather than here.                                                          |
+| `TWSPASSWORD`          | _(empty)_          | IBKR password in plain text. Same security warning as `TWSUSERID`.                                                                                               |
+| `FIXUSERID`            | _(empty)_          | FIX Gateway username. Only relevant when `FIX=yes` is set in `config.ini`. Present in gateway scripts only.                                                      |
+| `FIXPASSWORD`          | _(empty)_          | FIX Gateway password. Only relevant when `FIX=yes` is set in `config.ini`. Present in gateway scripts only.                                                      |
+| `JAVA_PATH`            | _(empty)_          | Path to a custom Java installation. The TWS/Gateway installer bundles its own JVM; leave this empty unless you have a specific reason to override it.            |
+| `HIDE`                 | _(empty)_          | Set to `YES` or `TRUE` (case-insensitive) to iconify the diagnostic window on launch. Has no effect when running with `-inline`. Linux only.                     |
 
 ### Order of Operations
 
