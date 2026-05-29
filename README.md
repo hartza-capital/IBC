@@ -42,11 +42,11 @@ sudo chmod o+x *.sh */*.sh
 
 Default paths assumed by the scripts:
 
-| Item                   | Path                   |
-| ---------------------- | ---------------------- |
-| TWS/Gateway jars       | `~/Jts/<version>/`     |
-| IBC program files      | `/opt/ibc`             |
-| `config.ini`           | `~/ibc/config.ini`     |
+| Item              | Path               |
+| ----------------- | ------------------ |
+| TWS/Gateway jars  | `~/Jts/<version>/` |
+| IBC program files | `/opt/ibc`         |
+| `config.ini`      | `~/ibc/config.ini` |
 
 ### 3. Configure IBC
 
@@ -60,16 +60,16 @@ cp /opt/ibc/config.ini ~/ibc/
 
 Minimum settings to review:
 
-| Setting                          | Description                                              |
-| -------------------------------- | -------------------------------------------------------- |
-| `IbLoginId`                      | Your IBKR username                                       |
-| `IbPassword`                     | Your IBKR password                                       |
-| `TradingMode`                    | `paper` or `live` (default: `live`)                      |
-| `AcceptNonBrokerageAccountWarning` | Set to `yes` to auto-accept the paper account warning  |
-| `AcceptIncomingConnectionAction` | `accept`, `reject`, or `manual`                          |
-| `CommandServerPort`              | TCP port for the command server (`0` = disabled)         |
-| `AutoRestartTime`                | Time for daily auto-restart without re-authentication    |
-| `ClosedownAt`                    | Time for scheduled shutdown (e.g. Friday evening)        |
+| Setting                            | Description                                           |
+| ---------------------------------- | ----------------------------------------------------- |
+| `IbLoginId`                        | Your IBKR username                                    |
+| `IbPassword`                       | Your IBKR password                                    |
+| `TradingMode`                      | `paper` or `live` (default: `live`)                   |
+| `AcceptNonBrokerageAccountWarning` | Set to `yes` to auto-accept the paper account warning |
+| `AcceptIncomingConnectionAction`   | `accept`, `reject`, or `manual`                       |
+| `CommandServerPort`                | TCP port for the command server (`0` = disabled)      |
+| `AutoRestartTime`                  | Time for daily auto-restart without re-authentication |
+| `ClosedownAt`                      | Time for scheduled shutdown (e.g. Friday evening)     |
 
 The `config.ini` file contains detailed comments for every setting.
 
@@ -167,14 +167,14 @@ Ib2FA=none
 IBC listens on a TCP port for remote commands (configure `CommandServerPort` in
 `config.ini`). Send commands via `telnet` or the provided `commandsend.sh` script:
 
-| Command          | Effect                                                        |
-| ---------------- | ------------------------------------------------------------- |
-| `STOP`           | Shuts down TWS/Gateway cleanly                                |
-| `RESTART`        | Initiates auto-restart (no re-authentication needed)          |
-| `RECONNECTDATA`  | Refreshes all market data connections (Ctrl-Alt-F equivalent) |
-| `RECONNECTACCOUNT` | Reconnects to the IB login server (Ctrl-Alt-R equivalent)  |
-| `ENABLEAPI`      | Enables the ActiveX/Socket Clients API checkbox               |
-| `EXIT`           | Closes the command server connection                          |
+| Command            | Effect                                                        |
+| ------------------ | ------------------------------------------------------------- |
+| `STOP`             | Shuts down TWS/Gateway cleanly                                |
+| `RESTART`          | Initiates auto-restart (no re-authentication needed)          |
+| `RECONNECTDATA`    | Refreshes all market data connections (Ctrl-Alt-F equivalent) |
+| `RECONNECTACCOUNT` | Reconnects to the IB login server (Ctrl-Alt-R equivalent)     |
+| `ENABLEAPI`        | Enables the ActiveX/Socket Clients API checkbox               |
+| `EXIT`             | Closes the command server connection                          |
 
 ## Multiple IBC Instances
 
@@ -237,13 +237,13 @@ This fork was created in early 2018 to continue development and support.
 
 If switching from IBController, note these key changes:
 
-| IBController                     | IBC                              |
-| -------------------------------- | -------------------------------- |
-| `IBController.ini`               | `config.ini`                     |
-| `ForceTwsApiPort`                | `OverrideTwsApiPort`             |
-| `AcceptIncomingConnectionAction` default: `accept` | default: `manual` |
-| `IbControllerPort`               | `CommandServerPort` (default: 0) |
-| `IbControlFrom`                  | `ControlFrom`                    |
-| `IbBindAddress`                  | `BindAddress`                    |
-| `IBControllerStart.sh`           | `twsstart.sh`                    |
-| `IBControllerGatewayStart.sh`    | `gatewaystart.sh`                |
+| IBController                                       | IBC                              |
+| -------------------------------------------------- | -------------------------------- |
+| `IBController.ini`                                 | `config.ini`                     |
+| `ForceTwsApiPort`                                  | `OverrideTwsApiPort`             |
+| `AcceptIncomingConnectionAction` default: `accept` | default: `manual`                |
+| `IbControllerPort`                                 | `CommandServerPort` (default: 0) |
+| `IbControlFrom`                                    | `ControlFrom`                    |
+| `IbBindAddress`                                    | `BindAddress`                    |
+| `IBControllerStart.sh`                             | `twsstart.sh`                    |
+| `IBControllerGatewayStart.sh`                      | `gatewaystart.sh`                |

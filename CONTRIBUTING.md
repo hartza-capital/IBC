@@ -1,94 +1,187 @@
-You are welcome to contribute to IBC. Here are some of the ways you can help:
+# Contributing to IBC
 
-- correct mistakes or improve the quality of documentation: for example
-  the User Guide or any of the text in the repository
+IBC is a 100% Java project. It automates TWS and IB Gateway by listening to AWT window events and dispatching each window to a dedicated `WindowHandler`. This guide covers everything you need to add a handler, test it, and submit a pull request.
 
-- contribute to the [IBC User Group](https://groups.io/g/IBC)
+---
 
-- suggest ways to make IBC better or more useful
+## Prerequisites
 
-- submit pull requests to enhance or correct the code or the script files
+- **Java 17 JDK** — `javac --version` must report `javac 17.x`
+- **Maven 3.8+** — `mvn --version`
+- **TWS or IB Gateway installed offline** — IBC compiles against their JAR files
+- **`IBC_BIN` environment variable** — must point to the directory that contains the TWS/Gateway JARs (e.g., the `jars/` folder inside the TWS installation)
 
-Please bear in mind that IBC is a small, narrowly focussed project. Its
-only purpose is to automate aspects of TWS and Gateway operation that would
-otherwise require manual intervention at runtime. Note the following:
+```bash
+export IBC_BIN=/opt/ibgateway/1019/jars   # adjust to your installation
+```
 
-- IBC is _not_ a tool for configuring TWS: the user must configure the TWS
-  settings as required through the means provided in TWS.
+The build enforces this variable at the `validate` phase; Maven will fail immediately if it is not set.
 
-- IBC is _not_ a management mechanism for TWS, so it cannot be extended to
-  provide for such things as restarting TWS after a failure. IBC and TWS run
-  in the same process, and if one exits so does the other.
+---
 
-You may find the following guidelines helpful before starting work on a
-contribution to the project:
+## Local build
 
-1. **Discuss it first**: it's wise to raise an issue on the
-   [GitHub repository](https://github.com/ibcalpha/ibc) explaining what you
-   propose to do. There may be reasons why your proposed change is unlikely
-   to be accepted, or someone else may already be working on something
-   similar, or it may even have been proposed and rejected before. You can
-   also discuss suggestions for improvement on the
-   [IBC User Group](https://groups.io/g/IBC).
+```bash
+# Fast build — produces resources/IBC.jar, skips the Linux distribution ZIP
+make dev
 
-2. **Cross-platform**: in general changes must work on all supported
-   platforms. In particular the Java source code should be cross-platform.
-   Please make sure to test thoroughly on all platforms, and for both TWS
-   and the Gateway, before submitting your pull request. If you can't do this,
-   then please make clear in your pull request what testing you have done.
+# Equivalent Maven command (same result)
+mvn -q package -DskipAssembly=true
 
-3. **Broad scope**: improvements should be potentially useful to a significant
-   proportion of the user base.
+# Full build — also produces dist/IBCLinux-<version>.zip
+make dist
 
-4. **Non-developer users**: a lot of IBC users aren't developers. It must be
-   easy for them to use any improvements. In particular, you should ensure
-   that the [configuration file](resources/config.ini) and/or
-   [user guide](userguide.md) adequately reflect changes.
+# Clean all build outputs (target/, dist/, resources/IBC.jar, resources/version)
+make clean
 
-5. **Backward compatibility**: new versions should not force users of previous
-   versions to change their configuration or script files (ie no surprises),
-   unless this is absolutely essential. Obviously it may be necessary to
-   introduce new settings into the [configuration file](resources/IBC.ini)
-   or enhance the script files, but this should be done in such a way that
-   if a user moves to the new version of IBC without making any changes
-   their TWS/Gateway will continue to operate exactly as before.
+# Clean then full rebuild
+make rebuild
+```
 
-6. **Respect IB T&C**: changes must not be an infringement of the intent or
-   provisions of IB's Terms and Conditions. For example, there should be no
-   attempt to bypass the requirement to enter a code during logon for users
-   enrolled in IB's security program.
+The fat JAR is written to `resources/IBC.jar`. It bundles the TOTP dependency and is the only artifact IBC needs at runtime.
 
-7. **Style**: please maintain the same style as the existing code unless
-   you've discussed a refactor with the current maintainers via email or a
-   GitHub [Issue](https://github.com/IbcAlpha/IBC/issues)
+---
 
-# How to build IBC
+## How TWS window handling works
 
-[Apache Ant](http://ant.apache.org/) is required to build IBC.
+`IbcTws.createWindowHandlers()` registers a list of `WindowHandler` instances with `TwsListener`. `TwsListener` is an `AWTEventListener` that receives every AWT window event. For each event it iterates the handler list and calls:
 
-The repository includes a [build.xml](build.xml) file that defines the
-build process. This build process expects to find an `IBC_BIN` environment
-variable that specifies a folder containing the TWS jar files. This enables
-the compiler to locate the TWS and Gateway entrypoints to give an
-error-free compilation.
+1. `recogniseWindow(window)` — returns `true` if this handler owns the window.
+2. `filterEvent(window, eventId)` — returns `true` if this event type should be acted on.
+3. `handleWindow(window, eventId)` — performs the actual automation (click a button, fill a field, etc.).
 
-This folder could be in your TWS installation directory (for example
-C:\Jts\963\jars), or you could create a separate directory and copy the
-jar files into it (this would avoid problems should TWS be uninstalled,
-or a new version installed). Note that it doesn't matter which version
-of TWS you use: package and class names are always the same.
+The first handler whose `recogniseWindow` returns `true` wins; the others are skipped.
 
-If you're using an IDE, such as NetBeans or Eclipse, to produce a modified
-version of IBC, you'll find it helpful to set the `IBC_BIN` environment
-variable permanently.
+---
 
-If you compile directly from the command line then depending on which
-shell you're using you may be able to prefix the command with setting the
-environment variable on the same line. However it's probably still
-preferable to set this permanently, rather than type it out each time you
-build.
+## Identifying a new TWS window
 
-Note that the `ver` property in the [build.xml](build.xml) is used in
-generating the file names for the distribution ZIP files, and is also put
-in the [version](resources/version) file which is used by the script
-files.
+Before writing a handler you need to know the window's title and component structure. Enable structure logging in `config.ini`:
+
+```ini
+LogStructureScope=all
+LogStructureWhen=open
+```
+
+- `LogStructureScope=all` logs every window IBC sees, including ones not yet handled.
+- `LogStructureWhen=open` dumps the component tree when the window first opens.
+
+Run IBC against a paper account (see below). The IBC log will print lines like:
+
+```
+detected dialog entitled: Some New Dialog; event=opened
+Window structure for dialog entitled: Some New Dialog; event=opened
+  JDialog [title=Some New Dialog]
+    JPanel
+      JLabel [text=Some message text]
+      JButton [text=OK]
+```
+
+Use the title string and button/label texts to write your `recogniseWindow` and `handleWindow` implementations.
+
+---
+
+## Adding a WindowHandler
+
+### 1. Create the handler class
+
+Create `src/ibcalpha/ibc/MyNewDialogHandler.java`. Use this template:
+
+```java
+package ibcalpha.ibc;
+
+import java.awt.Window;
+import java.awt.event.WindowEvent;
+import javax.swing.JDialog;
+
+class MyNewDialogHandler implements WindowHandler {
+
+    @Override
+    public boolean recogniseWindow(Window window) {
+        if (!(window instanceof JDialog)) return false;
+        return SwingUtils.titleContains(window, "Exact Or Partial Title Here");
+    }
+
+    @Override
+    public boolean filterEvent(Window window, int eventId) {
+        return eventId == WindowEvent.WINDOW_OPENED
+            || eventId == WindowEvent.WINDOW_ACTIVATED;
+    }
+
+    @Override
+    public void handleWindow(Window window, int eventId) {
+        if (!SwingUtils.clickButton(window, "OK")) {
+            Utils.logError("MyNewDialogHandler: could not find the OK button.");
+        }
+    }
+}
+```
+
+Tips:
+
+- `SwingUtils.titleContains(window, text)` — partial, case-sensitive match on the window title.
+- `SwingUtils.clickButton(window, label)` — finds and clicks a `JButton` by its text label.
+- `SwingUtils.findButton(window, label)` — returns the `JButton` without clicking it.
+- Use `JFrame` instead of `JDialog` in `recogniseWindow` for top-level frames.
+- Log errors with `Utils.logError(...)`, not `System.err`.
+
+### 2. Register the handler
+
+Open `src/ibcalpha/ibc/IbcTws.java` and add your handler to `createWindowHandlers()`:
+
+```java
+private static List<WindowHandler> createWindowHandlers() {
+    List<WindowHandler> windowHandlers = new ArrayList<>();
+    // ... existing handlers ...
+    windowHandlers.add(new MyNewDialogHandler());  // <-- add here
+    return windowHandlers;
+}
+```
+
+Order matters only when two handlers could both match the same window. Read the comment above `SecondFactorAuthenticationDialogHandler` for an example of ordering that is intentional.
+
+### 3. Build and verify
+
+```bash
+make dev
+```
+
+A clean compilation with no warnings is expected (`-Xlint:all` is active).
+
+---
+
+## Manual testing
+
+IBC must be tested against a live TWS or Gateway process. Use a **paper trading account** to avoid any risk.
+
+1. Install TWS or IB Gateway offline (so IBC can launch it).
+2. Set `IBC_BIN` to point to its JARs and build IBC (`make dev`).
+3. Edit `resources/config.ini`:
+   - Set `IbLoginId` and `IbPassword` (paper account credentials).
+   - Set `TradingMode=paper`.
+   - During handler development, set `LogStructureScope=all` and `LogStructureWhen=open`.
+4. Launch IBC with the config file:
+
+   ```bash
+   java -cp resources/IBC.jar ibcalpha.ibc.IbcTws resources/config.ini "" "" paper
+   ```
+
+5. Watch the console output. Confirm your handler fires (`detected dialog entitled: ...`) and that `handleWindow` completes without logging an error.
+
+---
+
+## Pull request checklist
+
+Include in your PR description:
+
+- **What dialog or window** the handler targets (title, TWS version where you observed it).
+- **What action** the handler takes (which button it clicks, what it fills in).
+- **config.ini setting** that controls the behavior, if you added one.
+- **Manual test result** — confirm you ran IBC against a paper account and observed the handler firing correctly.
+
+Make sure before opening the PR:
+
+- [ ] `make dev` compiles with no errors or warnings.
+- [ ] The new handler is registered in `IbcTws.createWindowHandlers()`.
+- [ ] Manual test was performed against a paper trading account.
+- [ ] `resources/config.ini` documents any new setting you added.

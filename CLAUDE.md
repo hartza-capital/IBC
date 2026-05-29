@@ -2,72 +2,104 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## What This Project Does
-
-IBC (Interactive Brokers Controller) automates Interactive Brokers TWS (Trader Workstation) and IB Gateway — handling login, 2FA prompts, dialog dismissal, scheduled restarts, and remote shutdown. It works by injecting a Java agent into the TWS/Gateway JVM and automating GUI interactions using Swing/AWT APIs. It targets Java 17.
-
 ## Build System
 
-**Apache Maven** (migrated from Ant + Ivy).
-
-**Prerequisite:** `IBC_BIN` environment variable must point to the directory containing TWS/Gateway `.jar` files (e.g. the TWS installation `jars/` folder). Without it, all build targets fail.
+**Prerequisites:** Java 17 JDK, Maven 3.8+, `IBC_BIN` env var pointing to the TWS/Gateway `jars/` directory (e.g. `~/Jts/1045/jars`).
 
 ```bash
-# Convenience wrapper around Maven
-make dev        # compile + jar (fast dev cycle, no distribution ZIP)
-make jar        # compile + jar (no distribution ZIP)
-make dist       # build + create Linux distribution ZIP
-make clean      # remove target/ and dist/
-make rebuild    # clean + dist
-make check-env  # verify IBC_BIN is set
+export IBC_BIN=~/Jts/1045/jars   # required for all builds
+
+make jar      # compile + produce resources/IBC.jar (no distribution ZIP)
+make dist     # compile + resources/IBC.jar + dist/IBCLinux-x.y.z.zip
+make clean    # remove build artifacts (target/, dist/, resources/IBC.jar)
+make rebuild  # clean + dist
+make format   # run prettier on *.md and *.json
 ```
 
-Direct Maven equivalents: `mvn compile`, `mvn package`, `mvn clean`.
+Direct Maven equivalents: `mvn compile`, `mvn package -DskipAssembly=true`, `mvn clean`.
 
-The compiled output is `resources/IBC.jar` (fat JAR with bundled dependencies).
+**Build output:** `resources/IBC.jar` — fat JAR with all dependencies (including `dev.samstevens.totp`).
 
-## No Automated Tests
+**Non-standard Maven layout:** sources live in `src/ibcalpha/ibc/` (not `src/main/java`), tests in `test/`. The default `maven-compiler-plugin` is disabled; compilation is done via `maven-antrun-plugin` to include TWS/Gateway jars from `$IBC_BIN` on the compile classpath.
 
-The `test/` directory exists but is empty. There is no test framework configured. Validation is done by running IBC against a paper trading TWS/Gateway instance.
+**Generated source:** `IbcVersionInfo.java` is generated during `generate-sources` phase into `target/generated-sources/java/ibcalpha/ibc/`. Never edit it manually.
 
 ## Architecture
 
-Single Java package `ibcalpha.ibc` (~83 classes). Two entry points:
+IBC is a GUI automation agent for IB TWS and IB Gateway. It hooks into the Swing event system to intercept window events, then dispatches to handlers that programmatically interact with dialogs.
 
-- `IbcTws.main()` — for TWS
-- `IbcGateway.main()` — for Gateway (delegates to IbcTws after setup)
+### Entry Points
 
-Both follow: `checkArguments()` → `setupDefaultEnvironment()` → `IbcTws.load()`
+- `IbcTws` — main class for TWS; loads config, sets up `TwsListener`, starts `CommandServer`
+- `IbcGateway` — main class for IB Gateway; same pattern, Gateway-specific window handlers
 
-**Key subsystems:**
+### Core Event Loop
 
-| Area           | Key Classes                                                                                                         |
-| -------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Login/Auth     | `AbstractLoginHandler`, `DefaultLoginManager`, `SecondFactorAuthenticationDialogHandler`                            |
-| Configuration  | `DefaultSettings`, `JtsIniManager` (manages TWS `.ini` file), `Configure*Task` classes                              |
-| GUI automation | `SwingUtils` (879 lines, core utility), `TwsListener` (AWT event monitor), `*FrameHandler`/`*DialogHandler` classes |
-| Main window    | `DefaultMainWindowManager`, `MainWindowFrameHandler`                                                                |
-| Remote control | `CommandServer` (TCP), `CommandDispatcher`, `CommandChannel`                                                        |
-| Threading      | `MyCachedThreadPool`, `MyScheduledExecutorService`, `GuiExecutor`/`GuiDeferredExecutor`                             |
+`TwsListener` is an `AWTEventListener` registered on the Swing Toolkit. Every `WINDOW_OPENED` / `WINDOW_ACTIVATED` / etc. event flows through it. For each event it iterates a list of `WindowHandler` instances, calling `recogniseWindow()` then `handleWindow()` on the first match. All handler execution is posted via `GuiDeferredExecutor` to avoid blocking the EDT.
 
-**Dialog handler pattern:** Each TWS dialog/window gets its own `*DialogHandler` or `*FrameHandler` class implementing `WindowHandler`. `TwsListener` receives all AWT window events and routes them to the registered handlers via `MainWindowManager`.
+### WindowHandler Pattern
 
-**Configuration flow:** `config.ini` → `DefaultSettings` → `Configure*Task` classes that read settings and call `JtsIniManager` to write TWS's own `.ini` configuration file before TWS initializes.
+All dialog and frame handlers implement `WindowHandler`:
 
-## Configuration
+```java
+interface WindowHandler {
+    boolean recogniseWindow(Window window);  // identify by title/component structure
+    boolean filterEvent(Window window, int eventId);  // which event IDs to act on
+    void handleWindow(Window window, int eventID);    // perform the automation
+}
+```
 
-Main template: `resources/config.ini`. Key settings:
+`SwingUtils` provides helpers to locate buttons and labels by text within a window. `ComponentIterator` walks the Swing component tree.
 
-- `IbLoginId`, `IbPassword` — credentials
-- `Ib2FA` — 2FA mode (`IBKR Mobile` | `TOTP` | `none`)
-- `IbcPortOffset`, `TwsApiPort` — API port configuration
-- `AutoRestartTime`, `ClosedownAt` — scheduling
-- Command server bind addresses/ports for remote control
+### Key Singletons (all use static factory pattern)
 
-## Runtime Scripts
+| Class             | Role                                                                                   |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| `Settings`        | Config abstraction backed by `config.ini`                                              |
+| `DefaultSettings` | `.ini` file parser implementation                                                      |
+| `LoginManager`    | Login state machine (`LOGGED_OUT` → `LOGGING_IN` → `TWO_FA_IN_PROGRESS` → `LOGGED_IN`) |
+| `SessionManager`  | Session lifecycle, daily auto-restart scheduling                                       |
+| `CommandServer`   | TCP server for remote commands (`STOP`, `RESTART`, `RECONNECTDATA`, etc.)              |
 
-Platform scripts in `resources/scripts/`: `twsstart.sh`, `gatewaystart.sh` (Linux), `twsstartmacos.sh`, `gatewaystartmacos.sh`, plus `stop.sh`, `restart.sh`, `reconnectaccount.sh`, `reconnectdata.sh`. Windows equivalents are `.bat` files.
+### Configuration Tasks (`Configure*Task`)
 
-## Version
+These run after login to configure TWS/Gateway programmatically by opening the Global Configuration dialog and setting values. Each implements `ConfigurationTask` and is dispatched via `ConfigDialogManager` / `GetConfigDialogTask`.
 
-Defined in `pom.xml` (`<version>` element). Updating it regenerates `IbcVersionInfo.java` at compile time (generated to `target/generated-sources/java/`) and writes `resources/version`.
+### Two-Factor Authentication
+
+`SecondFactorAuthenticationDialogHandler` handles the 2FA flow. When `Ib2FA` is a base32 string, it calls into `dev.samstevens.totp` to generate a TOTP code automatically. When it's `IBKR Mobile`, it waits for the push notification and can retry on timeout.
+
+### GUI Execution Utilities
+
+- `GuiDeferredExecutor` — posts work to the Swing EDT via `SwingUtilities.invokeLater`
+- `GuiSynchronousExecutor` — runs on EDT synchronously (blocks caller)
+- `MyCachedThreadPool` / `MyScheduledExecutorService` — thread pool wrappers with uncaught exception logging
+
+### Command Server
+
+`CommandServer` (TCP, port from `CommandServerPort` setting) accepts one connection at a time. `CommandDispatcher` maps command strings to actions. `CommandChannel` handles per-connection I/O.
+
+### JTS INI Management
+
+`JtsIniManager` / `JtsIniSectionSetting` read and write the TWS `jts.ini` file to persist configuration changes (e.g. trading mode, API port) across sessions.
+
+## Adding a New Dialog Handler
+
+1. Create `MyDialogHandler.java` implementing `WindowHandler`
+2. Implement `recogniseWindow()` using `SwingUtils` to match the dialog title or a unique component
+3. Implement `filterEvent()` — typically accept only `WINDOW_OPENED`
+4. Implement `handleWindow()` — interact via `SwingUtils.clickButton()` etc.
+5. Register the instance in the handler list built in `IbcTws` or `IbcGateway`
+
+## Key Configuration Settings (config.ini)
+
+| Setting                          | Purpose                                        |
+| -------------------------------- | ---------------------------------------------- |
+| `IbLoginId` / `IbPassword`       | IBKR credentials                               |
+| `TradingMode`                    | `paper` or `live`                              |
+| `Ib2FA`                          | `none`, `IBKR Mobile`, or a base32 TOTP secret |
+| `CommandServerPort`              | TCP port (`0` = disabled)                      |
+| `AutoRestartTime`                | Daily auto-restart time (no re-auth)           |
+| `ClosedownAt`                    | Scheduled shutdown time                        |
+| `AcceptIncomingConnectionAction` | `accept`, `reject`, `manual`                   |
+| `OverrideTwsApiPort`             | Force API port regardless of TWS config        |
