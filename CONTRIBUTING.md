@@ -9,15 +9,14 @@ You are welcome to contribute to IBC. Here are some of the ways you can help:
 
 - submit pull requests to enhance or correct the code or the script files
 
-
 Please bear in mind that IBC is a small, narrowly focussed project. Its
 only purpose is to automate aspects of TWS and Gateway operation that would
 otherwise require manual intervention at runtime. Note the following:
 
-- IBC is *not* a tool for configuring TWS: the user must configure the TWS
+- IBC is _not_ a tool for configuring TWS: the user must configure the TWS
   settings as required through the means provided in TWS.
 
-- IBC is *not* a management mechanism for TWS, so it cannot be extended to
+- IBC is _not_ a management mechanism for TWS, so it cannot be extended to
   provide for such things as restarting TWS after a failure. IBC and TWS run
   in the same process, and if one exits so does the other.
 
@@ -63,8 +62,7 @@ contribution to the project:
    you've discussed a refactor with the current maintainers via email or a
    GitHub [Issue](https://github.com/IbcAlpha/IBC/issues)
 
-How to build IBC
-================
+# How to build IBC
 
 [Apache Ant](http://ant.apache.org/) is required to build IBC.
 
@@ -94,4 +92,3 @@ Note that the `ver` property in the [build.xml](build.xml) is used in
 generating the file names for the distribution ZIP files, and is also put
 in the [version](resources/version) file which is used by the script
 files.
-
