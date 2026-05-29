@@ -24,6 +24,9 @@ import java.util.concurrent.ScheduledExecutorService;
 public class MyScheduledExecutorService {
     private static final ScheduledExecutorService instance = Executors.newScheduledThreadPool(1);
 
+    /**
+     * Private constructor for singleton pattern.
+     */
     private MyScheduledExecutorService() {}
 
     static ScheduledExecutorService getInstance() {return instance;}

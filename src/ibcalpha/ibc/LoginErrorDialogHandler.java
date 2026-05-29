@@ -24,6 +24,14 @@ import javax.swing.JDialog;
 
 public class LoginErrorDialogHandler implements WindowHandler {
 
+    /**
+     * Determines whether to process the given AWT event for this window.
+     * Only handles WINDOW_OPENED events.
+     *
+     * @param window the window that generated the event
+     * @param eventId the AWT event ID
+     * @return true if eventId is WINDOW_OPENED, false otherwise
+     */
     @Override
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
@@ -34,6 +42,13 @@ public class LoginErrorDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the Login Error dialog by logging the error message and initiating a cold restart.
+     * Clicks the OK button to dismiss the dialog before stopping.
+     *
+     * @param window the Login Error dialog
+     * @param eventID the AWT event ID
+     */
     @Override
     public void handleWindow(Window window, int eventID) {
         Utils.logToConsole("Login error message:" + SwingUtils.NEWLINE + SwingUtils.getTexts(window));
@@ -46,6 +61,12 @@ public class LoginErrorDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Identifies the Login Error dialog by checking the window type and title.
+     *
+     * @param window the window to check
+     * @return true if the window is a JDialog with "Login Error" in its title, false otherwise
+     */
     @Override
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;

@@ -28,6 +28,14 @@ import javax.swing.JLabel;
 
 public abstract class AbstractLoginHandler implements WindowHandler {
 
+    /**
+     * Determines whether to process the given AWT event for this window.
+     * Accepts WINDOW_OPENED events based on the current login state.
+     *
+     * @param window the window that generated the event
+     * @param eventId the AWT event ID (e.g., WindowEvent.WINDOW_OPENED)
+     * @return true if this event should be handled, false otherwise
+     */
     @Override
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
@@ -50,6 +58,13 @@ public abstract class AbstractLoginHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the login dialog by establishing the login handler, frame reference, and initiating login.
+     * Registers itself as the login handler if not already set and delegates to initiateLogin().
+     *
+     * @param window the login dialog window
+     * @param eventID the AWT event ID (e.g., WindowEvent.WINDOW_OPENED)
+     */
     @Override
     public final void handleWindow(Window window, int eventID) {
         if (LoginManager.loginManager().getLoginHandler() == null) LoginManager.loginManager().setLoginHandler(this);
@@ -88,8 +103,15 @@ public abstract class AbstractLoginHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Initiates the login process by setting login state to LOGGING_IN and clicking the Login button.
+     * For live trading in TWS 1016+, polls for the Login frame to transform into a 2FA dialog.
+     *
+     * @param window the login frame
+     * @throws IbcException if the login button cannot be found
+     */
     private void doLogin(final Window window) throws IbcException {
-        
+
         // this JLabel is only present for the 1016+ versions
         final JLabel initialTitleLabel = SwingUtils.findLabel(window, "LOGIN");
         
@@ -125,6 +147,13 @@ public abstract class AbstractLoginHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Periodically checks if the Login frame label has changed from "LOGIN" to "SECOND FACTOR AUTHENTICATION".
+     * When detected, passes the window to SecondFactorAuthenticationDialogHandler for processing.
+     * Reschedules itself if the transition has not yet occurred.
+     *
+     * @param window the login frame being monitored
+     */
     private void checkChangeToSecondFactorAuthenticationDialog(Window window) {
         JLabel currentTitleLabel = SwingUtils.findLabel(window, "SECOND FACTOR AUTHENTICATION");
         if (currentTitleLabel != null) {
@@ -153,6 +182,13 @@ public abstract class AbstractLoginHandler implements WindowHandler {
 
     protected abstract boolean isPasswordDisabledOrAbsent(Window window);
 
+    /**
+     * Locates the login button in the login frame by searching for common button text variations.
+     * Tries "Login", "Log In", and "Paper Log In" in order.
+     *
+     * @param window the login frame
+     * @return the login button, or null if not found
+     */
     private JButton findLoginButton(final Window window) {
         JButton b = SwingUtils.findButton(window, "Login");
         if (b == null) b = SwingUtils.findButton(window, "Log In");
@@ -160,17 +196,40 @@ public abstract class AbstractLoginHandler implements WindowHandler {
         return b;
     }
 
+    /**
+     * Directs focus to a credential field that is missing or empty.
+     * Used to prompt the user or external process to provide the required credential.
+     *
+     * @param window the login frame
+     * @param credentialIndex the field index (0 for username, 1 for password)
+     */
     protected final void setMissingCredential(final Window window, final int credentialIndex) {
         SwingUtils.findTextField(window, credentialIndex).requestFocus();
     }
 
-    protected final void setCredential(final Window window, 
+    /**
+     * Sets a credential value in the login frame by updating the specified text field.
+     *
+     * @param window the login frame
+     * @param credentialName the name of the credential (for error messages)
+     * @param credentialIndex the field index (0 for username, 1 for password)
+     * @param value the credential value to set
+     * @throws IbcException if the text field cannot be found or updated
+     */
+    protected final void setCredential(final Window window,
                                             final String credentialName,
-                                            final int credentialIndex, 
+                                            final int credentialIndex,
                                             final String value) throws IbcException {
         if (! SwingUtils.setTextField(window, credentialIndex, value)) throw new IbcException(credentialName);
     }
 
+    /**
+     * Sets the trading mode (Live Trading or Paper Trading) in the login frame.
+     * Handles both toggle button (TWS 974+) and combo box (earlier versions) UI patterns.
+     *
+     * @param window the login frame
+     * @return true if trading mode was set successfully, false if the dialog is invalid and requires cold restart
+     */
     protected final boolean setTradingMode(final Window window) {
         String tradingMode = TradingModeManager.tradingModeManager().getTradingMode();
 

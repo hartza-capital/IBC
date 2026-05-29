@@ -25,6 +25,12 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 
 class NotCurrentlyAvailableDialogHandler implements WindowHandler {
+    /**
+     * Determines whether to process window events for the "not currently available" dialog.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED or WINDOW_ACTIVATED event, false otherwise
+     */
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -35,6 +41,11 @@ class NotCurrentlyAvailableDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the "not currently available" dialog by closing it and the login frame.
+     * @param window the dialog window
+     * @param eventID the AWT window event ID
+     */
     public void handleWindow(Window window, int eventID) {
         if (! SwingUtils.clickButton(window, "OK")) {
             Utils.logError("The system is not currently available.");
@@ -55,6 +66,11 @@ class NotCurrentlyAvailableDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Identifies the "not currently available" dialog by checking for a login window with specific text.
+     * @param window the window to identify
+     * @return true if this is the "not currently available" dialog, false otherwise
+     */
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;
 

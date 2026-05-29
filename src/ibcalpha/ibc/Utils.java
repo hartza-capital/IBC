@@ -156,6 +156,12 @@ class Utils {
         return _dateFormatter.format(date);
     }
     
+    /**
+     * Formats a message by prepending the current timestamp and "IBC:" prefix.
+     *
+     * @param message the message to format
+     * @return the formatted message with timestamp and prefix
+     */
     private static String formatMessage(String message) {
         return _dateFormatter.format(LocalDateTime.now()) + " IBC: " + message;
     }

@@ -26,6 +26,12 @@ public class ResetOrderIdConfirmationDialogHandler implements WindowHandler {
     
     static volatile boolean orderIdResetRequestedAtStart;
 
+    /**
+     * Determines whether to process window events for the reset order ID confirmation dialog.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED event, false otherwise
+     */
     @Override
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
@@ -36,6 +42,12 @@ public class ResetOrderIdConfirmationDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the reset order ID confirmation dialog based on the ConfirmOrderIdReset setting.
+     * Behavior depends on whether the reset was initiated at startup or by user action.
+     * @param window the dialog window
+     * @param eventID the AWT window event ID
+     */
     @Override
     public void handleWindow(Window window, int eventID) {
         final String CONFIRM_RESET = "confirm";
@@ -95,6 +107,11 @@ public class ResetOrderIdConfirmationDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Identifies the reset order ID confirmation dialog by checking for a specific label.
+     * @param window the window to identify
+     * @return true if this is the reset order ID confirmation dialog, false otherwise
+     */
     @Override
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;

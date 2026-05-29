@@ -20,8 +20,15 @@ package ibcalpha.ibc;
 
 import javax.swing.JDialog;
 
-public interface ConfigurationAction extends Runnable{
+public interface ConfigurationAction extends Runnable {
 
-    public  void initialise(JDialog configDialog);
+    /**
+     * Initializes this configuration action with the global configuration dialog.
+     *
+     * Called before run() to provide the dialog instance that the action will interact with.
+     *
+     * @param configDialog the TWS Global Configuration dialog
+     */
+    void initialise(JDialog configDialog);
 
 }

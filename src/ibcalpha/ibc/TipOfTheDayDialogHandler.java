@@ -23,6 +23,12 @@ import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
 class TipOfTheDayDialogHandler implements WindowHandler {
+    /**
+     * Determines whether to process window events for the tip of the day dialog.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED or WINDOW_ACTIVATED event, false otherwise
+     */
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -33,12 +39,22 @@ class TipOfTheDayDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the tip of the day dialog by clicking the Close button.
+     * @param window the dialog window
+     * @param eventID the AWT window event ID
+     */
     public void handleWindow(Window window, int eventID) {
         if (! SwingUtils.clickButton(window, "Close")) {
             Utils.logError("could not dismiss Tip of the Day because we could not find one of the controls.");
         }
     }
 
+    /**
+     * Identifies the tip of the day dialog by checking the window title.
+     * @param window the window to identify
+     * @return true if this is the tip of the day dialog, false otherwise
+     */
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;
 

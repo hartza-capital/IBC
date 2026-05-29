@@ -32,10 +32,18 @@ class TwsSettingsSaver {
     private static final DateFormat dateFormat = new SimpleDateFormat("HH:mm");
 
 
+    /**
+     * Private constructor for singleton pattern.
+     */
     private TwsSettingsSaver() {};
 
     static TwsSettingsSaver getInstance() {return instance;}
 
+    /**
+     * Initializes automatic TWS settings saving based on the SaveTwsSettingsAt configuration.
+     *
+     * Configuration format: SaveTwsSettingsAt=hh:mm [hh:mm]... or SaveTwsSettingsAt=Every n [{mins | hours}] [hh:mm [hh:mm]]
+     */
     public void initialise() {
         // setting format: SaveTwsSettingsAt=hh:mm [hh:mm]...
         //             or: SaveTwsSettingsAt=Every n [{mins | hours}] [hh:mm [hh:mm]]
@@ -63,6 +71,12 @@ class TwsSettingsSaver {
 
     }
 
+    /**
+     * Adjusts a calendar to the next day if the current time has already passed.
+     *
+     * @param calendar the calendar to adjust
+     * @return an adjusted calendar set to tomorrow if the original time is in the past, otherwise the original calendar
+     */
     private static Calendar adjustCalendar(Calendar calendar) {
         Calendar cal = (Calendar)calendar.clone();
         if (!cal.getTime().after(new Date())) {
@@ -71,6 +85,13 @@ class TwsSettingsSaver {
         return cal;
     }
 
+    /**
+     * Converts an array of explicit time strings (hh:mm format) into a list of future save times.
+     *
+     * @param times the array of time strings in hh:mm format
+     * @return a list of Date objects representing the save times
+     * @throws IbcException if any time string is not in valid hh:mm format
+     */
     private static List<Date> convertSuppliedTimes(String[] times) throws IbcException {
         List<Date> saveTimes = new ArrayList<>();
         for (String time : times) {
@@ -79,6 +100,13 @@ class TwsSettingsSaver {
         return saveTimes;
     }
 
+    /**
+     * Generates a list of save times at regular intervals, optionally within a time range.
+     *
+     * @param times an array starting with "Every", followed by interval count, optional unit (mins/hours), optional start and end times
+     * @return a list of Date objects representing the generated save times
+     * @throws IbcException if the interval is not a valid integer or falls outside the 1-1439 minute range
+     */
     private static List<Date> generateSaveTimes(String[] times) throws IbcException {
         int interval = 0;
         try {
@@ -126,6 +154,13 @@ class TwsSettingsSaver {
         return saveTimes;
     }
 
+    /**
+     * Creates a Calendar set to the specified time today.
+     *
+     * @param time a time string in hh:mm format
+     * @return a Calendar object set to the specified time
+     * @throws IbcException if the time string is not in valid hh:mm format
+     */
     private static Calendar getCalendarForTime(String time) throws IbcException {
         Calendar cal = Calendar.getInstance();
         try {
@@ -142,6 +177,11 @@ class TwsSettingsSaver {
         return cal;
     }
 
+    /**
+     * Schedules a recurring task to save TWS settings at the specified time every day.
+     *
+     * @param saveTime the time at which to save TWS settings
+     */
     private static void scheduleSave(Date saveTime) {
         Utils.logToConsole("Tws settings will be saved at " + dateFormat.format(saveTime));
 

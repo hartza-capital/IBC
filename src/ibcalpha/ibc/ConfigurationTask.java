@@ -25,14 +25,30 @@ public class ConfigurationTask {
 
     private final ConfigurationAction configAction;
 
+    /**
+     * Constructs a ConfigurationTask that wraps a ConfigurationAction.
+     *
+     * @param configAction the configuration action to execute
+     */
     public ConfigurationTask(ConfigurationAction configAction) {
         this.configAction = configAction;
     }
 
+    /**
+     * Executes the configuration action asynchronously on a background thread.
+     *
+     * This method obtains the global configuration dialog, initializes the action with it,
+     * executes the action on the Swing EDT, and releases the dialog when complete.
+     */
     public void executeAsync() {
         MyCachedThreadPool.getInstance().execute(new ConfigTaskRunner());
     }
 
+    /**
+     * Executes the configuration action synchronously on the calling thread.
+     *
+     * This method runs the same workflow as executeAsync but blocks until completion.
+     */
     public void execute() {
         (new ConfigTaskRunner()).run();
     }

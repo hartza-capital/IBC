@@ -33,6 +33,13 @@ class ConfigureTwsMasterClientIDTask implements ConfigurationAction{
         this.masterClientID = masterClientID;
     }
 
+    /**
+     * Configures the TWS Master API client ID in the global configuration dialog.
+     *
+     * Opens the API settings section, locates the Master API client ID text field, and updates it
+     * to the specified value if different from the current setting.
+     * If API is already enabled, flags that a confirmation dialog is expected.
+     */
     @Override
     public void run() {
         try {
@@ -64,6 +71,11 @@ class ConfigureTwsMasterClientIDTask implements ConfigurationAction{
         }
     }
 
+    /**
+     * Initializes this task with the global configuration dialog.
+     *
+     * @param configDialog the TWS Global Configuration dialog
+     */
     @Override
     public void initialise(JDialog configDialog) {
         this.configDialog = configDialog;

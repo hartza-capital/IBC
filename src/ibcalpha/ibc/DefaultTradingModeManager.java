@@ -22,12 +22,20 @@ public class DefaultTradingModeManager extends TradingModeManager {
 
     private String tradingMode;
 
+    /**
+     * Creates a new DefaultTradingModeManager with trading mode set to live.
+     */
     public DefaultTradingModeManager() {
         fromSettings = false;
         setTradingMode(TRADING_MODE_LIVE);
         message = "parameterless constructor (trading mode live assumed)";
     }
 
+    /**
+     * Creates a new DefaultTradingModeManager with the specified trading mode.
+     *
+     * @param tradingMode the trading mode (either "live" or "paper")
+     */
     public DefaultTradingModeManager(String tradingMode) {
         fromSettings = false;
         setTradingMode(tradingMode);
@@ -58,6 +66,12 @@ public class DefaultTradingModeManager extends TradingModeManager {
         }
     }
 
+    /**
+     * Sets the trading mode to the specified value after validation.
+     *
+     * @param value the trading mode to set (must be "live" or "paper")
+     * @throws SystemException if the value is not a valid trading mode
+     */
     private void setTradingMode(String value) {
         if (!(value.equalsIgnoreCase(TRADING_MODE_LIVE) || value.equalsIgnoreCase(TRADING_MODE_PAPER))) {
                 Utils.exitWithError(ErrorCodes.INVALID_TRADING_MODE, "Invalid Trading Mode argument or .ini file setting: " + tradingMode);
@@ -68,11 +82,19 @@ public class DefaultTradingModeManager extends TradingModeManager {
     private final String message;
     private final boolean fromSettings;
 
+    /**
+     * Logs a diagnostic message describing the source of the trading mode setting.
+     */
     @Override
     public void logDiagnosticMessage(){
         Utils.logToConsole("using default trading mode manager: " + message);
     }
 
+    /**
+     * Returns the current trading mode, retrieving from settings if necessary.
+     *
+     * @return the trading mode ("live" or "paper")
+     */
     @Override
     public String getTradingMode() {
         if (fromSettings) {

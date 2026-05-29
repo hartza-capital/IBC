@@ -24,6 +24,13 @@ import javax.swing.JFrame;
 
 class GatewayMainWindowFrameHandler  implements WindowHandler {
     @Override
+    /**
+     * Determines whether this handler should act on the given window event.
+     *
+     * @param window the AWT window associated with the event.
+     * @param eventId the AWT event ID (e.g., WINDOW_OPENED).
+     * @return true if this handler should process the event; false otherwise.
+     */
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -34,11 +41,23 @@ class GatewayMainWindowFrameHandler  implements WindowHandler {
     }
 
     @Override
+    /**
+     * Records the Gateway main window when it opens.
+     *
+     * @param window the Gateway main window.
+     * @param eventID the AWT event ID.
+     */
     public void handleWindow(Window window, int eventID) {
         SessionManager.setMainWindow((JFrame) window);
     }
 
     @Override
+    /**
+     * Identifies the Gateway main window by looking for the Help > About Gateway or Help > About IB Gateway menu item.
+     *
+     * @param window the window to identify.
+     * @return true if this is the Gateway main window; false otherwise.
+     */
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JFrame)) return false;
 

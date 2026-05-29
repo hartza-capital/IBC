@@ -41,6 +41,9 @@ public class DefaultMainWindowManager extends MainWindowManager {
     private final Object futureCreationLock = new Object();
     private Future<JFrame> mainWindowFuture;
 
+    /**
+     * Logs a diagnostic message indicating that the default main window manager is in use.
+     */
     @Override
     public void logDiagnosticMessage(){
         Utils.logToConsole("using default main window manager");
@@ -49,23 +52,17 @@ public class DefaultMainWindowManager extends MainWindowManager {
     /**
      * Returns the main window, if necessary blocking the calling thread until
      * either it is available or a specified timeout has elapsed.
-     * 
+     *
      * If the main window is currently open, it is returned immediately without blocking
      * the calling thread.
-     * 
+     *
      * Calling this method from the Swing event dispatch thread results in an IllegalStateException
      * being thrown.
-     * 
-     * @param timeout
-     * the length of time to wait for the main window to become available. If this is
-     * negative, the calling thread blocks until the window becomes available.
-     * @param unit
-     * the time units for the timeout parameter
-     * @return
-     * null if the timeout expires before the main window becomes available; otherwise
-     * the main window
-     * @throws IllegalStateException
-     * the method has been called from the Swing event dispatch thread
+     *
+     * @param timeout the length of time to wait for the main window to become available. If negative, blocks until available
+     * @param unit the time units for the timeout parameter
+     * @return null if the timeout expires before the main window becomes available; otherwise the main window
+     * @throws IllegalStateException if the method has been called from the Swing event dispatch thread
      */
     @Override
     public JFrame getMainWindow(long timeout, TimeUnit unit) {
@@ -111,23 +108,26 @@ public class DefaultMainWindowManager extends MainWindowManager {
     /**
      * Returns the main window, if necessary blocking the calling thread until
      * it is available.
-     * 
+     *
      * If the main window is currently open, it is returned immediately without blocking
      * the calling thread.
-     * 
+     *
      * Calling this method from the Swing event dispatch thread results in an IllegalStateException
      * being thrown.
-     * 
-     * @return
-     * the main window
-     * @throws IllegalStateException 
-     * the method has been called from the Swing event dispatch thread
+     *
+     * @return the main window
+     * @throws IllegalStateException if the method has been called from the Swing event dispatch thread
      */
     @Override
     public JFrame getMainWindow() throws IllegalStateException{
         return getMainWindow(-1, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * Sets the main window reference and completes initialization tasks for the main window.
+     *
+     * @param window the main window
+     */
     @Override
     public void setMainWindow(JFrame window) {
         Utils.logToConsole("Found " + (SessionManager.isGateway() ? "Gateway" : "TWS") + " main window");
@@ -148,6 +148,11 @@ public class DefaultMainWindowManager extends MainWindowManager {
     }
 
     private final WindowStateListener listener = new WindowStateListener() {
+        /**
+         * Handles window state changes to re-minimize the main window if it was maximized too soon after minimization.
+         *
+         * @param e the window state change event
+         */
         @Override
         public void windowStateChanged(WindowEvent e) {
             int state = e.getNewState();
@@ -162,6 +167,9 @@ public class DefaultMainWindowManager extends MainWindowManager {
     };
 
     private Long lastMinimizeTime;
+    /**
+     * Minimizes the main window if the MinimizeMainWindow setting is enabled.
+     */
     @Override
     public void iconizeIfRequired() {
         if (Settings.settings().getBoolean("MinimizeMainWindow", false)) {

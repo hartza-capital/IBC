@@ -60,11 +60,20 @@ class CommandDispatcher
         mChannel.close();
     }
 
+    /**
+     * Handles an invalid or unrecognized command by rejecting it and logging an error.
+     *
+     * @param cmd the invalid command string
+     */
     private void handleInvalidCommand(String cmd) {
         mChannel.writeNack("Command invalid");
         Utils.logError("CommandServer: invalid command received: " + cmd);
     }
 
+    /**
+     * Handles the ENABLEAPI command by configuring the API for TWS.
+     * Not valid for IB Gateway.
+     */
     private void handleEnableAPICommand() {
         if (SessionManager.isGateway()) {
             mChannel.writeNack("ENABLEAPI is not valid for the IB Gateway");
@@ -75,6 +84,10 @@ class CommandDispatcher
         (new ConfigurationTask(new EnableApiTask(mChannel))).execute();
    }
 
+    /**
+     * Handles the RECONNECTDATA command by simulating a keyboard shortcut to reconnect market data.
+     * Not valid for FIX Gateway.
+     */
     private void handleReconnectDataCommand() {
         if (SessionManager.isFIX()) {
             mChannel.writeNack("RECONNECTDATA is not valid for the FIX Gateway");
@@ -88,10 +101,14 @@ class CommandDispatcher
         jf.dispatchEvent(pressed);
         jf.dispatchEvent(typed);
         jf.dispatchEvent(released);
-  
+
         mChannel.writeAck("");
    }
 
+    /**
+     * Handles the RECONNECTACCOUNT command by simulating a keyboard shortcut to reconnect account data.
+     * Not valid for FIX Gateway.
+     */
     private void handleReconnectAccountCommand() {
         if (SessionManager.isFIX()) {
             mChannel.writeNack("RECONNECTACCOUNT is not valid for the FIX Gateway");
@@ -109,10 +126,17 @@ class CommandDispatcher
         mChannel.writeAck("");
     }
 
+    /**
+     * Handles the STOP command by shutting down TWS/Gateway.
+     */
     private void handleStopCommand() {
         (new StopTask(mChannel, false, "STOP command")).run();     // run on the current thread
     }
-    
+
+    /**
+     * Handles the RESTART command by restarting TWS/Gateway.
+     * Not valid for FIX Gateway.
+     */
     private void handleRestartCommand() {
         if (SessionManager.isFIX()) {
             mChannel.writeNack("RESTART is not valid for the FIX Gateway");

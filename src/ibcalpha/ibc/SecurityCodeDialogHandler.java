@@ -24,6 +24,14 @@ import javax.swing.JDialog;
 
 public class SecurityCodeDialogHandler implements WindowHandler {
 
+    /**
+     * Determines whether to process the given AWT event for this window.
+     * Only handles WINDOW_OPENED events.
+     *
+     * @param window the window that generated the event
+     * @param eventId the AWT event ID
+     * @return true if eventId is WINDOW_OPENED, false otherwise
+     */
     @Override
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
@@ -34,6 +42,13 @@ public class SecurityCodeDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the Security Code Card Authentication dialog by initiating a read-only login
+     * if the ReadOnlyLogin configuration setting is enabled.
+     *
+     * @param window the Security Code Card Authentication dialog
+     * @param eventID the AWT event ID
+     */
     @Override
     public void handleWindow(Window window, int eventID) {
         if (! Settings.settings().getBoolean("ReadOnlyLogin", false)) return;
@@ -45,6 +60,12 @@ public class SecurityCodeDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Identifies the Security Code Card Authentication dialog by checking for the "Enter Read Only" button.
+     *
+     * @param window the window to check
+     * @return true if the window is a JDialog with an "Enter Read Only" button, false otherwise
+     */
     @Override
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;

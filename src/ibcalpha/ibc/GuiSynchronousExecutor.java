@@ -24,10 +24,18 @@ import javax.swing.SwingUtilities;
 class GuiSynchronousExecutor implements Executor{
     private static final GuiSynchronousExecutor instance = new GuiSynchronousExecutor();
 
+    /**
+     * Private constructor for singleton pattern.
+     */
     private GuiSynchronousExecutor() {}
 
     static GuiSynchronousExecutor instance() {return instance;}
 
+    /**
+     * Executes the task on the Swing event dispatch thread, blocking the caller until completion.
+     *
+     * @param task the runnable task to execute
+     */
     @Override
     public void execute(Runnable task) {
         if (SwingUtilities.isEventDispatchThread()) {

@@ -18,6 +18,12 @@
 
 package ibcalpha.ibc;
 
+/**
+ * Exit codes used by IBC to indicate the reason for termination.
+ *
+ * These constants are used when IBC exits, providing diagnostic information to the host system
+ * about whether the shutdown was normal or due to an error condition.
+ */
 public final class ErrorCodes {
 
     public static final int UNHANDLED_EXCEPTION = 1100;

@@ -42,10 +42,20 @@ class CommandServer
         _commandServer = this;
     }
     
+    /**
+     * Returns the singleton instance of the CommandServer.
+     *
+     * @return the CommandServer instance
+     */
     public static CommandServer commandServer() {
         return _commandServer;
     }
 
+    /**
+     * Main loop for the CommandServer.
+     * Starts listening on the configured port and accepts incoming client connections.
+     * Each connection is dispatched to a CommandDispatcher in a separate thread.
+     */
     @Override
     public void run() {
         Thread.currentThread().setName("CommandServer");
@@ -73,6 +83,10 @@ class CommandServer
         Utils.logToConsole("CommandServer is shutdown");
     }
 
+    /**
+     * Shuts down the CommandServer by closing the server socket.
+     * Signals the main loop to exit by setting mQuitting to true.
+     */
     public void shutdown() {
         mQuitting = true;
         if (mSocket != null) {
@@ -86,6 +100,13 @@ class CommandServer
         }
     }
 
+    /**
+     * Creates a server socket listening on the specified port.
+     * Binds to a specific address if BindAddress setting is configured.
+     *
+     * @param port the port number to listen on
+     * @return true if the socket was successfully created, false otherwise
+     */
     private boolean createSocket(final int port) {
         final int backlog = 5;
         try {
@@ -119,10 +140,16 @@ class CommandServer
         return true;
     }
 
+    /**
+     * Accepts the next incoming client connection from the server socket.
+     * Verifies that the client is permitted based on the ControlFrom setting.
+     *
+     * @return a connected socket if a permitted client connects, null otherwise or if the server socket is closed
+     */
     private Socket getClient() {
         try {
             if (mSocket.isClosed()) return null;
-            
+
             final Socket socket = mSocket.accept();
 
             final String allowedAddresses = Settings.settings().getString("ControlFrom", "");
@@ -134,7 +161,7 @@ class CommandServer
                 socket.close();
                 return null;
             }
-             
+
             Utils.logToConsole("CommandServer accepted connection from: " + socket.getInetAddress().toString());
             return socket;
 
@@ -147,6 +174,11 @@ class CommandServer
         }
     }
 
+    /**
+     * Returns a comma-separated string of all network addresses on which the server is listening.
+     *
+     * @return a comma-separated list of IP addresses, or an empty string if none are available
+     */
     private String getAddresses() {
         final List<String> addressList = getAddressList();
         String s = addressList.isEmpty() ? "" : addressList.get(0);
@@ -156,8 +188,13 @@ class CommandServer
         return s;
     }
 
+    /**
+     * Enumerates all network interfaces and returns a list of their associated IP addresses.
+     *
+     * @return a list of IP address strings from all network interfaces
+     */
     private List<String> getAddressList() {
-        List<String> addressList = new ArrayList<>(); 
+        List<String> addressList = new ArrayList<>();
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
@@ -175,7 +212,15 @@ class CommandServer
         }
         return addressList;
     }
-    
+
+    /**
+     * Checks whether a connecting client is permitted to issue commands.
+     * A client is permitted if it is from the local machine, loopback address, or listed in ControlFrom setting.
+     *
+     * @param socket the client socket connection
+     * @param allowedAddresses a comma-separated list of allowed IP addresses or hostnames
+     * @return true if the client is permitted, false otherwise
+     */
     private boolean isPermittedClient(final Socket socket, final String allowedAddresses) {
         if (socket.getInetAddress().getHostAddress().equals(mSocket.getInetAddress().getHostAddress())) return true;
         

@@ -22,8 +22,11 @@ import javax.swing.JFrame;
 
 public class DefaultLoginManager extends LoginManager {
 
+    /**
+     * Creates a new DefaultLoginManager that obtains credentials from settings.
+     */
     public DefaultLoginManager() {
-        /* don't actually get the credentials yet because the settings 
+        /* don't actually get the credentials yet because the settings
          * provider might be changed
          */
         ibapiCredentialsFromArgs = false;
@@ -31,15 +34,26 @@ public class DefaultLoginManager extends LoginManager {
         message = "will get username and password from settings";
     }
 
+    /**
+     * Creates a new DefaultLoginManager that extracts credentials from command-line arguments.
+     *
+     * @param args the command-line arguments containing optional TWS and FIX credentials
+     */
     public DefaultLoginManager(String[] args) {
         ibapiCredentialsFromArgs = getTWSUserNameAndPasswordFromArguments(args);
         fixCredentialsFromArgs = getFIXUserNameAndPasswordFromArguments(args);
-        message = "will get username and password from " + 
-                (ibapiCredentialsFromArgs ? "args" : "settings") + 
-                "; FIX username and password (if required) from " + 
+        message = "will get username and password from " +
+                (ibapiCredentialsFromArgs ? "args" : "settings") +
+                "; FIX username and password (if required) from " +
                 (fixCredentialsFromArgs ? "args" : "settings");
     }
 
+    /**
+     * Creates a new DefaultLoginManager with TWS credentials provided to the constructor.
+     *
+     * @param username the TWS login username
+     * @param password the TWS login password
+     */
     public DefaultLoginManager(String username, String password) {
         IBAPIUserName = username;
         IBAPIPassword = password;
@@ -48,6 +62,14 @@ public class DefaultLoginManager extends LoginManager {
         message = "getting username and password from constructor";
     }
 
+    /**
+     * Creates a new DefaultLoginManager with both FIX and TWS credentials provided to the constructor.
+     *
+     * @param FIXUsername the FIX login username
+     * @param FIXPassword the FIX login password
+     * @param IBAPIUsername the TWS login username
+     * @param IBAPIPassword the TWS login password
+     */
     public DefaultLoginManager(String FIXUsername, String FIXPassword, String IBAPIUsername, String IBAPIPassword) {
         this.FIXUserName = FIXUsername;
         this.FIXPassword = FIXPassword;
@@ -93,64 +115,123 @@ public class DefaultLoginManager extends LoginManager {
     private volatile String FIXPassword;
 
 
+    /**
+     * Logs a diagnostic message describing the source of login credentials.
+     */
     @Override
     public void logDiagnosticMessage(){
         Utils.logToConsole("using default login manager: " + message);
     }
 
+    /**
+     * Returns the FIX login password from either constructor arguments or settings.
+     *
+     * @return the FIX password
+     */
     @Override
     public String FIXPassword() {
         if (fixCredentialsFromArgs) return FIXPassword;
         return getFIXPasswordFromSettings();
     }
 
+    /**
+     * Returns the FIX login username from either constructor arguments or settings.
+     *
+     * @return the FIX username
+     */
     @Override
     public String FIXUserName() {
         if (fixCredentialsFromArgs) return FIXUserName;
         return getFIXUserNameFromSettings();
     }
 
+    /**
+     * Returns the TWS login password from either constructor arguments or settings.
+     *
+     * @return the TWS password
+     */
     @Override
     public String IBAPIPassword() {
         if (ibapiCredentialsFromArgs) return IBAPIPassword;
         return getTWSPasswordFromSettings();
     }
 
+    /**
+     * Returns the TWS login username from either constructor arguments or settings.
+     *
+     * @return the TWS username
+     */
     @Override
     public String IBAPIUserName() {
         if (ibapiCredentialsFromArgs) return IBAPIUserName;
         return getTWSUserNameFromSettings();
     }
 
+    /**
+     * Returns the login dialog frame.
+     *
+     * @return the login frame
+     */
     @Override
     public JFrame getLoginFrame() {
         return super.getLoginFrame();
     }
 
+    /**
+     * Sets the login dialog frame.
+     *
+     * @param window the login frame
+     */
     @Override
     public void setLoginFrame(JFrame window) {
         super.setLoginFrame(window);
     }
 
+    /**
+     * Returns the current login handler.
+     *
+     * @return the login handler instance
+     */
     @Override
     public AbstractLoginHandler getLoginHandler() {
         return loginHandler;
     }
 
+    /**
+     * Sets the login handler to be used for login automation.
+     *
+     * @param handler the login handler instance
+     */
     @Override
     public void setLoginHandler(AbstractLoginHandler handler) {
         loginHandler = handler;
     }
 
+    /**
+     * Retrieves the FIX login password from the settings configuration.
+     *
+     * @return the FIX password from settings
+     */
     private static String getFIXPasswordFromSettings() {
         String password = Settings.settings().getString("FIXPassword", "");
         return password;
     }
 
+    /**
+     * Retrieves the FIX login username from the settings configuration.
+     *
+     * @return the FIX username from settings
+     */
     private static String getFIXUserNameFromSettings() {
         return Settings.settings().getString("FIXLoginId", "");
     }
 
+    /**
+     * Attempts to extract FIX username and password from command-line arguments.
+     *
+     * @param args the command-line arguments
+     * @return true if FIX credentials were found and extracted; false otherwise
+     */
     private boolean getFIXUserNameAndPasswordFromArguments(String[] args) {
         if (args.length >= 3 && args.length <= 6) {
             FIXUserName = args[1];
@@ -161,21 +242,37 @@ public class DefaultLoginManager extends LoginManager {
         }
     }
 
+    /**
+     * Retrieves the TWS login password from the settings configuration.
+     *
+     * @return the TWS password from settings
+     */
     private static String getTWSPasswordFromSettings() {
         String password = Settings.settings().getString("IbPassword", "");
         return password;
     }
 
+    /**
+     * Retrieves the TWS login username from the settings configuration.
+     *
+     * @return the TWS username from settings
+     */
     private static String getTWSUserNameFromSettings() {
         return Settings.settings().getString("IbLoginId", "");
     }
 
+    /**
+     * Attempts to extract TWS username and password from command-line arguments.
+     *
+     * @param args the command-line arguments
+     * @return true if TWS credentials were found and extracted; false otherwise
+     */
     private boolean getTWSUserNameAndPasswordFromArguments(String[] args) {
         if (args.length == 5 || args.length == 6) {
             IBAPIUserName = args[3];
             IBAPIPassword = args[4];
             return true;
-        
+
         }
         if (args.length == 3 || args.length == 4) {
             IBAPIUserName = args[1];

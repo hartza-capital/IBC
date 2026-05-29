@@ -25,6 +25,13 @@ import javax.swing.JDialog;
 public class GatewayDialogHandler implements WindowHandler {
     
     @Override
+    /**
+     * Determines whether this handler should act on the given window event.
+     *
+     * @param window the AWT window associated with the event.
+     * @param eventId the AWT event ID (e.g., WINDOW_OPENED).
+     * @return true if this handler should process the event; false otherwise.
+     */
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -35,6 +42,14 @@ public class GatewayDialogHandler implements WindowHandler {
     }
 
     @Override
+    /**
+     * Performs the automation action for a recognized Gateway dialog.
+     * Handles "Connection to server failed" dialogs by initiating a cold restart;
+     * other dialogs are logged but left for user interaction.
+     *
+     * @param window the Gateway dialog window.
+     * @param eventID the AWT event ID.
+     */
     public void handleWindow(Window window, int eventID) {
         String text = SwingUtils.getLabelTexts(window);
         // since this is a generic dialog, we always log the text
@@ -54,6 +69,13 @@ public class GatewayDialogHandler implements WindowHandler {
     }
 
     @Override
+    /**
+     * Identifies whether the window is a Gateway dialog.
+     * Checks if the window is a JDialog with "Gateway" in its title.
+     *
+     * @param window the window to identify.
+     * @return true if this is a recognized Gateway dialog; false otherwise.
+     */
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;
 

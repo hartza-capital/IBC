@@ -29,11 +29,23 @@ public class ConfigureResetOrderIdsTask implements ConfigurationAction {
         this.resetOrderIds = resetOrderIds;
     }
 
+    /**
+     * Initializes this task with the global configuration dialog.
+     *
+     * @param configDialog the TWS Global Configuration dialog
+     */
     @Override
     public void initialise(JDialog configDialog) {
         this.configDialog = configDialog;
     }
 
+    /**
+     * Resets the API order ID sequence in the TWS configuration.
+     *
+     * If resetOrderIds is true, opens the API settings section and clicks the
+     * "Reset API order ID sequence" button. On TWS (not Gateway), flags that a
+     * confirmation dialog is expected. If resetOrderIds is false, does nothing.
+     */
     @Override
     public void run() {
         try {

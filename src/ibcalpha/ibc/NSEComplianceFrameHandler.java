@@ -23,6 +23,12 @@ import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 
 public class NSEComplianceFrameHandler  implements WindowHandler {
+    /**
+     * Determines whether to process window events for the NSE compliance notice frame.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED or WINDOW_ACTIVATED event, false otherwise
+     */
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -33,6 +39,11 @@ public class NSEComplianceFrameHandler  implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the NSE compliance notice frame by dismissing it if DismissNSEComplianceNotice is enabled.
+     * @param window the frame window
+     * @param eventID the AWT window event ID
+     */
     public void handleWindow(Window window, int eventID) {
         if (! Settings.settings().getBoolean("DismissNSEComplianceNotice", true)) return;
         window.setVisible(false);
@@ -40,6 +51,11 @@ public class NSEComplianceFrameHandler  implements WindowHandler {
         Utils.logToConsole("NSE Compliance Dialog disposed");
     }
 
+    /**
+     * Identifies the NSE compliance notice frame by checking the window title.
+     * @param window the window to identify
+     * @return true if this is the NSE compliance frame, false otherwise
+     */
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JFrame)) return false;
 

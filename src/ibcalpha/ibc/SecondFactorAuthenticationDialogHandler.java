@@ -31,14 +31,30 @@ import dev.samstevens.totp.code.CodeGenerator;
 import dev.samstevens.totp.code.DefaultCodeGenerator;
 
 public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
+    /**
+     * Private constructor for singleton pattern.
+     */
     private SecondFactorAuthenticationDialogHandler() {};
-    
+
     static SecondFactorAuthenticationDialogHandler _secondFactorAuthenticationDialogHandler = new SecondFactorAuthenticationDialogHandler();
-    
+
+    /**
+     * Returns the singleton instance of SecondFactorAuthenticationDialogHandler.
+     *
+     * @return the singleton handler instance
+     */
     static SecondFactorAuthenticationDialogHandler getInstance() {
         return _secondFactorAuthenticationDialogHandler;
     }
     
+    /**
+     * Determines whether to process the given AWT event for this window.
+     * Handles both WINDOW_OPENED and WINDOW_CLOSED events.
+     *
+     * @param window the window that generated the event
+     * @param eventId the AWT event ID
+     * @return true if eventId is WINDOW_OPENED or WINDOW_CLOSED, false otherwise
+     */
     @Override
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
@@ -51,13 +67,30 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
         }
     }
 
-    private void setCredential(final Window window, 
+    /**
+     * Sets a 2FA credential value (e.g., TOTP code) in the 2FA dialog.
+     *
+     * @param window the 2FA dialog
+     * @param credentialName the name of the credential (for error messages)
+     * @param credentialIndex the field index within the dialog
+     * @param value the credential value to set (e.g., TOTP code)
+     * @throws IbcException if the text field cannot be found or updated
+     */
+    private void setCredential(final Window window,
                                         final String credentialName,
-                                        final int credentialIndex, 
+                                        final int credentialIndex,
                                         final String value) throws IbcException {
         if (! SwingUtils.setTextField(window, credentialIndex, value)) throw new IbcException(credentialName);
     }
 
+    /**
+     * Handles the Second Factor Authentication dialog by processing either a WINDOW_OPENED or WINDOW_CLOSED event.
+     * On WINDOW_OPENED: handles read-only login, device selection, or TOTP generation.
+     * On WINDOW_CLOSED: updates the login state accordingly.
+     *
+     * @param window the 2FA dialog
+     * @param eventID the AWT event ID (WINDOW_OPENED or WINDOW_CLOSED)
+     */
     @Override
     public void handleWindow(Window window, int eventID) {
         if (eventID == WindowEvent.WINDOW_OPENED) {
@@ -82,9 +115,16 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Generates a time-based one-time password (TOTP) from the Ib2FA setting and submits the 2FA dialog.
+     * Sets the login state to TWO_FA_IN_PROGRESS before attempting to generate and submit the TOTP.
+     *
+     * @param window the 2FA dialog
+     * @throws IbcException if the TOTP code field cannot be set
+     */
     private void doValidate2FA(final Window window) throws IbcException {
         CodeGenerator codeGenerator = new DefaultCodeGenerator();
-        
+
         // Set the login state to TWO_FA_IN_PROGRESS
         LoginManager.loginManager().setLoginState(LoginManager.LoginState.TWO_FA_IN_PROGRESS);
 
@@ -102,7 +142,7 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
         } catch (Exception e) {
             Utils.logError("could not generate TOTP: " + e.getMessage());
         }
-        
+
         // Submit the dialog
         GuiDeferredExecutor.instance().execute(() -> {
             Utils.logToConsole("Second factor authentication dialog submitted");
@@ -110,15 +150,27 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
         });
     }
 
+    /**
+     * Identifies the Second Factor Authentication dialog by window type and title.
+     * Recognizes both JDialog (Gateway) and JFrame (TWS) variants.
+     *
+     * @param window the window to check
+     * @return true if the window is a Second Factor Authentication dialog, false otherwise
+     */
     @Override
     public boolean recogniseWindow(Window window) {
         // For TWS this window is a JFrame; for Gateway it is a JDialog
         if (! (window instanceof JDialog || window instanceof JFrame)) return false;
-        
+
         return SwingUtils.titleContains(window, "Second Factor Authentication") ||
             SwingUtils.titleContains(window, "Security Code Card Authentication");
     }
 
+    /**
+     * Initiates a read-only login by clicking the "Enter Read Only" button in the 2FA dialog.
+     *
+     * @param window the 2FA dialog
+     */
     private void doReadonlyLogin(Window window){
         if (SwingUtils.clickButton(window, "Enter Read Only")) {
             Utils.logToConsole("initiating read-only login.");
@@ -127,6 +179,13 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
         }
     }
     
+    /**
+     * Checks whether the 2FA dialog requires the user to select a 2FA method.
+     * This occurs when multiple 2FA methods are enabled.
+     *
+     * @param window the 2FA dialog
+     * @return true if device selection is required, false otherwise
+     */
     private boolean secondFactorDeviceSelectionRequired(Window window) {
         // this area appears in the Second Factor Authentication dialog when the
         // user has enabled more than one second factor authentication method
@@ -134,6 +193,12 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
         return (SwingUtils.findTextArea(window, "Select second factor device") != null);
     }
     
+    /**
+     * Selects the configured second factor device from the 2FA method selection list and submits the dialog.
+     * The device name must match a value from the SecondFactorDevice configuration setting.
+     *
+     * @param window the 2FA dialog
+     */
     private void selectSecondFactorDevice(Window window) {
         JList<?> deviceList = SwingUtils.findList(window, 0);
         if (deviceList == null) {

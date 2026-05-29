@@ -42,11 +42,22 @@ class ConfigureAutoLogoffOrRestartTimeTask implements ConfigurationAction {
         this.autoActionTime = autoActionTime.format(DateTimeFormatter.ofPattern("hh:mm a"));
     }
 
+    /**
+     * Initializes this task with the global configuration dialog.
+     *
+     * @param configDialog the TWS Global Configuration dialog
+     */
     @Override
     public void initialise(JDialog configDialog) {
         this.configDialog = configDialog;
     }
 
+    /**
+     * Sets the auto logoff or restart time in the TWS configuration dialog.
+     *
+     * Navigates to the Lock and Exit section, parses the configured time as HH:MM AM/PM,
+     * and updates the time controls if different from the current setting. Logs all changes.
+     */
     @Override
     public void run() {
         try {

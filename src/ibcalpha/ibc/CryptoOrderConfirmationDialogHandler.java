@@ -23,7 +23,13 @@ import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
 public class CryptoOrderConfirmationDialogHandler implements WindowHandler {
-    
+
+    /**
+     * Determines whether to process window events for the cryptocurrency order confirmation dialog.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED event, false otherwise
+     */
     @Override
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
@@ -34,6 +40,12 @@ public class CryptoOrderConfirmationDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the cryptocurrency order confirmation dialog based on the ConfirmCryptoCurrencyOrders setting.
+     * Can transmit, cancel, or leave the dialog for manual handling.
+     * @param window the dialog window
+     * @param eventID the AWT window event ID
+     */
     @Override
     public void handleWindow(Window window, int eventID) {
         String setting = Settings.settings().getString("ConfirmCryptoCurrencyOrders", "manual");
@@ -58,6 +70,11 @@ public class CryptoOrderConfirmationDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Identifies the cryptocurrency order confirmation dialog by checking the window title.
+     * @param window the window to identify
+     * @return true if this is the cryptocurrency order confirmation dialog, false otherwise
+     */
     @Override
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;

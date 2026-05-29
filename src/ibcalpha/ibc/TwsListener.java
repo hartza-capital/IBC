@@ -39,6 +39,14 @@ class TwsListener
         getLogStructureParameters();
     }
 
+    /**
+     * Handles AWTEvents dispatched by the Swing toolkit.
+     * Filters for window events and iterates through registered WindowHandler instances
+     * to find and execute handlers that recognize the window.
+     * All handler execution is deferred to the GUI event dispatch thread.
+     *
+     * @param event the AWTEvent to process
+     */
     @Override
     public void eventDispatched(AWTEvent event) {
         try {
@@ -69,6 +77,10 @@ class TwsListener
         }
     }
     
+    /**
+     * Initializes logging parameters for window structure logging based on configuration settings.
+     * Handles both legacy LogComponents setting and newer LogStructureScope/LogStructureWhen settings.
+     */
     private static void getLogStructureParameters() {
         // legacy deprecated setting overrides explicit values of LogStructureScope 
         // and LogStructureWhen
@@ -78,6 +90,14 @@ class TwsListener
         logStructureWhen = getLogStructureWhen(logComponentsSetting);
     }
     
+    /**
+     * Determines the scope of windows for which component structure should be logged.
+     * Valid scopes are: "known" (recognized windows), "unknown" (unrecognized windows),
+     * "untitled" (windows without a title), or "all" (all windows).
+     *
+     * @param logComponentsSetting the legacy LogComponents setting value
+     * @return a validated scope string
+     */
     private static String getLogStructureScope(String logComponentsSetting) {
         if (logComponentsSetting.equals("ignore")) {
             logStructureScope = Settings.settings().getString("LogStructureScope", "known").toLowerCase();
@@ -99,6 +119,14 @@ class TwsListener
         return logStructureScope;
     }
     
+    /**
+     * Determines when window component structure should be logged.
+     * Valid values are: "activate" (when window is activated), "open" (when window is opened),
+     * "openclose" (on both open and close), "never" (no logging), or a specific window event name.
+     *
+     * @param logComponentsSetting the legacy LogComponents setting value
+     * @return a validated "when" string
+     */
     private static String getLogStructureWhen(String logComponentsSetting) {
         if (logComponentsSetting.equals("ignore")) {
             logStructureWhen = Settings.settings().getString("LogStructureWhen", "never").toLowerCase();
@@ -146,6 +174,12 @@ class TwsListener
         Utils.logToConsole("detected " + getWindowTypeAndTitle(window) + "; event=" + SwingUtils.windowEventToString(eventID));
     }
 
+    /**
+     * Returns a string describing the type and title of a window.
+     *
+     * @param window the Window to describe
+     * @return a string indicating whether it is a frame or dialog and the window title
+     */
     private static String getWindowTypeAndTitle(Window window) {
         if (window == null) throw new NullPointerException("window is null");
         if (window instanceof JFrame) {

@@ -30,6 +30,17 @@ class GetConfigDialogTask implements Callable<JDialog>{
     private final Lock lock = new ReentrantLock();
     private final Condition gotConfigDialog = lock.newCondition();
 
+    /**
+     * Retrieves the Global Configuration dialog from TWS or Gateway.
+     *
+     * Opens the configuration dialog via the appropriate menu item and waits for it to appear.
+     * On Gateway, uses Configure > Settings; on TWS, tries Edit > Global Configuration (Classic layout)
+     * or File > Global Configuration (Mosaic layout). Blocks until the dialog is available.
+     *
+     * @return the Global Configuration dialog
+     * @throws IbcException if the menu item cannot be invoked
+     * @throws InterruptedException if interrupted while waiting for the dialog
+     */
     @Override
     public JDialog call() throws IbcException, InterruptedException {
         final JFrame mainForm = MainWindowManager.mainWindowManager().getMainWindow();

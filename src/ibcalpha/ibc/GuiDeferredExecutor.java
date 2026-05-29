@@ -24,10 +24,18 @@ import javax.swing.SwingUtilities;
 class GuiDeferredExecutor implements Executor {
     private static final GuiDeferredExecutor instance = new GuiDeferredExecutor();
 
+    /**
+     * Private constructor for singleton pattern.
+     */
     private GuiDeferredExecutor() {}
 
     static GuiDeferredExecutor instance() {return instance;}
 
+    /**
+     * Schedules the task for execution on the Swing event dispatch thread (non-blocking).
+     *
+     * @param task the runnable task to execute
+     */
     public void execute(Runnable task) {
         SwingUtilities.invokeLater(task);
     }

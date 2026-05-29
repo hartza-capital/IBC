@@ -206,8 +206,18 @@ import java.util.concurrent.TimeUnit;
 
 public class IbcTws {
 
+    /**
+     * Private constructor prevents instantiation of this utility class.
+     */
     private IbcTws() { }
 
+    /**
+     * Starts the TWS automation agent.
+     * Sets up exception handling, validates arguments, initializes the environment, and loads TWS.
+     *
+     * @param args command-line arguments (optional: config file, credentials, trading mode).
+     * @throws Exception if an error occurs during TWS initialization.
+     */
     public static void main(final String[] args) throws Exception {
         if (Thread.getDefaultUncaughtExceptionHandler() == null) {
             Thread.setDefaultUncaughtExceptionHandler(new ibcalpha.ibc.UncaughtExceptionHandler());
@@ -262,6 +272,11 @@ public class IbcTws {
         }
     }
 
+    /**
+     * Initializes and starts the TWS/Gateway automation system.
+     * Sets up the Toolkit listener, command server, shutdown scheduling, and auto-save of settings.
+     * Catches and gracefully handles illegal state exceptions during initialization.
+     */
     public static void load() {
         try {
             printVersionInfo();
@@ -293,14 +308,27 @@ public class IbcTws {
         }
     }
 
+    /**
+     * Prints IBC version information to the console.
+     */
     public static void printVersionInfo() {
         Utils.logToConsole("version: " + IbcVersionInfo.IBC_VERSION);
     }
 
+    /**
+     * Registers the Toolkit AWTEventListener to intercept window events and dispatch to handlers.
+     */
     private static void createToolkitListener() {
         Toolkit.getDefaultToolkit().addAWTEventListener(new TwsListener(createWindowHandlers()), AWTEvent.WINDOW_EVENT_MASK);
     }
 
+    /**
+     * Creates the list of window handlers in priority order.
+     * Order matters: handlers that match similar window patterns are ordered to check specific handlers first.
+     * For example, SecondFactorAuthenticationDialogHandler must come before SecurityCodeDialogHandler.
+     *
+     * @return a list of WindowHandler instances ready to be registered with the Toolkit listener.
+     */
     private static List<WindowHandler> createWindowHandlers() {
         List<WindowHandler> windowHandlers = new ArrayList<>();
 
@@ -326,7 +354,7 @@ public class IbcTws {
         // because both contain an "Enter Read Only" button
         windowHandlers.add(SecondFactorAuthenticationDialogHandler.getInstance());
         windowHandlers.add(new SecurityCodeDialogHandler());
-        
+
         windowHandlers.add(new ReloginDialogHandler());
         windowHandlers.add(new NonBrokerageAccountDialogHandler());
         windowHandlers.add(new ExitConfirmationDialogHandler());
@@ -345,11 +373,17 @@ public class IbcTws {
         return windowHandlers;
     }
     
+    /**
+     * Calculates the next scheduled cold restart time based on the ColdRestartTime setting.
+     * Parses a 24-hour HH:mm format and schedules for the next occurrence (Sunday by default).
+     *
+     * @return the next scheduled cold restart time, or null if ColdRestartTime is not configured.
+     */
     private static Date getColdRestartTime() {
         String coldRestartTimeSetting = Settings.settings().getString("ColdRestartTime", "");
         if (coldRestartTimeSetting.length() == 0) {
             return null;
-        } 
+        }
 
             int shutdownDayOfWeek = Calendar.SUNDAY;
             int shutdownHour;
@@ -374,12 +408,18 @@ public class IbcTws {
                     cal.add(Calendar.DAY_OF_MONTH, 7);
                 }
             } catch (ParseException e) {
-                Utils.exitWithError(ErrorCodes.INVALID_SETTING_VALUE, 
+                Utils.exitWithError(ErrorCodes.INVALID_SETTING_VALUE,
                                     "Invalid ColdRestartTime setting: '" + coldRestartTimeSetting + "'; format should be: <hh:mm>   eg 13:00");
             }
             return cal.getTime();
     }
 
+    /**
+     * Calculates the next scheduled shutdown time based on the ClosedownAt setting.
+     * Parses either a 24-hour time (daily) or a day-of-week and 24-hour time (weekly).
+     *
+     * @return the next scheduled shutdown time, or null if ClosedownAt is not configured.
+     */
     private static Date getShutdownTime() {
         String shutdownTimeSetting = Settings.settings().getString("ClosedownAt", "");
         if (shutdownTimeSetting.length() == 0) {
@@ -421,23 +461,34 @@ public class IbcTws {
                     }
                 }
             } catch (ParseException e) {
-                Utils.exitWithError(ErrorCodes.INVALID_SETTING_VALUE, 
+                Utils.exitWithError(ErrorCodes.INVALID_SETTING_VALUE,
                                     "Invalid ClosedownAt setting: '" + shutdownTimeSetting + "'; format should be: <[day ]hh:mm>   eg 22:00 or Friday 22:00");
             }
             return cal.getTime();
         }
     }
 
+    /**
+     * Constructs the full path to the TWS jts.ini configuration file.
+     *
+     * @return the path to jts.ini in the TWS settings directory.
+     */
     private static String getJtsIniFilePath() {
         return getTWSSettingsDirectory() + File.separatorChar + "jts.ini";
     }
 
+    /**
+     * Gets or creates the TWS settings directory from the IbDir configuration setting.
+     * Defaults to the current working directory if not configured.
+     *
+     * @return the path to the TWS settings directory.
+     */
     private static String getTWSSettingsDirectory() {
         String path = Settings.settings().getString("IbDir", System.getProperty("user.dir"));
         try {
             Files.createDirectories(Paths.get(path));
         } catch (FileAlreadyExistsException ex) {
-            Utils.exitWithError(ErrorCodes.CANT_CREATE_TWS_SETTINGS_DIR, 
+            Utils.exitWithError(ErrorCodes.CANT_CREATE_TWS_SETTINGS_DIR,
                                 "Failed to create TWS settings directory at: " + path + "; a file of that name already exists");
         } catch (IOException ex) {
             Utils.exitWithException(ErrorCodes.CANT_CREATE_TWS_SETTINGS_DIR, ex);
@@ -445,6 +496,10 @@ public class IbcTws {
         return path;
     }
 
+    /**
+     * Logs all system properties to the console.
+     * Masks credential arguments in sun.java.command to prevent logging sensitive data.
+     */
     private static void printProperties() {
         Properties p = System.getProperties();
         Enumeration<Object> i = p.keys();
@@ -454,7 +509,7 @@ public class IbcTws {
             String props = (String) i.nextElement();
             String vals = (String) p.get(props);
             if (props.equals("sun.java.command")) {
-                //hide credentials 
+                //hide credentials
                 String[] args = vals.split(" ");
                 for (int j = 2; j < args.length - 1; j++) {
                     args[j] = "***";
@@ -466,6 +521,10 @@ public class IbcTws {
         Utils.logRawToConsole("------------------------------------------------------------");
     }
 
+    /**
+     * Starts the IB Gateway application with the configured TWS settings directory.
+     * Exits with error if the Gateway entry point cannot be found.
+     */
     private static void startGateway() {
         String[] twsArgs = new String[1];
         twsArgs[0] = getTWSSettingsDirectory();
@@ -478,10 +537,18 @@ public class IbcTws {
         }
     }
 
+    /**
+     * Starts the TCP command server in a background thread.
+     * The command server listens for remote control commands if enabled.
+     */
     private static void startCommandServer() {
         MyCachedThreadPool.getInstance().execute(new CommandServer());
     }
 
+    /**
+     * Schedules a shutdown or cold restart timer based on configuration settings.
+     * If both ClosedownAt and ColdRestartTime are configured, the earliest time is used.
+     */
     private static boolean isColdRestart = false;
     private static void startShutdownTimerIfRequired() {
         Date shutdownTime = getShutdownTime();
@@ -505,6 +572,11 @@ public class IbcTws {
         }, delay, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * Starts the TWS application with the configured TWS settings directory.
+     * Opens the Trades log window if ShowAllTrades is enabled.
+     * Exits with error if the TWS entry point cannot be found.
+     */
     private static void startTws() {
         if (Settings.settings().getBoolean("ShowAllTrades", false)) {
             Utils.showTradesLogWindow();
@@ -520,6 +592,11 @@ public class IbcTws {
         }
     }
 
+    /**
+     * Orchestrates the startup of TWS or Gateway based on session configuration.
+     * Initializes the JTS INI manager and applies all required configuration tasks
+     * (API port, master client ID, auto logoff, precautions, etc.).
+     */
     private static void startTwsOrGateway() {
         Utils.logToConsole("TWS Settings directory is: " + getTWSSettingsDirectory());
         SessionManager.startSession();
@@ -539,6 +616,10 @@ public class IbcTws {
         configureApiPrecautions();
     }
     
+    /**
+     * Applies the ResetOrderIdsAtStart configuration if enabled.
+     * Ignored for FIX mode (only applies to IB API).
+     */
     private static void configureResetOrderIdsAtStart() {
         String configName= "ResetOrderIdsAtStart";
         boolean resetOrderIds = Settings.settings().getBoolean(configName, false);
@@ -549,9 +630,14 @@ public class IbcTws {
             }
             (new ConfigurationTask(new ConfigureResetOrderIdsTask(resetOrderIds))).executeAsync();
         }
-            
+
     }
     
+    /**
+     * Applies the OverrideTwsApiPort configuration if set.
+     * Overrides the API port number configured in TWS settings.
+     * Ignored for FIX mode (only applies to IB API).
+     */
     private static void configureApiPort() {
         String configName = "OverrideTwsApiPort";
         int portNumber = Settings.settings().getInt(configName, 0);
@@ -564,6 +650,11 @@ public class IbcTws {
         }
     }
     
+    /**
+     * Applies the OverrideTwsMasterClientID configuration if set.
+     * Overrides the master client ID configured in TWS settings.
+     * Ignored for FIX mode (only applies to IB API).
+     */
     private static void configureMasterClientID() {
         String configName = "OverrideTwsMasterClientID";
         String masterClientID = Settings.settings().getString(configName, "");
@@ -576,6 +667,11 @@ public class IbcTws {
         }
     }
 
+    /**
+     * Applies the AutoRestartTime or AutoLogoffTime configuration if set.
+     * AutoRestartTime takes precedence over AutoLogoffTime if both are configured.
+     * Ignored for FIX mode (only applies to IB API).
+     */
     private static void configureAutoLogoffOrRestart() {
         String configName = "AutoLogoffTime Or AutoRestartTime";
         String autoLogoffTime = Settings.settings().getString("AutoLogoffTime", "");
@@ -596,6 +692,11 @@ public class IbcTws {
         }
     }
     
+    /**
+     * Applies the ReadOnlyApi configuration if set.
+     * Configures whether the API connection is read-only or allows order submission.
+     * Ignored for FIX mode (only applies to IB API).
+     */
     private static void configureReadOnlyApi() {
         String configName = "ReadOnlyApi";
         if (!Settings.settings().getString(configName, "").equals("")) {
@@ -607,6 +708,11 @@ public class IbcTws {
         }
     }
     
+    /**
+     * Applies the SendMarketDataInLotsForUSstocks configuration if set.
+     * Configures whether US stock market data is sent in shares or lots.
+     * Ignored for FIX mode (only applies to IB API).
+     */
     private static void configureSendMarketDataInLotsForUSstocks(){
         String configName = "SendMarketDataInLotsForUSstocks";
         String sendMarketDataInLots = Settings.settings().getString(configName, "");
@@ -619,6 +725,11 @@ public class IbcTws {
         }
     }
     
+    /**
+     * Applies API precaution configurations if any are set.
+     * Configures bypassing of various order and risk warnings and confirmations.
+     * Ignored for FIX mode (only applies to IB API).
+     */
     private static void configureApiPrecautions() {
         String configName = "ApiPrecautions";
 
@@ -631,7 +742,7 @@ public class IbcTws {
         String bypassUSStocksMarketDataInSharesWarning = Settings.settings().getString("BypassUSStocksMarketDataInSharesWarning", "");
         String bypassRedirectOrderWarning = Settings.settings().getString("BypassRedirectOrderWarning", "");
         String bypassNoOverfillProtectionPrecaution = Settings.settings().getString("BypassNoOverfillProtectionPrecaution", "");
-        
+
         if (!bypassOrderPrecautions.equals("") ||
                 !bypassBondWarning.equals("") ||
                 !bypassNegativeYieldToWorstConfirmation.equals("") ||
@@ -655,10 +766,13 @@ public class IbcTws {
                                     bypassUSStocksMarketDataInSharesWarning,
                                     bypassRedirectOrderWarning,
                                     bypassNoOverfillProtectionPrecaution))).executeAsync();
-            
+
         }
     }
 
+    /**
+     * Starts the automatic saving of TWS settings to persist configuration changes.
+     */
     private static void startSavingTwsSettingsAutomatically() {
         TwsSettingsSaver.getInstance().initialise();
     }

@@ -22,15 +22,29 @@ public abstract class Settings {
 
     private static Settings _settings;
 
+    /**
+     * Sets the global Settings instance to the specified implementation.
+     *
+     * @param settings the Settings instance to use; must not be null
+     * @throws IllegalArgumentException if settings is null
+     */
     public static void initialise(Settings settings){
         if (settings == null) throw new IllegalArgumentException("settings");
         _settings = settings;
     }
 
+    /**
+     * Resets the global Settings instance to a new DefaultSettings.
+     */
     public static void setDefault() {
         _settings = new DefaultSettings();
     }
 
+    /**
+     * Returns the current global Settings instance.
+     *
+     * @return the active Settings instance
+     */
     public static Settings settings() {
         return _settings;
     }

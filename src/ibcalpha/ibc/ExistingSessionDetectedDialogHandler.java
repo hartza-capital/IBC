@@ -26,6 +26,12 @@ public class ExistingSessionDetectedDialogHandler implements WindowHandler {
 
     private boolean attempted;
 
+    /**
+     * Determines whether to process window events for the existing session detected dialog.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED event, false otherwise
+     */
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -35,6 +41,12 @@ public class ExistingSessionDetectedDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the existing session detected dialog based on the ExistingSessionDetectedAction setting.
+     * Implements complex logic for handling multiple session scenarios (primary, secondary, override).
+     * @param window the dialog window
+     * @param eventID the AWT window event ID
+     */
     public void handleWindow(Window window, int eventID) {
         final String MANUAL = "manual";
         final String PRIMARY = "primary";
@@ -143,6 +155,11 @@ public class ExistingSessionDetectedDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Identifies the existing session detected dialog by checking the window title.
+     * @param window the window to identify
+     * @return true if this is the existing session detected dialog, false otherwise
+     */
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;
 

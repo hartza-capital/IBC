@@ -33,6 +33,13 @@ class ConfigureTwsApiPortTask implements ConfigurationAction{
         this.portNumber = portNumber;
     }
 
+    /**
+     * Configures the TWS API socket port in the global configuration dialog.
+     *
+     * Opens the API settings section, locates the socket port text field, and updates it
+     * to the specified port number if different from the current setting.
+     * If API is already enabled, flags that a confirmation dialog is expected.
+     */
     @Override
     public void run() {
         try {
@@ -64,6 +71,11 @@ class ConfigureTwsApiPortTask implements ConfigurationAction{
         }
     }
 
+    /**
+     * Initializes this task with the global configuration dialog.
+     *
+     * @param configDialog the TWS Global Configuration dialog
+     */
     @Override
     public void initialise(JDialog configDialog) {
         this.configDialog = configDialog;

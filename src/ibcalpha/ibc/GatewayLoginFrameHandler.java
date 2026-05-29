@@ -26,11 +26,18 @@ import javax.swing.JToggleButton;
 final class GatewayLoginFrameHandler extends AbstractLoginHandler {
 
     @Override
+    /**
+     * Identifies whether the window is the IB Gateway login frame.
+     * Checks for Gateway title variants and the presence of a login button.
+     *
+     * @param window the window to identify.
+     * @return true if this is the Gateway login frame; false otherwise.
+     */
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JFrame)) return false;
 
         return ((SwingUtils.titleContains(window, "IBKR Gateway") ||
-                    SwingUtils.titleContains(window, "IB Gateway") || 
+                    SwingUtils.titleContains(window, "IB Gateway") ||
                     SwingUtils.titleContains(window, "Interactive Brokers Gateway")) &&
                (SwingUtils.findButton(window, "Login") != null ||
                 SwingUtils.findButton(window, "Log In") != null ||          // TWS 974+
@@ -38,6 +45,15 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
     }
 
     @Override
+    /**
+     * Initializes the Gateway login frame by selecting the gateway mode (FIX or IB API).
+     * Also sets the trading mode if the Trading Mode label is present.
+     *
+     * @param window the Gateway login frame.
+     * @param eventID the AWT event ID.
+     * @return true if initialization succeeded; false otherwise.
+     * @throws IbcException if gateway mode selection fails.
+     */
     protected final boolean initialise(final Window window, int eventID) throws IbcException {
         selectGatewayMode(window);
         if (SwingUtils.findLabel(window, "Trading Mode") != null)  {
@@ -47,6 +63,15 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
     }
 
     @Override
+    /**
+     * Performs pre-login validation and preparation by checking which credentials are missing.
+     * Routes to FIX or IB API credential checking based on session mode.
+     *
+     * @param window the Gateway login frame.
+     * @param eventID the AWT event ID.
+     * @return true if all required credentials are present; false if any are missing.
+     * @throws IbcException if credential validation fails.
+     */
     protected final boolean preLogin(final Window window, int eventID) throws IbcException {
         boolean result;
         if (SessionManager.isFIX()) {
@@ -57,6 +82,13 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
         return result;
     }
 
+    /**
+     * Validates FIX mode credentials and prompts for missing ones.
+     * If IB API credentials are partially provided, validates those as well.
+     *
+     * @param window the Gateway login frame.
+     * @return true if all required FIX and optional IB API credentials are present; false otherwise.
+     */
     private boolean setMissingFIXCredentials(Window window) {
         boolean result = false;
         if (LoginManager.loginManager().FIXUserName().length() == 0) {
@@ -77,6 +109,12 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
         return result;
     }
 
+    /**
+     * Validates IB API mode credentials and prompts for missing ones.
+     *
+     * @param window the Gateway login frame.
+     * @return true if all required IB API credentials are present; false otherwise.
+     */
     private boolean setMissingIBAPICredentials(Window window) {
         boolean result = false;
         if (LoginManager.loginManager().IBAPIUserName().length() == 0) {
@@ -90,6 +128,15 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
     }
 
     @Override
+    /**
+     * Fills in the login frame fields with credentials based on the current session mode.
+     * For FIX mode, sets FIX and IB API credentials; for IB API mode, sets only IB API credentials.
+     *
+     * @param window the Gateway login frame.
+     * @param eventID the AWT event ID.
+     * @return true if all credential fields were successfully populated.
+     * @throws IbcException if credential setting fails.
+     */
     protected final boolean setFields(Window window, int eventID) throws IbcException {
         if (SessionManager.isFIX()) {
             Utils.logToConsole("Setting FIX user name");
@@ -109,6 +156,12 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
         return true;
     }
 
+    /**
+     * Selects the appropriate Gateway mode (FIX or IB API) based on session configuration.
+     *
+     * @param window the Gateway login frame.
+     * @throws IbcException if the gateway mode selector button cannot be found.
+     */
     private void selectGatewayMode(Window window) throws IbcException {
         if (SessionManager.isFIX()) {
             switchToFIX(window);
@@ -117,6 +170,12 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
         }
     }
 
+    /**
+     * Switches the Gateway login frame to FIX CTCI mode by clicking the FIX CTCI toggle button.
+     *
+     * @param window the Gateway login frame.
+     * @throws IbcException if the FIX CTCI selector button cannot be found.
+     */
     private void switchToFIX(Window window) throws IbcException {
         JToggleButton button = SwingUtils.findToggleButton(window, "FIX CTCI");
         if (button == null) throw new IbcException("FIX CTCI selector");
@@ -127,6 +186,13 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
         }
     }
 
+    /**
+     * Switches the Gateway login frame to IB API mode by clicking the IB API toggle button.
+     * Attempts to find either "IB API" or "TWS/API" button variants.
+     *
+     * @param window the Gateway login frame.
+     * @throws IbcException if neither IB API selector button can be found.
+     */
     private void switchToIBAPI(Window window) throws IbcException {
         JToggleButton button = SwingUtils.findToggleButton(window, "IB API");
         if (button == null) button = SwingUtils.findToggleButton(window, "TWS/API") ;
@@ -139,6 +205,13 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
     }
 
     @Override
+    /**
+     * Checks whether the user ID field is disabled or absent from the Gateway login frame.
+     * Field index depends on session mode (FIX vs IB API).
+     *
+     * @param window the Gateway login frame.
+     * @return true if the user ID field is absent or disabled; false if enabled.
+     */
     protected boolean isUserIdDisabledOrAbsent(Window window) {
         int index = SessionManager.isFIX() ? 2 : 0;
         JTextField userID = SwingUtils.findTextField(window, index);
@@ -147,6 +220,13 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
     }
 
     @Override
+    /**
+     * Checks whether the password field is disabled or absent from the Gateway login frame.
+     * Field index depends on session mode (FIX vs IB API).
+     *
+     * @param window the Gateway login frame.
+     * @return true if the password field is absent or disabled; false if enabled.
+     */
     protected boolean isPasswordDisabledOrAbsent(Window window) {
         int index = SessionManager.isFIX() ? 3 : 1;
         JTextField password = SwingUtils.findTextField(window, index);

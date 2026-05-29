@@ -23,6 +23,12 @@ import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 
 public class PasswordExpiryWarningFrameHandler  implements WindowHandler {
+    /**
+     * Determines whether to process window events for the password expiry warning frame.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED or WINDOW_ACTIVATED event, false otherwise
+     */
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -33,6 +39,11 @@ public class PasswordExpiryWarningFrameHandler  implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the password expiry warning frame by dismissing it if DismissPasswordExpiryWarning is enabled.
+     * @param window the frame window
+     * @param eventID the AWT window event ID
+     */
     public void handleWindow(Window window, int eventID) {
         if (! Settings.settings().getBoolean("DismissPasswordExpiryWarning", false)) return;
         if (! SwingUtils.clickButton(window, "OK")) {
@@ -40,6 +51,11 @@ public class PasswordExpiryWarningFrameHandler  implements WindowHandler {
         }
     }
 
+    /**
+     * Identifies the password expiry warning frame by checking the window title.
+     * @param window the window to identify
+     * @return true if this is the password expiry warning frame, false otherwise
+     */
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JFrame)) return false;
 

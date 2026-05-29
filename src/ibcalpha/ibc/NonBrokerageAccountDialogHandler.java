@@ -23,6 +23,12 @@ import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
 public class NonBrokerageAccountDialogHandler  implements WindowHandler {
+    /**
+     * Determines whether to process window events for the non-brokerage account dialog.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED or WINDOW_CLOSED event, false otherwise
+     */
     @Override
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
@@ -35,6 +41,12 @@ public class NonBrokerageAccountDialogHandler  implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the non-brokerage account dialog by acknowledging the warning if AcceptNonBrokerageAccountWarning is enabled.
+     * Also notifies when the dialog is closed.
+     * @param window the dialog window
+     * @param eventID the AWT window event ID
+     */
     @Override
     public void handleWindow(Window window, int eventID) {
         if (eventID == WindowEvent.WINDOW_CLOSED) {
@@ -51,6 +63,11 @@ public class NonBrokerageAccountDialogHandler  implements WindowHandler {
         }
     }
 
+    /**
+     * Identifies the non-brokerage account dialog by checking for a specific label.
+     * @param window the window to identify
+     * @return true if this is the non-brokerage account dialog, false otherwise
+     */
     @Override
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;

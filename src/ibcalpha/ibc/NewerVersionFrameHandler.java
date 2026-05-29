@@ -23,6 +23,12 @@ import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 
 class NewerVersionFrameHandler implements WindowHandler {
+    /**
+     * Determines whether to process window events for the newer version frame.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED or WINDOW_ACTIVATED event, false otherwise
+     */
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -33,6 +39,11 @@ class NewerVersionFrameHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the newer version frame by clicking OK or No to dismiss it.
+     * @param window the frame window
+     * @param eventID the AWT window event ID
+     */
     public void handleWindow(Window window, int eventID) {
         if (SwingUtils.clickButton(window, "OK")) {
         } else if (SwingUtils.clickButton(window, "No")) { // ie no we don't want the opportunity to upgrade now - Linux version only
@@ -41,6 +52,11 @@ class NewerVersionFrameHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Identifies the newer version frame by checking for a specific label.
+     * @param window the window to identify
+     * @return true if this is the newer version frame, false otherwise
+     */
     public boolean recogniseWindow(Window window) {
         if (!(window instanceof JFrame)) return false;
 

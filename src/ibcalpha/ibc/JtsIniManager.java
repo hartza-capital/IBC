@@ -124,6 +124,13 @@ class JtsIniManager {
         }
     }
     
+    /**
+     * Finds the index of a setting within a section of the ini file.
+     *
+     * @param section the section header (e.g., "[Logon]")
+     * @param setting the setting name to find
+     * @return the zero-based index of the setting line, or -1 if not found
+     */
     private static int getSettingIndex(String section, String setting) {
         String key = setting + "=";
 
@@ -149,6 +156,10 @@ class JtsIniManager {
         loadIniFile();
     }
 
+    /**
+     * Loads the jts.ini file contents into memory.
+     * Creates a File reference and reads all lines if the file exists.
+     */
     private static void loadIniFile() {
         jtsIniFile = new File(jtsIniFilePath);
         if (jtsIniFile.isDirectory()) {
@@ -160,6 +171,10 @@ class JtsIniManager {
         }
     }
 
+    /**
+     * Updates an existing jts.ini file to include all required minimum settings.
+     * If settings are missing or need updating, the file is rewritten.
+     */
     private static void updateExistingFile() {
         Utils.logToConsole("Ensuring " + jtsIniFilePath + " contains required minimal lines");
 
@@ -182,6 +197,12 @@ class JtsIniManager {
         }
     }
 
+    /**
+     * Determines which required settings are missing from the current jts.ini file.
+     * Different settings are required depending on whether FIX, TWS, or Gateway is running.
+     *
+     * @return a list of missing JtsIniSectionSetting objects
+     */
     private static List<JtsIniSectionSetting> getMissingSettings() {
         List<JtsIniSectionSetting> missingSettings = new ArrayList<>();
 
@@ -225,6 +246,16 @@ class JtsIniManager {
         return missingSettings;
     }
 
+    /**
+     * Searches for a setting within a section and logs whether it was found.
+     * Optionally updates the setting if it exists but has a different value.
+     *
+     * @param section the section header to search in
+     * @param setting the setting name to find
+     * @param expectedValue the expected value of the setting
+     * @param updateIfDifferent if true, updates the setting if its value differs from expectedValue
+     * @return true if the setting exists, false otherwise
+     */
     private static boolean findSettingAndLog(String section, String setting, String expectedValue, boolean updateIfDifferent) {
         int index = getSettingIndex(section, setting);
         
@@ -244,6 +275,12 @@ class JtsIniManager {
         return true;
     }
     
+    /**
+     * Updates a setting value at the specified line index in the loaded ini file lines.
+     *
+     * @param index the zero-based index of the line to update
+     * @param newValue the new value for the setting
+     */
     private static void updateSetting(int index, String newValue) {
         String line = lines.get(index);
         String settingName = line.substring(0, line.indexOf("="));
@@ -251,6 +288,12 @@ class JtsIniManager {
         settingsUpdated = true;
     }
 
+    /**
+     * Reads all lines from the jts.ini file into memory.
+     *
+     * @param jtsIniFile the File object representing the jts.ini file
+     * @return a list of strings, one per line in the file
+     */
     private static List<String> getFileLines(File jtsIniFile) {
         List<String> linesList = null;
 
@@ -263,6 +306,10 @@ class JtsIniManager {
         return linesList;
     }
 
+    /**
+     * Creates a minimal jts.ini file with only the required essential settings.
+     * Used when the jts.ini file does not exist.
+     */
     private static void createMinimalFile() {
         Utils.logToConsole("Creating minimal " + jtsIniFilePath);
         try (BufferedWriter w = new BufferedWriter(new FileWriter(jtsIniFile))) {
@@ -280,6 +327,11 @@ class JtsIniManager {
         }
     }
 
+    /**
+     * Rewrites an existing jts.ini file, integrating missing settings into appropriate sections.
+     *
+     * @param missingSettings a list of settings that need to be added to the file
+     */
     private static void rewriteExistingFile(List<JtsIniSectionSetting> missingSettings) {
         Utils.logToConsole("Rewriting existing " + jtsIniFilePath);
 
@@ -292,8 +344,15 @@ class JtsIniManager {
         }
     }
 
+    /**
+     * Writes all existing ini file sections and settings to the output, inserting missing settings into appropriate sections.
+     *
+     * @param missingSettings a list of settings to insert as sections are processed
+     * @param w the BufferedWriter to write output to
+     * @throws IOException if an I/O error occurs while writing
+     */
     private static void updateExistingSections(
-            List<JtsIniSectionSetting> missingSettings, 
+            List<JtsIniSectionSetting> missingSettings,
             BufferedWriter w ) throws IOException {
         String currentSection = "";
         for (String line : lines) {
@@ -306,6 +365,12 @@ class JtsIniManager {
         writeMissingSettingsToSection(currentSection, missingSettings, w);
     }
 
+    /**
+     * Filters the missing settings list to return only those that have not been processed yet.
+     *
+     * @param missingSettings the full list of missing settings
+     * @return a list of unprocessed JtsIniSectionSetting objects
+     */
     private static List<JtsIniSectionSetting> getUnprocessedSettings(
             List<JtsIniSectionSetting> missingSettings) {
         return missingSettings.stream()
@@ -313,8 +378,15 @@ class JtsIniManager {
                                .collect(toList());
     }
 
+    /**
+     * Writes unprocessed (new) settings to the output, adding section headers as needed.
+     *
+     * @param unprocessedSettings a list of settings that have not yet been written to the file
+     * @param w the BufferedWriter to write output to
+     * @throws IOException if an I/O error occurs while writing
+     */
     private static void updateUnprocessedSettings(
-            List<JtsIniSectionSetting> unprocessedSettings, 
+            List<JtsIniSectionSetting> unprocessedSettings,
             BufferedWriter w ) throws IOException {
         if (unprocessedSettings.isEmpty()) return;
 
@@ -328,8 +400,17 @@ class JtsIniManager {
         }
     }
 
+    /**
+     * Writes all missing settings that belong to the specified section.
+     * Marks processed settings so they are not written again.
+     *
+     * @param currentSection the section header to write missing settings for
+     * @param missingSettings the full list of missing settings to consider
+     * @param w the BufferedWriter to write output to
+     * @throws IOException if an I/O error occurs while writing
+     */
     private static void writeMissingSettingsToSection(
-            String currentSection, 
+            String currentSection,
             List<JtsIniSectionSetting> missingSettings,
             BufferedWriter w) throws IOException {
 
@@ -345,6 +426,13 @@ class JtsIniManager {
         }
     }
 
+    /**
+     * Writes a single line to the ini file and logs it for diagnostics.
+     *
+     * @param line the line content to write
+     * @param w the BufferedWriter to write to
+     * @throws IOException if an I/O error occurs while writing
+     */
     private static void writeIniFileLine(String line, BufferedWriter w) throws IOException {
         Utils.logToConsole("    jts.ini: " + line);
         w.write(line);

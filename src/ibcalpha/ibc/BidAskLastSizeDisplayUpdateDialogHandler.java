@@ -25,6 +25,12 @@ import javax.swing.JDialog;
 
 public class BidAskLastSizeDisplayUpdateDialogHandler implements WindowHandler {
 
+    /**
+     * Determines whether to process window events for the bid/ask/last size display update dialog.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED event, false otherwise
+     */
     @Override
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
@@ -35,6 +41,12 @@ public class BidAskLastSizeDisplayUpdateDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the bid/ask/last size display update dialog based on the AcceptBidAskLastSizeDisplayUpdateNotification setting.
+     * Can accept, defer, or ignore the notification. Optionally configures market data lot settings.
+     * @param window the dialog window
+     * @param eventID the AWT window event ID
+     */
     @Override
     public void handleWindow(Window window, int eventID) {
         String accept = Settings.settings().getString("AcceptBidAskLastSizeDisplayUpdateNotification", "ignore");
@@ -67,6 +79,11 @@ public class BidAskLastSizeDisplayUpdateDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Identifies the bid/ask/last size display update dialog by checking for a specific text pane.
+     * @param window the window to identify
+     * @return true if this is the bid/ask/last size display update dialog, false otherwise
+     */
     @Override
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;

@@ -36,6 +36,11 @@ class StopTask
         mReason = reason;
     }
 
+    /**
+     * Executes the shutdown sequence.
+     * If a shutdown is already in progress, sends an error message.
+     * Otherwise, initiates the TWS/Gateway shutdown with the specified reason.
+     */
     @Override
     public void run() {
         if (! _Running.set()) {
@@ -55,6 +60,9 @@ class StopTask
         }
     }
     
+    /**
+     * Creates a cold restart flag file in the JTS config directory to force a cold restart on the next start.
+     */
     private void createColdRestartFlagFile() {
         try {
         new File(System.getProperty("jtsConfigDir") + 
@@ -67,11 +75,23 @@ class StopTask
         }
     }
 
+    /**
+     * Checks whether a shutdown is currently in progress.
+     *
+     * @return true if a shutdown is in progress, false otherwise
+     */
     public final static boolean shutdownInProgress()
     {
         return _Running.query();
     }
 
+    /**
+     * Performs the actual shutdown of TWS/Gateway.
+     * Sends acknowledgment to the client, closes the CommandServer, and either halts immediately
+     * or invokes the File menu to cleanly close the application depending on login state.
+     *
+     * @param reason a description of why the shutdown was initiated
+     */
     private void stop(String reason) {
         try {
             writeAck("Shutting down: " + reason);
@@ -90,8 +110,25 @@ class StopTask
         }
     }
 
+    /**
+     * Sends a success acknowledgment message to the connected client.
+     *
+     * @param message the acknowledgment message
+     */
     private void writeAck(String message) {if (mChannel != null) mChannel.writeAck(message);}
+
+    /**
+     * Sends an informational message to the connected client.
+     *
+     * @param message the informational message
+     */
     private void writeInfo(String message) {if (mChannel != null) mChannel.writeInfo(message);}
+
+    /**
+     * Sends an error message to the connected client.
+     *
+     * @param message the error message
+     */
     private void writeNack(String message) {if (mChannel != null) mChannel.writeNack(message);}
 
 }

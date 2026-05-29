@@ -25,6 +25,12 @@ import javax.swing.JDialog;
 
 public class ReconnectDataOrAccountConfirmationDialogHandler implements WindowHandler {
 
+    /**
+     * Determines whether to process window events for the reconnect data or account confirmation dialog.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED event, false otherwise
+     */
     @Override
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
@@ -35,6 +41,11 @@ public class ReconnectDataOrAccountConfirmationDialogHandler implements WindowHa
         }
     }
 
+    /**
+     * Handles the reconnect data or account confirmation dialog by clicking OK.
+     * @param window the dialog window
+     * @param eventID the AWT window event ID
+     */
     @Override
     public void handleWindow(Window window, int eventID) {
         if (! SwingUtils.clickButton(window, "OK")) {
@@ -42,6 +53,11 @@ public class ReconnectDataOrAccountConfirmationDialogHandler implements WindowHa
         }
     }
 
+    /**
+     * Identifies the reconnect data or account confirmation dialog by checking title and label content.
+     * @param window the window to identify
+     * @return true if this is the reconnect confirmation dialog, false otherwise
+     */
     @Override
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;

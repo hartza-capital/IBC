@@ -26,16 +26,32 @@ import javax.swing.JFrame;
 
 public class SessionManager {
     
+    /**
+     * Initializes the SessionManager with information about whether the session is for Gateway or TWS.
+     *
+     * @param isGateway true if the session is for IB Gateway; false if for TWS
+     */
     public static void initialise(boolean isGateway) {
         _isGateway = isGateway;
     }
     
     private static boolean _isGateway = false;
+    /**
+     * Indicates whether the current session is for IB Gateway.
+     *
+     * @return true if the session is for IB Gateway; false if for TWS
+     */
     public static boolean isGateway() {
         return _isGateway;
     };
     
     private static boolean _isFIX = false;
+    /**
+     * Indicates whether the current session is a FIX protocol session.
+     *
+     * @return true if the session is a FIX protocol session; false otherwise
+     * @throws SystemException if called before the session has started
+     */
     public static boolean isFIX() {
         if (!_isSessionStarted) Utils.exitWithError(ErrorCodes.INVALID_STATE, "isFix() called before session has started");
         return _isFIX;

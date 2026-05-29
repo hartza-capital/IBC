@@ -29,6 +29,15 @@ class GetMainWindowTask implements Callable<JFrame>{
     private final Lock lock = new ReentrantLock();
     private final Condition gotFrame = lock.newCondition();
 
+    /**
+     * Retrieves the main TWS or Gateway window frame.
+     *
+     * Waits until the main window is available and returns it.
+     * This is a blocking operation that returns when the window is set via setMainWindow().
+     *
+     * @return the main application window frame
+     * @throws InterruptedException if interrupted while waiting for the window
+     */
     @Override
     public JFrame call() throws InterruptedException {
         lock.lock();

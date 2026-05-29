@@ -734,6 +734,15 @@ class SwingUtils {
         return title;
     }
 
+    /**
+     * Returns a string describing the details of a Swing component.
+     *
+     * Includes component type, text content, and enabled/disabled status. Used for diagnostic
+     * logging and debugging Swing component hierarchies.
+     *
+     * @param component the component to describe
+     * @return a formatted string with component details
+     */
     private static String getComponentDetails(Component component) {
         String s = component.isEnabled() ? "" : "[Disabled]";
         if (component instanceof JButton) {
@@ -786,6 +795,14 @@ class SwingUtils {
         return s;
     }
 
+    /**
+     * Returns a string showing the class inheritance hierarchy of an object.
+     *
+     * Shows the full derivation path from the root class to the actual class, separated by dots.
+     *
+     * @param object the object to analyze
+     * @return a string representing the class hierarchy
+     */
     private static String getClassDerivation(Object object) {
         String s = object.getClass().getSimpleName();
         Class<?> c = object.getClass().getSuperclass();
@@ -796,10 +813,26 @@ class SwingUtils {
         return s;
     }
 
+    /**
+     * Appends a hierarchical representation of a component and its children to a StringBuilder.
+     *
+     * @param component the component to describe
+     * @param builder the StringBuilder to append to
+     */
     private static void appendComponentStructure(Component component, StringBuilder builder) {
         appendComponentStructure(component, builder, "");
     }
 
+    /**
+     * Appends a hierarchical representation of a component and its children to a StringBuilder with indentation.
+     *
+     * Recursively processes containers, trees, lists, combo boxes, and menu bars. Each nested level
+     * is indented to show the hierarchy.
+     *
+     * @param component the component to describe
+     * @param builder the StringBuilder to append to
+     * @param indent the indentation string for this level of nesting
+     */
     private static void appendComponentStructure(Component component, StringBuilder builder, String indent) {
         builder.append(NEWLINE);
         builder.append(indent);
@@ -820,6 +853,13 @@ class SwingUtils {
         }
     }
 
+    /**
+     * Appends all items in a combo box model to a StringBuilder.
+     *
+     * @param model the ComboBoxModel to process
+     * @param builder the StringBuilder to append to
+     * @param indent the indentation string for this level
+     */
     private static void appendComboItems(ComboBoxModel<?> model, StringBuilder builder, String indent) {
         for (int i = 0; i < model.getSize(); i++) {
             builder.append(NEWLINE);
@@ -828,6 +868,13 @@ class SwingUtils {
         }
     }
     
+    /**
+     * Appends all items in a list model to a StringBuilder.
+     *
+     * @param model the ListModel to process
+     * @param builder the StringBuilder to append to
+     * @param indent the indentation string for this level
+     */
     private static void appendListItems(ListModel<?> model, StringBuilder builder, String indent) {
         for (int i = 0; i < model.getSize(); i++) {
             builder.append(NEWLINE);
@@ -836,6 +883,14 @@ class SwingUtils {
         }
     }
     
+    /**
+     * Appends a tree node and its children to a StringBuilder recursively.
+     *
+     * @param model the TreeModel containing the node
+     * @param node the tree node to process
+     * @param builder the StringBuilder to append to
+     * @param indent the indentation string for this level
+     */
     private static void appendTreeNodes(TreeModel model, Object node, StringBuilder builder, String indent) {
         builder.append(NEWLINE);
         builder.append(indent);
@@ -852,6 +907,16 @@ class SwingUtils {
         for (int i = 0; i < model.getChildCount(node); i++) appendTreeNodes(model, model.getChild(node, i), builder, "|   " + indent);
     }
 
+    /**
+     * Appends a menu item and its sub-elements to a StringBuilder.
+     *
+     * Handles JMenuBar, JPopupMenu, JMenuItem, and JSeparator components. Recursively
+     * processes sub-menus and items.
+     *
+     * @param menuItem the menu component to process
+     * @param builder the StringBuilder to append to
+     * @param indent the indentation string for this level
+     */
     private static void appendMenuItem(Component menuItem, StringBuilder builder, String indent) {
         if (menuItem instanceof JMenuBar) {
             appendMenuSubElements((MenuElement)menuItem, builder, indent);
@@ -870,6 +935,13 @@ class SwingUtils {
         }
     }
 
+    /**
+     * Appends all sub-elements of a menu element to a StringBuilder.
+     *
+     * @param element the MenuElement whose sub-elements to process
+     * @param builder the StringBuilder to append to
+     * @param indent the indentation string for this level
+     */
     private static void appendMenuSubElements(MenuElement element, StringBuilder builder, String indent) {
         for (MenuElement subItem : element.getSubElements()) {
             appendMenuItem((Component)subItem, builder, indent);

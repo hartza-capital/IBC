@@ -33,6 +33,14 @@ public class TradesFrameHandler implements WindowHandler {
     boolean showAllTrades;
 
     @Override
+    /**
+     * Determines whether this handler should act on the given window event.
+     * Acts on WINDOW_OPENED, WINDOW_CLOSING, and WINDOW_CLOSED events.
+     *
+     * @param window the AWT window associated with the event.
+     * @param eventId the AWT event ID.
+     * @return true if this handler should process the event; false otherwise.
+     */
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -45,6 +53,14 @@ public class TradesFrameHandler implements WindowHandler {
     }
 
     @Override
+    /**
+     * Manages the Trades window lifecycle based on the ShowAllTrades setting.
+     * Opens and configures the Trades window to display all trades if enabled;
+     * re-opens it if the user closes it while ShowAllTrades is active.
+     *
+     * @param window the Trades frame.
+     * @param eventID the AWT event ID (WINDOW_OPENED, WINDOW_CLOSING, or WINDOW_CLOSED).
+     */
     public void handleWindow(final Window window, int eventID) {
         if (!firstTradesWindowOpened) {
             showAllTrades = Settings.settings().getBoolean("ShowAllTrades", false);
@@ -76,17 +92,17 @@ public class TradesFrameHandler implements WindowHandler {
             } else {
                 Utils.logToConsole("IBC can't set Trade History window to show all trades with this TWS version: user must do this");
                 /*
-                 * For TWS 955 onwards, IB have replaced the row of daily 
+                 * For TWS 955 onwards, IB have replaced the row of daily
                  * checkboxes with what appears visually to be a combo box:
                  * it is indeed derived from a JComboBox, but setting the
                  * selected item to 'Last 7 Days' doesn't have the desired
                  * effect.
-                 * 
-                 * At present I don't see a way of getting round this, but 
+                 *
+                 * At present I don't see a way of getting round this, but
                  * the setting chosen by the user can now be persisted
                  * between sessions, so there is really no longer a need for
                  * 'ShowAllTrades'.
-                 * 
+                 *
                  */
 
                 showAllTrades = false;
@@ -107,16 +123,34 @@ public class TradesFrameHandler implements WindowHandler {
     }
 
     @Override
+    /**
+     * Identifies the Trades window by looking for "Trades" in the window title.
+     *
+     * @param window the window to identify.
+     * @return true if this is the Trades window; false otherwise.
+     */
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JFrame))  return false;
 
         return (SwingUtils.titleContains(window, "Trades"));
     }
 
+    /**
+     * Monitors the "All" trades checkbox to keep it selected.
+     * Re-selects it if the user attempts to deselect while ShowAllTrades is active.
+     *
+     * @param window the Trades frame.
+     * @param text the label text of the checkbox to monitor.
+     */
     private void monitorAllTradesCheckbox(Window window, String text) {
         final JCheckBox check = SwingUtils.findCheckBox(window, text);
         if (check != null) check.addChangeListener(new ChangeListener() {
             @Override
+            /**
+             * Handles state changes to the monitored checkbox by re-selecting it if deselected.
+             *
+             * @param ce the change event.
+             */
             public void stateChanged(ChangeEvent ce) {
                 Utils.logToConsole("Checkbox: " + check.getText() + "; selected=" + check.isSelected());
                 if (!check.isSelected()) {

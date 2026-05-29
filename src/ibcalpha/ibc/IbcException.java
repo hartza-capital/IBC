@@ -25,6 +25,11 @@ public class IbcException extends Exception {
         super(message);
     }
 
+    /**
+     * Returns the exception message as the string representation.
+     *
+     * @return the exception message
+     */
     public String toString() {
         return super.getMessage();
     }

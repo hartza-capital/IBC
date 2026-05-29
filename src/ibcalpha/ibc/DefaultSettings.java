@@ -31,18 +31,36 @@ public class DefaultSettings extends Settings {
     private final Properties props = new Properties();
     private String path;
 
+    /**
+     * Creates a new DefaultSettings instance that loads from the default settings file path.
+     */
     public DefaultSettings() {
         load(generateDefaultIniPath());
     }
 
+    /**
+     * Creates a new DefaultSettings instance that loads from a path determined by command-line arguments.
+     *
+     * @param args the command-line arguments specifying the settings file path
+     */
     public DefaultSettings(String[] args) {
         load(getSettingsPath(args));
     }
 
+    /**
+     * Creates a new DefaultSettings instance that loads from the specified path.
+     *
+     * @param path the path to the settings file
+     */
     public DefaultSettings(String path) {
         load(path);
     }
 
+    /**
+     * Loads settings from the specified file path into the properties object.
+     *
+     * @param path the path to the settings file
+     */
     private void load(String path) {
         this.path = path;
         props.clear();
@@ -68,6 +86,12 @@ public class DefaultSettings extends Settings {
         }
     }
     
+    /**
+     * Returns a sanitized value for a settings property, masking sensitive credentials.
+     *
+     * @param key the property key
+     * @return the sanitized value, with credentials masked as "***"
+     */
     private String getSettingSanitisedValue(String key) {
         String value = props.getProperty(key);
         if (key.equalsIgnoreCase("FIXLoginId") ||
@@ -81,20 +105,31 @@ public class DefaultSettings extends Settings {
         return value;
     }
 
+    /**
+     * Generates the default settings file path based on the operating system and user home directory.
+     *
+     * @return the default path to the settings file
+     */
     static String generateDefaultIniPath() {
         if (System.getProperty("os.name").startsWith("Windows")) {
-            return System.getenv("HOMEDRIVE") + 
-                    System.getenv("HOMEPATH") + File.separator + 
-                    "Documents" + File.separator + 
-                    "IBC" + File.separator + 
+            return System.getenv("HOMEDRIVE") +
+                    System.getenv("HOMEPATH") + File.separator +
+                    "Documents" + File.separator +
+                    "IBC" + File.separator +
                     "config.ini";
         } else {
-            return System.getProperty("user.home") + File.separator + 
-                    "ibc" + File.separator + 
+            return System.getProperty("user.home") + File.separator +
+                    "ibc" + File.separator +
                     "config.ini";
         }
     }
 
+    /**
+     * Determines the settings file path from command-line arguments or defaults.
+     *
+     * @param args the command-line arguments
+     * @return the path to the settings file
+     */
     static String getSettingsPath(String [] args) {
         String iniPath;
         if (args.length == 0 || args[0].equalsIgnoreCase("NULL")) {
@@ -112,6 +147,11 @@ public class DefaultSettings extends Settings {
         return iniPath;
     }
 
+    /**
+     * Returns a sanitized version of the computer user name for use in file paths.
+     *
+     * @return the sanitized user name with special characters replaced by underscores
+     */
     private static String getComputerUserName() {
         StringBuilder sb = new StringBuilder(System.getProperty("user.name"));
         int i;
@@ -129,21 +169,29 @@ public class DefaultSettings extends Settings {
         return sb.toString();
     }
 
+    /**
+     * Returns the current working directory with a trailing file separator.
+     *
+     * @return the working directory
+     */
     private static String getWorkingDirectory() {
         return System.getProperty("user.dir") + File.separator;
     }
 
+    /**
+     * Logs a diagnostic message indicating the settings file path in use.
+     */
     @Override
     public void logDiagnosticMessage(){
         Utils.logToConsole("using default settings provider: ini file is " + path);
     }
 
     /**
-    returns the value associated with property named key.
-    Returns defaultValue if no such property.
-     * @param key
-     * @param defaultValue
-     * @return 
+     * Returns the string value associated with the specified property key.
+     *
+     * @param key the property key
+     * @param defaultValue the value to return if the property is not found or is empty
+     * @return the property value, or defaultValue if not found
      */
     @Override
     public String getString(String key,
@@ -158,12 +206,11 @@ public class DefaultSettings extends Settings {
     }
 
     /**
-    returns the int value associated with property named key.
-    Returns defaultValue if there is no such property,
-    or if the property value cannot be converted to an int.
-     * @param key
-     * @param defaultValue
-     * @return 
+     * Returns the integer value associated with the specified property key.
+     *
+     * @param key the property key
+     * @param defaultValue the value to return if the property is not found or cannot be parsed as an integer
+     * @return the property value as an integer, or defaultValue if not found or invalid
      */
     @Override
     public int getInt(String key,
@@ -189,10 +236,11 @@ public class DefaultSettings extends Settings {
     }
 
     /**
+     * Returns the character value associated with the specified property key.
      *
-     * @param key
-     * @param defaultValue
-     * @return
+     * @param key the property key
+     * @param defaultValue the default value to return if the property is not found; the first character is used
+     * @return the first character of the property value, or the first character of defaultValue if not found
      */
     @Override
     public char getChar(String key,
@@ -217,12 +265,11 @@ public class DefaultSettings extends Settings {
     }
 
     /**
-    returns the double value associated with property named key.
-    Returns defaultVAlue if there is no such property,
-    or if the property value cannot be converted to a double.
-     * @param key
-     * @param defaultValue
-     * @return 
+     * Returns the double value associated with the specified property key.
+     *
+     * @param key the property key
+     * @param defaultValue the value to return if the property is not found or cannot be parsed as a double
+     * @return the property value as a double, or defaultValue if not found or invalid
      */
     @Override
     public double getDouble(String key,
@@ -248,12 +295,11 @@ public class DefaultSettings extends Settings {
     }
 
     /**
-    returns the boolean value associated with property named key.
-    Returns defaultValue if there is no such property,
-    or if the property value cannot be converted to a boolean.
-     * @param key
-     * @param defaultValue
-     * @return 
+     * Returns the boolean value associated with the specified property key.
+     *
+     * @param key the property key
+     * @param defaultValue the value to return if the property is not found or cannot be parsed as a boolean
+     * @return the property value as a boolean, or defaultValue if not found or invalid
      */
     @Override
     public boolean getBoolean(String key,

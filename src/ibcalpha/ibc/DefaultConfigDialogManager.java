@@ -41,13 +41,16 @@ public class DefaultConfigDialogManager extends ConfigDialogManager {
     */
     private int usageCount;
 
+    /**
+     * Logs a diagnostic message indicating that the default config dialog manager is in use.
+     */
     @Override
     public void logDiagnosticMessage(){
         Utils.logToConsole("using default config dialog manager");
     }
 
     /**
-     * Records the fact that the config dialog has closed.
+     * Records the fact that the config dialog has closed and clears the cached reference.
      */
     @Override
     public void clearConfigDialog() {
@@ -58,23 +61,17 @@ public class DefaultConfigDialogManager extends ConfigDialogManager {
     /**
      * Returns the Global Configuration dialog, if necessary blocking the calling thread until
      * either it is available or a specified timeout has elapsed.
-     * 
+     *
      * If the Global Configuration dialog is currently open, it is returned immediately without blocking
      * the calling thread.
-     * 
+     *
      * Calling this method from the Swing event dispatch thread results in an IllegalStateException
      * being thrown.
-     * 
-     * @param timeout
-     * the length of time to wait for the Global Configuration dialog to become available. If this is
-     * negative, the calling thread blocks until the dialog becomes available.
-     * @param unit
-     * the time units for the timeout parameter
-     * @return
-     * null if the timeout expires before the Global Configuration dialog becomes available; otherwise
-     * the Global Configuration dialog
-     * @throws IllegalStateException 
-     * the method has been called from the Swing event dispatch thread
+     *
+     * @param timeout the length of time to wait for the Global Configuration dialog to become available. If negative, blocks until available
+     * @param unit the time units for the timeout parameter
+     * @return null if the timeout expires before the Global Configuration dialog becomes available; otherwise the Global Configuration dialog
+     * @throws IllegalStateException if the method has been called from the Swing event dispatch thread
      */
     @Override
     public JDialog getConfigDialog(long timeout, TimeUnit unit) throws IllegalStateException {
@@ -131,17 +128,15 @@ public class DefaultConfigDialogManager extends ConfigDialogManager {
     /**
      * Returns the Global Configuration dialog, if necessary blocking the calling thread until
      * it is available.
-     * 
+     *
      * If the Global Configuration dialog is currently open, it is returned immediately without blocking
      * the calling thread.
-     * 
+     *
      * Calling this method from the Swing event dispatch thread results in an IllegalStateException
      * being thrown.
-     * 
-     * @return
-     * the Global Configuration dialog, or null if the relevant menu entries cannot be found
-     * @throws IllegalStateException 
-     * the method has been called from the Swing event dispatch thread
+     *
+     * @return the Global Configuration dialog, or null if the relevant menu entries cannot be found
+     * @throws IllegalStateException if the method has been called from the Swing event dispatch thread
      */
     @Override
     public JDialog getConfigDialog() throws IllegalStateException {
@@ -149,6 +144,11 @@ public class DefaultConfigDialogManager extends ConfigDialogManager {
     }
 
     private boolean openedByUser;
+    /**
+     * Sets the Global Configuration dialog and records whether it was opened by an automated task or the user.
+     *
+     * @param window the Global Configuration dialog
+     */
     @Override
     public void setConfigDialog(JDialog window) {
         configDialog = window;
@@ -163,30 +163,50 @@ public class DefaultConfigDialogManager extends ConfigDialogManager {
     }
 
     private boolean apiConfigChangeConfirmationExpected;
+    /**
+     * Indicates whether an API configuration change confirmation dialog is expected to appear.
+     *
+     * @return true if a confirmation dialog is expected; false otherwise
+     */
     @Override
     public boolean getApiConfigChangeConfirmationExpected() {
         return apiConfigChangeConfirmationExpected;
     }
 
+    /**
+     * Releases a reference to the Global Configuration dialog, potentially closing it if no other references remain.
+     */
     @Override
     public void releaseConfigDialog() {
         decrementUsage();
     }
 
+    /**
+     * Records that an API configuration change confirmation dialog is expected to appear.
+     */
     @Override
     public void setApiConfigChangeConfirmationExpected() {
         apiConfigChangeConfirmationExpected = true;
     }
 
+    /**
+     * Records that the expected API configuration change confirmation dialog has been handled.
+     */
     @Override
     public void setApiConfigChangeConfirmationHandled() {
         apiConfigChangeConfirmationExpected = false;
     }
 
+    /**
+     * Increments the usage counter for the Global Configuration dialog.
+     */
     private synchronized void incrementUsage() {
         usageCount++;
     }
 
+    /**
+     * Decrements the usage counter for the Global Configuration dialog and closes it if the count reaches zero.
+     */
     private synchronized void decrementUsage() {
         usageCount--;
         if (openedByUser) return;

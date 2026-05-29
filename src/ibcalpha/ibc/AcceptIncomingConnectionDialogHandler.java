@@ -23,6 +23,12 @@ import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
 class AcceptIncomingConnectionDialogHandler implements WindowHandler {
+    /**
+     * Determines whether to process window events for the accept incoming connection dialog.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED event, false otherwise
+     */
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -32,6 +38,12 @@ class AcceptIncomingConnectionDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the accept incoming connection dialog based on the AcceptIncomingConnectionAction setting.
+     * Accepts, rejects, or leaves the dialog for manual handling depending on configuration.
+     * @param window the dialog window
+     * @param eventID the AWT window event ID
+     */
     public void handleWindow(Window window, int eventID) {
         final String Accept = "accept";
         final String Reject = "reject";
@@ -57,6 +69,11 @@ class AcceptIncomingConnectionDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Identifies the accept incoming connection dialog by looking for a specific label.
+     * @param window the window to identify
+     * @return true if this is the accept incoming connection dialog, false otherwise
+     */
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;
 

@@ -25,15 +25,29 @@ public abstract class TradingModeManager {
         _TradingModeManager = new DefaultTradingModeManager();
     }
 
+    /**
+     * Sets the global TradingModeManager instance to the specified implementation.
+     *
+     * @param tradingModeManager the TradingModeManager instance to use; must not be null
+     * @throws IllegalArgumentException if tradingModeManager is null
+     */
     public static void initialise(TradingModeManager tradingModeManager){
         if (tradingModeManager == null) throw new IllegalArgumentException("tradingModeManager");
         _TradingModeManager = tradingModeManager;
     }
 
+    /**
+     * Resets the global TradingModeManager instance to a new DefaultTradingModeManager.
+     */
     public static void setDefault() {
         _TradingModeManager = new DefaultTradingModeManager();
     }
 
+    /**
+     * Returns the current global TradingModeManager instance.
+     *
+     * @return the active TradingModeManager instance
+     */
     public static TradingModeManager tradingModeManager() {
         return _TradingModeManager;
     }

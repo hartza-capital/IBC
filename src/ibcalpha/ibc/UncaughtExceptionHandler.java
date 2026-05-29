@@ -20,6 +20,12 @@ package ibcalpha.ibc;
 
 public final class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
 
+    /**
+     * Handles an uncaught exception in a thread by logging it and exiting IBC.
+     *
+     * @param thread the thread that encountered the uncaught exception
+     * @param t the throwable that was not caught
+     */
     @Override
     public void uncaughtException(Thread thread, Throwable t) {
         Utils.exitWithException(ErrorCodes.UNHANDLED_EXCEPTION, t);

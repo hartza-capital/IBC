@@ -24,6 +24,12 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
 class NewerVersionDialogHandler implements WindowHandler {
+    /**
+     * Determines whether to process window events for the newer version dialog.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED or WINDOW_ACTIVATED event, false otherwise
+     */
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -34,6 +40,11 @@ class NewerVersionDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the newer version dialog by clicking OK or No to dismiss it.
+     * @param window the dialog window
+     * @param eventID the AWT window event ID
+     */
     public void handleWindow(Window window, int eventID) {
         if (SwingUtils.clickButton(window, "OK")) {
         } else if (SwingUtils.clickButton(window, "No")) { // ie no we don't want the opportunity to upgrade now - Linux version only
@@ -42,6 +53,11 @@ class NewerVersionDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Identifies the newer version dialog by checking for a specific label or option pane message.
+     * @param window the window to identify
+     * @return true if this is the newer version dialog, false otherwise
+     */
     public boolean recogniseWindow(Window window) {
         if (!(window instanceof JDialog)) return false;
 

@@ -24,6 +24,13 @@ import javax.swing.JDialog;
 
 class ApiChangeConfirmationDialogHandler implements WindowHandler {
 
+    /**
+     * Determines whether to process window events for the API change confirmation dialog.
+     * Processes WINDOW_OPENED events only if an API config change confirmation is expected.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED event and an API change confirmation is pending, false otherwise
+     */
     @Override
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
@@ -35,6 +42,12 @@ class ApiChangeConfirmationDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the API change confirmation dialog by confirming the socket port change.
+     * Clicks the Yes button to apply the new API socket port setting.
+     * @param window the dialog window
+     * @param eventID the AWT window event ID
+     */
     @Override
     public void handleWindow(Window window, int eventID) {
         ConfigDialogManager.configDialogManager().setApiConfigChangeConfirmationHandled();
@@ -44,6 +57,11 @@ class ApiChangeConfirmationDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Identifies the API change confirmation dialog by checking for a specific label.
+     * @param window the window to identify
+     * @return true if this is the API change confirmation dialog, false otherwise
+     */
     @Override
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;

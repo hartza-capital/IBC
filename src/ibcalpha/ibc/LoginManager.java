@@ -32,15 +32,29 @@ public abstract class LoginManager {
         _LoginManager = new DefaultLoginManager();
     }
 
+    /**
+     * Sets the global LoginManager instance to the specified implementation.
+     *
+     * @param loginManager the LoginManager instance to use; must not be null
+     * @throws IllegalArgumentException if loginManager is null
+     */
     public static void initialise(LoginManager loginManager){
         if (loginManager == null) throw new IllegalArgumentException("loginManager");
         _LoginManager = loginManager;
     }
 
+    /**
+     * Resets the global LoginManager instance to a new DefaultLoginManager.
+     */
     public static void setDefault() {
         _LoginManager = new DefaultLoginManager();
     }
 
+    /**
+     * Returns the current global LoginManager instance.
+     *
+     * @return the active LoginManager instance
+     */
     public static LoginManager loginManager() {
         return _LoginManager;
     }
@@ -73,10 +87,20 @@ public abstract class LoginManager {
     }
     
     private volatile LoginState loginState = LoginState.LOGGED_OUT;
+    /**
+     * Returns the current login state.
+     *
+     * @return the current login state
+     */
     public LoginState getLoginState() {
         return loginState;
     }
 
+    /**
+     * Sets the login state and handles associated state transitions and logging.
+     *
+     * @param state the new login state
+     */
     public void setLoginState(LoginState state) {
         if (state == loginState) return;
         loginState = state;
@@ -155,6 +179,11 @@ public abstract class LoginManager {
         }, 5, TimeUnit.SECONDS);
     }
     
+    /**
+     * Determines whether re-login is permitted after a second factor authentication timeout.
+     *
+     * @return true if re-login is permitted; false otherwise
+     */
     private boolean reloginPermitted() {
         if (Settings.settings().getString("ReloginAfterSecondFactorAuthenticationTimeout", "").isEmpty()) {
             if (!Settings.settings().getString("ExitAfterSecondFactorAuthenticationTimeout", "").isEmpty()) {

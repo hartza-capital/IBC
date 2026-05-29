@@ -36,12 +36,23 @@ class ComponentIterator implements Iterator<Component> {
         mStack.push(new NodeState(container));
     }
 
+    /**
+     * Returns true if there are more components to iterate over.
+     *
+     * @return true if a next component is available, false otherwise
+     */
     @Override
     public boolean hasNext() {
         if (mCurrent == null)  return moveNext();
         return true;
     }
 
+    /**
+     * Returns the next component in the iteration.
+     *
+     * @return the next component in the iteration
+     * @throws NoSuchElementException if there are no more components to iterate
+     */
     @Override
     public Component next() {
         if (!hasNext()) throw new NoSuchElementException();
@@ -50,11 +61,21 @@ class ComponentIterator implements Iterator<Component> {
         return result;
     }
 
+    /**
+     * Removes the current element from the iteration (not supported).
+     *
+     * @throws UnsupportedOperationException always, as removal is not supported
+     */
     @Override
     public void remove() {
         throw new UnsupportedOperationException("Not supported");
     }
 
+    /**
+     * Advances the iterator to the next component in depth-first order.
+     *
+     * @return true if a next component was found, false if iteration is exhausted
+     */
     private boolean moveNext() {
         if (mStack.isEmpty()) return false;
         while (true) {

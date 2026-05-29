@@ -22,6 +22,13 @@ import static ibcalpha.ibc.IbcTws.checkArguments;
 import static ibcalpha.ibc.IbcTws.setupDefaultEnvironment;
 
 public class IbcGateway {
+    /**
+     * Starts the IB Gateway automation agent.
+     * Sets up exception handling, validates arguments, initializes the environment, and loads the Gateway.
+     *
+     * @param args command-line arguments (optional: config file, credentials, trading mode).
+     * @throws Exception if an error occurs during Gateway initialization.
+     */
     public static void main(String[] args) throws Exception {
         if (Thread.getDefaultUncaughtExceptionHandler() == null) {
             Thread.setDefaultUncaughtExceptionHandler(new ibcalpha.ibc.UncaughtExceptionHandler());
@@ -31,6 +38,9 @@ public class IbcGateway {
         IbcTws.load();
     }
 
+    /**
+     * Prints IBC version information to the console.
+     */
     public static void printVersionInfo() {
         IbcTws.printVersionInfo();
     }

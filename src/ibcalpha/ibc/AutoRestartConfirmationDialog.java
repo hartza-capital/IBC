@@ -24,6 +24,12 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
 public class AutoRestartConfirmationDialog implements WindowHandler  {
+    /**
+     * Determines whether to process window events for the auto-restart confirmation dialog.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED event, false otherwise
+     */
     @Override
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
@@ -34,6 +40,11 @@ public class AutoRestartConfirmationDialog implements WindowHandler  {
         }
     }
 
+    /**
+     * Handles the auto-restart confirmation dialog by clicking the OK button.
+     * @param window the dialog window
+     * @param eventID the AWT window event ID
+     */
     @Override
     public void handleWindow(Window window, int eventID) {
         if (SwingUtils.clickButton(window, "OK")) {
@@ -42,6 +53,11 @@ public class AutoRestartConfirmationDialog implements WindowHandler  {
         }
     }
 
+    /**
+     * Identifies the auto-restart confirmation dialog by checking for relevant text content.
+     * @param window the window to identify
+     * @return true if this is the auto-restart confirmation dialog, false otherwise
+     */
     @Override
     public boolean recogniseWindow(Window window) {
         if (!(window instanceof JDialog)) return false;

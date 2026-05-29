@@ -29,15 +29,29 @@ public abstract class ConfigDialogManager
         _ConfigDialogManager = new DefaultConfigDialogManager();
     }
 
+    /**
+     * Sets the global ConfigDialogManager instance to the specified implementation.
+     *
+     * @param configDialogManager the ConfigDialogManager instance to use; must not be null
+     * @throws IllegalArgumentException if configDialogManager is null
+     */
     public static void initialise(ConfigDialogManager configDialogManager){
         if (configDialogManager == null) throw new IllegalArgumentException("configDialogManager");
         _ConfigDialogManager = configDialogManager;
     }
 
+    /**
+     * Resets the global ConfigDialogManager instance to a new DefaultConfigDialogManager.
+     */
     public static void setDefault() {
         _ConfigDialogManager = new DefaultConfigDialogManager();
     }
 
+    /**
+     * Returns the current global ConfigDialogManager instance.
+     *
+     * @return the active ConfigDialogManager instance
+     */
     public static ConfigDialogManager configDialogManager() {
         return _ConfigDialogManager;
     }

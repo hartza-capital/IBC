@@ -23,6 +23,12 @@ import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
 public class RestartConfirmationDialogHandler implements WindowHandler {
+    /**
+     * Determines whether to process window events for the restart confirmation dialog.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED event, false otherwise
+     */
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -32,12 +38,22 @@ public class RestartConfirmationDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the restart confirmation dialog by confirming the restart.
+     * @param window the dialog window
+     * @param eventID the AWT window event ID
+     */
     public void handleWindow(Window window, int eventID) {
         if (!SwingUtils.clickButton(window, "Yes")) {
             Utils.logError("could not ignore shutdown confirmation dialog because we could not find one of the controls.");
         }
     }
 
+    /**
+     * Identifies the restart confirmation dialog by checking for a specific label.
+     * @param window the window to identify
+     * @return true if this is the restart confirmation dialog, false otherwise
+     */
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;
 

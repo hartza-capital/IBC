@@ -23,7 +23,13 @@ import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
 public class ShutdownProgressDialogHandler implements WindowHandler {
-      public boolean filterEvent(Window window, int eventId) {
+    /**
+     * Determines whether to process window events for the shutdown progress dialog.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED event, false otherwise
+     */
+    public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -32,12 +38,22 @@ public class ShutdownProgressDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the shutdown progress dialog by shutting down executor services and the command server.
+     * @param window the dialog window
+     * @param eventID the AWT window event ID
+     */
     public void handleWindow(Window window, int eventID) {
         MyCachedThreadPool.getInstance().shutdownNow();
         MyScheduledExecutorService.getInstance().shutdownNow();
         CommandServer.commandServer().shutdown();
     }
 
+    /**
+     * Identifies the shutdown progress dialog by checking the window title.
+     * @param window the window to identify
+     * @return true if this is the shutdown progress dialog, false otherwise
+     */
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;
 

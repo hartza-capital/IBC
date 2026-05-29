@@ -30,6 +30,13 @@ public class ConfigureReadOnlyApiTask implements ConfigurationAction{
         this.readOnlyApi = readOnlyApi;
     }
 
+    /**
+     * Configures the Read-Only API setting in the global configuration dialog.
+     *
+     * Opens the API settings section and sets the Read-Only API checkbox to the specified value.
+     * If API is already enabled, flags that a confirmation dialog is expected.
+     * On older TWS versions that lack this setting, logs an error but does not fail.
+     */
     @Override
     public void run() {
         try {
@@ -60,6 +67,11 @@ public class ConfigureReadOnlyApiTask implements ConfigurationAction{
         }
     }
 
+    /**
+     * Initializes this task with the global configuration dialog.
+     *
+     * @param configDialog the TWS Global Configuration dialog
+     */
     @Override
     public void initialise(JDialog configDialog) {
         this.configDialog = configDialog;

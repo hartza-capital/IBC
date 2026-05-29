@@ -27,7 +27,15 @@ import javax.swing.JDialog;
 import java.util.regex.*;
 
 public class TooManyFailedLoginAttemptsDialogHandler implements WindowHandler {
-        @Override
+    /**
+     * Determines whether to process the given AWT event for this window.
+     * Only handles WINDOW_OPENED events.
+     *
+     * @param window the window that generated the event
+     * @param eventId the AWT event ID
+     * @return true if eventId is WINDOW_OPENED, false otherwise
+     */
+    @Override
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -37,6 +45,15 @@ public class TooManyFailedLoginAttemptsDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the "Too many failed login attempts" dialog by parsing the wait time from the message
+     * and optionally scheduling an automatic re-login attempt if configured.
+     * Parses the message to extract minutes and seconds, then schedules a re-login task
+     * if ReloginAfterSecondFactorAuthenticationTimeout is enabled.
+     *
+     * @param window the "Too many failed login attempts" dialog
+     * @param eventID the AWT event ID
+     */
     @Override
     public void handleWindow(Window window, int eventID) {
         // this dialog will contain a text area with a message like this:
@@ -59,8 +76,8 @@ public class TooManyFailedLoginAttemptsDialogHandler implements WindowHandler {
             Duration waitfor = Duration.parse("PT" + minutes + "M" + seconds + "S").plus(Duration.ofSeconds(3));
 
             if (Settings.settings().getBoolean("ReloginAfterSecondFactorAuthenticationTimeout", false)) {
-                Utils.logToConsole("Will re-login at " + Utils.formatDate(LocalDateTime.now().plus(waitfor)) + 
-                                    "; login number: " + 
+                Utils.logToConsole("Will re-login at " + Utils.formatDate(LocalDateTime.now().plus(waitfor)) +
+                                    "; login number: " +
                                     (LoginManager.loginManager().getLoginHandler().currentLoginAttemptNumber() + 1));
 
                 MyScheduledExecutorService.getInstance().schedule(() -> {
@@ -77,6 +94,13 @@ public class TooManyFailedLoginAttemptsDialogHandler implements WindowHandler {
             }
     }
 
+    /**
+     * Identifies the "Too many failed login attempts" dialog by checking the window type
+     * and presence of the lockout message text area.
+     *
+     * @param window the window to check
+     * @return true if the window is a JDialog with the lockout message, false otherwise
+     */
     @Override
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;

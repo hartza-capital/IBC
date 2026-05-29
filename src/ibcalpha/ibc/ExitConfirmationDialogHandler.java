@@ -23,6 +23,12 @@ import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
 public class ExitConfirmationDialogHandler implements WindowHandler {
+    /**
+     * Determines whether to process window events for the exit confirmation dialog.
+     * @param window the window to check
+     * @param eventId the AWT window event ID
+     * @return true if this is a WINDOW_OPENED event, false otherwise
+     */
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -32,6 +38,11 @@ public class ExitConfirmationDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Handles the exit confirmation dialog by confirming the exit if a shutdown is in progress.
+     * @param window the dialog window
+     * @param eventID the AWT window event ID
+     */
     public void handleWindow(Window window, int eventID) {
         // we don't handle this dialog if it's not the result of 
         // a StopTask running
@@ -42,6 +53,11 @@ public class ExitConfirmationDialogHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Identifies the exit confirmation dialog by checking for a specific label.
+     * @param window the window to identify
+     * @return true if this is the exit confirmation dialog, false otherwise
+     */
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;
 

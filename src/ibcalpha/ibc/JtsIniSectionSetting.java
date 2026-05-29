@@ -18,11 +18,32 @@
 
 package ibcalpha.ibc;
 
+/**
+ * Represents a single setting within a section of the jts.ini file.
+ * Used by JtsIniManager to track settings that need to be added or updated.
+ */
 class JtsIniSectionSetting {
+    /**
+     * The section header (e.g., "[Logon]" or "[IBGateway]").
+     */
     String section;
+
+    /**
+     * The setting line content (e.g., "Locale=en" or "ApiOnly=true").
+     */
     String setting;
+
+    /**
+     * Flag indicating whether this setting has been written to the ini file.
+     */
     boolean isProcessed;
 
+    /**
+     * Constructs a JtsIniSectionSetting with the specified section and setting.
+     *
+     * @param section the section header for this setting
+     * @param setting the setting line content
+     */
     JtsIniSectionSetting(String section, String setting) {
         this.section = section;
         this.setting = setting;

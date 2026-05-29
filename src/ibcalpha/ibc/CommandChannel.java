@@ -108,10 +108,21 @@ final class CommandChannel {
         if (! _Prompt.isEmpty()) reply(_Prompt);
     }
 
+    /**
+     * Sends a message to the connected client without a trailing newline.
+     *
+     * @param message the message text to send
+     */
     private void reply(String message) {
         reply(message, false);
     }
 
+    /**
+     * Sends a message to the connected client with optional trailing newline.
+     *
+     * @param message the message text to send
+     * @param addNewline if true, appends a newline after the message
+     */
     private void reply(String message, boolean addNewline) {
         if (mOutstream == null) return;
         try {
@@ -126,10 +137,20 @@ final class CommandChannel {
         }
     }
 
+    /**
+     * Sends a message to the connected client followed by a newline.
+     *
+     * @param message the message text to send
+     */
     private void replyLine(String message) {
         reply(message,true);
     }
 
+    /**
+     * Initializes input and output streams for the socket connection.
+     *
+     * @return true if streams were successfully created, false otherwise
+     */
     private boolean setupStreams() {
         try {
             mInstream = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));

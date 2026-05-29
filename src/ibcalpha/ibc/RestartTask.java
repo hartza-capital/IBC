@@ -45,6 +45,11 @@ class RestartTask
         mChannel = channel;
     }
 
+    /**
+     * Executes the restart sequence.
+     * If a restart is already in progress, sends an error message.
+     * Otherwise, initiates the TWS/Gateway restart and schedules an auto-restart time if the File menu method fails.
+     */
     @Override
     public void run() {
         if (! _Running.set()) {
@@ -113,10 +118,31 @@ class RestartTask
         countdown.setVisible(true);
     }    
 
+    /**
+     * Sends a success acknowledgment message to the connected client.
+     *
+     * @param message the acknowledgment message
+     */
     private void writeAck(String message) {if (mChannel != null) mChannel.writeAck(message);}
+
+    /**
+     * Sends an informational message to the connected client.
+     *
+     * @param message the informational message
+     */
     private void writeInfo(String message) {if (mChannel != null) mChannel.writeInfo(message);}
+
+    /**
+     * Sends an error message to the connected client.
+     *
+     * @param message the error message
+     */
     private void writeNack(String message) {if (mChannel != null) mChannel.writeNack(message);}
 
+    /**
+     * A panel component that displays a countdown timer until the scheduled restart time.
+     * Updates once per second and displays the remaining time in seconds.
+     */
     private class Countdown extends JPanel {
         private  static final long serialVersionUID = 1L;
         
@@ -124,6 +150,11 @@ class RestartTask
         private final LocalDateTime countdownTo;
         private Duration secsRemaining;
         
+        /**
+         * Initializes a countdown timer panel for the specified target datetime.
+         *
+         * @param countdownTo the target LocalDateTime when the restart should occur
+         */
         public Countdown(final LocalDateTime countdownTo) {
             this.setSize(250, 250);
             this.setOpaque(false);
@@ -131,12 +162,17 @@ class RestartTask
             MyScheduledExecutorService.getInstance().scheduleAtFixedRate(  () -> {
                                                 secsRemaining = Duration.between(LocalDateTime.now(), this.countdownTo);
                                                 this.repaint();
-                                            }, 
-                                            0, 
-                                            1, 
+                                            },
+                                            0,
+                                            1,
                                             TimeUnit.SECONDS);
         }
 
+        /**
+         * Paints the countdown display showing seconds remaining until the restart time.
+         *
+         * @param g the Graphics object to paint on
+         */
         @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);       

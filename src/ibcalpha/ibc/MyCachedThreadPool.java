@@ -24,6 +24,9 @@ import java.util.concurrent.Executors;
 public class MyCachedThreadPool {
     private static final ExecutorService instance = Executors.newCachedThreadPool();
 
+    /**
+     * Private constructor for singleton pattern.
+     */
     private MyCachedThreadPool() {}
 
     static ExecutorService getInstance() {return instance;}

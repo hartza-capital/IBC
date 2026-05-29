@@ -62,6 +62,13 @@ public class ConfigureApiPrecautionsTask implements ConfigurationAction {
         this.configDialog = configDialog;
     }
 
+    /**
+     * Configures the API precaution settings in the TWS Global Configuration dialog.
+     *
+     * Opens the API > Precautions section and applies the bypass settings for various order
+     * and trade warnings. Any setting value that is empty is skipped.
+     * Invalid values result in application exit with an error code.
+     */
     @Override
     public void run() {
         try {
@@ -76,13 +83,22 @@ public class ConfigureApiPrecautionsTask implements ConfigurationAction {
             doSetting("Bypass US Stocks market data in shares warning for API Orders", bypassUSStocksMarketDataInSharesWarning.toLowerCase());
             doSetting("Bypass Redirect Order warning for Stock API Orders", bypassRedirectOrderWarning.toLowerCase());
             doSetting("Bypass No Overfill Protection precaution for destinations where implied natively.", bypassNoOverfillProtectionPrecaution.toLowerCase());
-            
+
         } catch (IbcException e) {
             Utils.exitWithError(ErrorCodes.UNHANDLED_EXCEPTION, "Can't find API - Precautions settings");
         }
-        
+
     }
 
+    /**
+     * Applies a single precaution checkbox setting.
+     *
+     * Sets the checkbox to the specified state ("yes" or "no"). An empty setting is ignored.
+     * Invalid values trigger application exit with an error code.
+     *
+     * @param checkBoxText the label text of the checkbox to configure
+     * @param setting "yes" to check, "no" to uncheck, or "" to skip
+     */
     private void doSetting(String checkBoxText, String setting) {
         switch (setting) {
             case "":

@@ -29,15 +29,29 @@ public abstract class MainWindowManager {
         _mainWindowManager = new DefaultMainWindowManager();
     }
 
+    /**
+     * Sets the global MainWindowManager instance to the specified implementation.
+     *
+     * @param mainWindowManager the MainWindowManager instance to use; must not be null
+     * @throws IllegalArgumentException if mainWindowManager is null
+     */
     public static void initialise(MainWindowManager mainWindowManager){
         if (mainWindowManager == null) throw new IllegalArgumentException("mainWindowManager");
         _mainWindowManager = mainWindowManager;
     }
 
+    /**
+     * Resets the global MainWindowManager instance to a new DefaultMainWindowManager.
+     */
     public static void setDefault() {
         _mainWindowManager = new DefaultMainWindowManager();
     }
 
+    /**
+     * Returns the current global MainWindowManager instance.
+     *
+     * @return the active MainWindowManager instance
+     */
     public static MainWindowManager mainWindowManager() {
         return _mainWindowManager;
     }
