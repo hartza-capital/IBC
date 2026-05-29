@@ -131,9 +131,9 @@ IBC/
 
 ### Modules
 
-| Module | Path | Language | Description |
-| ------ | ---- | -------- | ----------- |
-| `ibcalpha.ibc` | [`src/ibcalpha/ibc/README.md`](src/ibcalpha/ibc/README.md) | Java | Core IBC package — 82 classes covering event dispatch, dialog handlers, login/2FA, configuration tasks, command server, and session management |
+| Module         | Path                                                       | Language | Description                                                                                                                                    |
+| -------------- | ---------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ibcalpha.ibc` | [`src/ibcalpha/ibc/README.md`](src/ibcalpha/ibc/README.md) | Java     | Core IBC package — 82 classes covering event dispatch, dialog handlers, login/2FA, configuration tasks, command server, and session management |
 
 ### By Category
 
