@@ -1,7 +1,0 @@
-<ivy-module version="1.0">
-    <info organisation="org.apache" module="dependee"/>
-    <dependencies>
-        <!-- https://mvnrepository.com/artifact/dev.samstevens.totp/totp -->
-        <dependency org="dev.samstevens.totp" name="totp" rev="1.7.1"/>
-    </dependencies>
-</ivy-module>
