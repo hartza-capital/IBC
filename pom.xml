@@ -52,6 +52,21 @@
         <version>3.4.1</version>
         <executions>
           <execution>
+            <id>require-maven-version</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>[3.8,)</version>
+                  <message>Maven 3.8+ is required to build IBC.</message>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+          <execution>
             <id>require-ibc-bin</id>
             <phase>validate</phase>
             <goals>
