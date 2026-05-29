@@ -6,3 +6,4 @@ build
 resources/*.jar
 resources/version
 dependency-reduced-pom.xml
+resources/IBC.jar
