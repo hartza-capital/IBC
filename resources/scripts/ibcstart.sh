@@ -24,7 +24,7 @@ echo "  -g or --gateway         Indicates that the IB Gateway is to be loaded ra
 echo "                          than TWS"
 echo
 echo "  twsPath                 Path to the TWS installation folder. Defaults to"
-echo "                          ~/Jts on Linux, ~/Applications on OS X"
+echo "                          ~/Jts"
 echo
 echo "  twsSettingsPath         Path to the TWS settings folder. Defaults to"
 echo "                          the twsPath argument"
@@ -100,8 +100,6 @@ E_TWS_VERSION_NOT_INSTALLED=4
 E_IBC_PATH_NOT_EXIST=5
 E_IBC_INI_NOT_EXIST=6
 E_TWS_VMOPTIONS_NOT_FOUND=7
-E_UNKNOWN_OPERATING_SYSTEM=8
-
 # errorlevel set by IBC if second factor authentication dialog times out and
 # ExitAfterSecondFactorAuthenticationTimeout setting is true
 let E_2FA_DIALOG_TIMED_OUT=$((1111 % 256))
@@ -115,18 +113,10 @@ ENTRY_POINT_TWS=ibcalpha.ibc.IbcTws
 ENTRY_POINT_GATEWAY=ibcalpha.ibc.IbcGateway
 
 OS_LINUX=Linux
-OS_OSX='OS X'
+os=$OS_LINUX
 
 entry_point=$ENTRY_POINT_TWS
 program=TWS
-
-if [[ $OSTYPE = [lL]inux* ]]; then
-	os=$OS_LINUX
-elif [[ $(uname) = [dD]arwin* ]]; then
-	os=$OS_OSX
-else
-	error_exit $E_UNKNOWN_OPERATING_SYSTEM "Can't detect operating system"
-fi
 
 shopt -s nocasematch extglob
 
@@ -234,17 +224,10 @@ if [ "$tws_version" = "" ]; then
 	error_exit $E_NO_TWS_VERSION "TWS major version number has not been supplied"
 fi
 
-if [ "$os" = "$OS_LINUX" ]; then
-	if [ "$tws_path" = "" ]; then tws_path=~/Jts ;fi
-	if [ "$tws_settings_path" = "" ]; then tws_settings_path="${tws_path}" ;fi
-	tws_program_path="${tws_path}/${tws_version}"
-	gateway_program_path="${tws_path}/ibgateway/${tws_version}"
-else
-	if [ "$tws_path" = "" ]; then tws_path=~/Applications ;fi
-	if [ "$tws_settings_path" = "" ]; then tws_settings_path=~/Jts ;fi
-	tws_program_path="${tws_path}/Trader Workstation ${tws_version}"
-	gateway_program_path="${tws_path}/IB Gateway ${tws_version}"
-fi
+if [ "$tws_path" = "" ]; then tws_path=~/Jts ;fi
+if [ "$tws_settings_path" = "" ]; then tws_settings_path="${tws_path}" ;fi
+tws_program_path="${tws_path}/${tws_version}"
+gateway_program_path="${tws_path}/ibgateway/${tws_version}"
 if [ "$ibc_path" = "" ]; then ibc_path=/opt/ibc ;fi
 if [ "$ibc_ini" = "" ]; then ibc_ini=~/ibc/config.ini ;fi
 
@@ -317,21 +300,12 @@ echo Generating the JAVA VM options
 
 declare -a vm_options
 index=0
-if [[ "$os" = "$OS_LINUX" ]]; then
-	while read line; do
-		if [[ -n ${line} && ! "${line:0:1}" = "#" && ! "${line:0:2}" = "-D" ]]; then
-			vm_options[$index]="$line"
-			((index++))
-		fi
-	done <<< $(cat ${vmoptions_source})
-elif [[ "$os" = "$OS_OSX" ]]; then
-	while read line; do
-		if [[ -n ${line} && ! "${line:0:1}" = "#" && ! "${line:0:2}" = "-D" ]]; then
-			vm_options[$index]="$line"
-			((index++))
-		fi
-	done < <( cat "$vmoptions_source" )
-fi
+while read line; do
+	if [[ -n ${line} && ! "${line:0:1}" = "#" && ! "${line:0:2}" = "-D" ]]; then
+		vm_options[$index]="$line"
+		((index++))
+	fi
+done <<< $(cat ${vmoptions_source})
 
 java_vm_options=${vm_options[*]}
 java_vm_options="$java_vm_options -Dtwslaunch.autoupdate.serviceImpl=com.ib.tws.twslaunch.install4j.Install4jAutoUpdateService"
@@ -422,18 +396,11 @@ function read_from_config {
 	fi
 }
 
-if [[ "$os" = "$OS_LINUX" ]]; then
-	if [[ ! -n "$java_path" ]]; then
-		java_path=$(read_from_config "$install4j/pref_jre.cfg")
-	fi
-	if [[ ! -n "$java_path" ]]; then
-		java_path=$(read_from_config "$install4j/inst_jre.cfg")
-	fi
-elif [[ "$os" = "$OS_OSX" ]]; then
-	java_path="$install4j/jre.bundle/Contents/Home/jre/bin"
-	if [[ ! -e "$java_path/java" ]]; then
-		java_path="$install4j/jre.bundle/Contents/Home/bin"
-	fi
+if [[ ! -n "$java_path" ]]; then
+	java_path=$(read_from_config "$install4j/pref_jre.cfg")
+fi
+if [[ ! -n "$java_path" ]]; then
+	java_path=$(read_from_config "$install4j/inst_jre.cfg")
 fi
 
 # alternatively use installed java
@@ -482,13 +449,8 @@ JAVA_TOOL_OPTIONS=
 pushd "$tws_settings_path" > /dev/null
 
 echo "Renaming IB's TWS or Gateway start script to prevent restart without IBC"
-if [[ "$os" = "$OS_LINUX" ]]; then
-	if [[ -e "${program_path}/tws" ]]; then mv "${program_path}/tws" "${program_path}/tws1"; fi
-	if [[ -e "${program_path}/ibgateway" ]]; then mv "${program_path}/ibgateway" "${program_path}/ibgateway1"; fi
-elif [[ "$os" = "$OS_OSX" ]]; then
-	if [[ -e "${program_path}/Trader Workstation ${tws_version}.app" ]]; then mv "${program_path}/Trader Workstation ${tws_version}.app" "${program_path}/Trader Workstation ${tws_version}-1.app"; fi
-	if [[ -e "${program_path}/IB Gateway ${tws_version}.app" ]]; then mv "${program_path}/IB Gateway ${tws_version}.app" "${program_path}/IB Gateway ${tws_version}-1.app"; fi
-fi
+if [[ -e "${program_path}/tws" ]]; then mv "${program_path}/tws" "${program_path}/tws1"; fi
+if [[ -e "${program_path}/ibgateway" ]]; then mv "${program_path}/ibgateway" "${program_path}/ibgateway1"; fi
 echo
 
 if [[ $useJava8 != "yes" ]]; then

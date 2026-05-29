@@ -19,11 +19,7 @@ elif [[ -n "$LOG_PATH" ]]; then
 
 	log_file=${LOG_PATH}/ibc-${IBC_VRSN}_${APP}-${TWS_MAJOR_VRSN}_$(date +%A).txt
 	if [[ -e "$log_file" ]]; then
-		if [[ $(uname) = [dD]arwin* ]]; then
-			if [[ $(stat -f "%Sm" -t %D "$log_file") != $(date +%D) ]]; then rm "$log_file"; fi
-		else
-			if [[ $(date -r "$log_file" +%D) != $(date +%D) ]]; then rm "$log_file"; fi
-		fi
+		if [[ $(date -r "$log_file" +%D) != $(date +%D) ]]; then rm "$log_file"; fi
 	fi
 else
 	log_file=/dev/null
