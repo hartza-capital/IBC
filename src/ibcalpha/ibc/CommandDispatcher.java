@@ -28,9 +28,29 @@ class CommandDispatcher
 
     private final CommandChannel mChannel;
 
-    private final static int SHORTCUT_MODIFIERS = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx() | KeyEvent.ALT_DOWN_MASK;
+    /**
+     * Cached modifier mask for simulated TWS keyboard shortcuts.
+     */
+    private static int shortcutModifiers = -1;
 
-            
+    /**
+     * Returns the modifier mask used to simulate TWS reconnect keyboard
+     * shortcuts.
+     *
+     * The value is computed lazily because accessing the AWT toolkit during
+     * class initialisation fails in headless environments.
+     *
+     * @return the modifier mask combining the platform menu shortcut and Alt
+     */
+    private static int getShortcutModifiers() {
+        if (shortcutModifiers == -1) {
+            int menuShortcut = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+            shortcutModifiers = menuShortcut | KeyEvent.ALT_DOWN_MASK;
+        }
+        return shortcutModifiers;
+    }
+
+
     CommandDispatcher(CommandChannel channel) {
         mChannel = channel;
     }
@@ -95,9 +115,9 @@ class CommandDispatcher
         }
         JFrame jf = MainWindowManager.mainWindowManager().getMainWindow(1, TimeUnit.MILLISECONDS);
 
-        KeyEvent pressed=new KeyEvent(jf,  KeyEvent.KEY_PRESSED, System.currentTimeMillis(), SHORTCUT_MODIFIERS, KeyEvent.VK_F, KeyEvent.CHAR_UNDEFINED);
-        KeyEvent typed=new KeyEvent(jf, KeyEvent.KEY_TYPED, System.currentTimeMillis(), SHORTCUT_MODIFIERS, KeyEvent.VK_UNDEFINED, 'F' );
-        KeyEvent released=new KeyEvent(jf, KeyEvent.KEY_RELEASED, System.currentTimeMillis(), SHORTCUT_MODIFIERS, KeyEvent.VK_F,  KeyEvent.CHAR_UNDEFINED );
+        KeyEvent pressed=new KeyEvent(jf,  KeyEvent.KEY_PRESSED, System.currentTimeMillis(), getShortcutModifiers(), KeyEvent.VK_F, KeyEvent.CHAR_UNDEFINED);
+        KeyEvent typed=new KeyEvent(jf, KeyEvent.KEY_TYPED, System.currentTimeMillis(), getShortcutModifiers(), KeyEvent.VK_UNDEFINED, 'F' );
+        KeyEvent released=new KeyEvent(jf, KeyEvent.KEY_RELEASED, System.currentTimeMillis(), getShortcutModifiers(), KeyEvent.VK_F,  KeyEvent.CHAR_UNDEFINED );
         jf.dispatchEvent(pressed);
         jf.dispatchEvent(typed);
         jf.dispatchEvent(released);
@@ -116,9 +136,9 @@ class CommandDispatcher
         }
         JFrame jf = MainWindowManager.mainWindowManager().getMainWindow();
 
-        KeyEvent pressed=new KeyEvent(jf,  KeyEvent.KEY_PRESSED, System.currentTimeMillis(), SHORTCUT_MODIFIERS, KeyEvent.VK_R, KeyEvent.CHAR_UNDEFINED);
-        KeyEvent typed=new KeyEvent(jf, KeyEvent.KEY_TYPED, System.currentTimeMillis(), SHORTCUT_MODIFIERS, KeyEvent.VK_UNDEFINED, 'R' );
-        KeyEvent released=new KeyEvent(jf, KeyEvent.KEY_RELEASED, System.currentTimeMillis(), SHORTCUT_MODIFIERS, KeyEvent.VK_R,  KeyEvent.CHAR_UNDEFINED );
+        KeyEvent pressed=new KeyEvent(jf,  KeyEvent.KEY_PRESSED, System.currentTimeMillis(), getShortcutModifiers(), KeyEvent.VK_R, KeyEvent.CHAR_UNDEFINED);
+        KeyEvent typed=new KeyEvent(jf, KeyEvent.KEY_TYPED, System.currentTimeMillis(), getShortcutModifiers(), KeyEvent.VK_UNDEFINED, 'R' );
+        KeyEvent released=new KeyEvent(jf, KeyEvent.KEY_RELEASED, System.currentTimeMillis(), getShortcutModifiers(), KeyEvent.VK_R,  KeyEvent.CHAR_UNDEFINED );
         jf.dispatchEvent(pressed);
         jf.dispatchEvent(typed);
         jf.dispatchEvent(released);
