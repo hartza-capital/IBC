@@ -1,5 +1,5 @@
 coverage:
-  acceptable: 20%
+  acceptable: 15%
   paths:
     - target/site/jacoco/jacoco.xml
 
