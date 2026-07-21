@@ -1,0 +1,117 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+env:
+  JAVA_VERSION: "21"
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+      pull-requests: write # octocov posts the coverage report as a PR comment
+
+    steps:
+      # Mint an installation token from the org GitHub App to read private hartza-capital
+      # repos (dependencies/submodules). App tokens are not subject to SAML SSO, unlike a PAT.
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      # persist-credentials:false so the default GITHUB_TOKEN extraheader does not override the
+      # app-token credential injected below (git can't use two credentials for the same host).
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Configure private package access
+        run: git config --global url."https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Run tests with coverage
+        run: mvn -B test
+
+      - name: Run octocov coverage check
+        uses: k1LoW/octocov-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  reviewdog:
+    name: Reviewdog (checkstyle)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # reviewdog posts checkstyle findings as inline PR review comments
+
+    steps:
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Configure private package access
+        run: git config --global url."https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Set up reviewdog
+        uses: reviewdog/action-setup@v1
+
+      # Reviewdog is the single lint pass: generate the checkstyle report using the
+      # project's own pom-configured ruleset (not a standalone google/sun config), then
+      # annotate the PR diff inline. checkstyle:checkstyle produces the XML without failing
+      # the build. Advisory only — fail-level defaults to none.
+      - name: Run checkstyle (reviewdog)
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mvn -B checkstyle:checkstyle
+          # Rewrite absolute file paths to repo-relative so reviewdog can match the diff.
+          sed -i "s|${GITHUB_WORKSPACE}/||g" target/checkstyle-result.xml
+          reviewdog -f=checkstyle -name=checkstyle -reporter=github-pr-review \
+            -filter-mode=added -level=warning < target/checkstyle-result.xml
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [test, reviewdog]
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.test.result }}" == "failure" ]; then
+            echo "Tests failed"
+            exit 1
+          elif [ "${{ needs.test.result }}" == "success" ]; then
+            echo "All tests passed"
+          fi
