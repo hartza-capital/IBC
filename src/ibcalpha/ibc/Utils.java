@@ -106,7 +106,8 @@ class Utils {
     }
 
     /**
-     * Logs the supplied message and terminates the JVM with the given error code.
+     * Logs the supplied message and terminates the JVM with the given error
+     * code.
      *
      * @param errorCode the exit code to report
      * @param message the error message to log
