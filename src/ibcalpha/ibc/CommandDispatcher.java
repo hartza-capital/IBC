@@ -26,6 +26,9 @@ import javax.swing.JFrame;
 class CommandDispatcher
         implements Runnable {
 
+    /**
+     * Channel used to read commands from and write responses to the client.
+     */
     private final CommandChannel mChannel;
 
     /**
@@ -44,14 +47,15 @@ class CommandDispatcher
      */
     private static int getShortcutModifiers() {
         if (shortcutModifiers == -1) {
-            int menuShortcut = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+            int menuShortcut = Toolkit.getDefaultToolkit()
+                                     .getMenuShortcutKeyMaskEx();
             shortcutModifiers = menuShortcut | KeyEvent.ALT_DOWN_MASK;
         }
         return shortcutModifiers;
     }
 
 
-    CommandDispatcher(CommandChannel channel) {
+    CommandDispatcher(final CommandChannel channel) {
         mChannel = channel;
     }
 
@@ -66,11 +70,11 @@ class CommandDispatcher
             } else if (cmd.equalsIgnoreCase("ENABLEAPI")) {
                 handleEnableAPICommand();
             } else if (cmd.equalsIgnoreCase("RECONNECTDATA")) {
-            	handleReconnectDataCommand();
+                handleReconnectDataCommand();
             } else if (cmd.equalsIgnoreCase("RECONNECTACCOUNT")) {
-            	handleReconnectAccountCommand();
+                handleReconnectAccountCommand();
             } else if (cmd.equalsIgnoreCase("RESTART")) {
-            	handleRestartCommand();
+                handleRestartCommand();
             } else {
                 handleInvalidCommand(cmd);
             }
@@ -81,11 +85,12 @@ class CommandDispatcher
     }
 
     /**
-     * Handles an invalid or unrecognized command by rejecting it and logging an error.
+     * Handles an invalid or unrecognized command by rejecting it and logging
+     * an error.
      *
      * @param cmd the invalid command string
      */
-    private void handleInvalidCommand(String cmd) {
+    private void handleInvalidCommand(final String cmd) {
         mChannel.writeNack("Command invalid");
         Utils.logError("CommandServer: invalid command received: " + cmd);
     }
@@ -105,40 +110,61 @@ class CommandDispatcher
    }
 
     /**
-     * Handles the RECONNECTDATA command by simulating a keyboard shortcut to reconnect market data.
+     * Handles the RECONNECTDATA command by simulating a keyboard shortcut to
+     * reconnect market data.
      * Not valid for FIX Gateway.
      */
     private void handleReconnectDataCommand() {
         if (SessionManager.isFIX()) {
-            mChannel.writeNack("RECONNECTDATA is not valid for the FIX Gateway");
+            mChannel.writeNack(
+                    "RECONNECTDATA is not valid for the FIX Gateway");
             return;
         }
-        JFrame jf = MainWindowManager.mainWindowManager().getMainWindow(1, TimeUnit.MILLISECONDS);
+        JFrame jf = MainWindowManager.mainWindowManager()
+                             .getMainWindow(1, TimeUnit.MILLISECONDS);
 
-        KeyEvent pressed=new KeyEvent(jf,  KeyEvent.KEY_PRESSED, System.currentTimeMillis(), getShortcutModifiers(), KeyEvent.VK_F, KeyEvent.CHAR_UNDEFINED);
-        KeyEvent typed=new KeyEvent(jf, KeyEvent.KEY_TYPED, System.currentTimeMillis(), getShortcutModifiers(), KeyEvent.VK_UNDEFINED, 'F' );
-        KeyEvent released=new KeyEvent(jf, KeyEvent.KEY_RELEASED, System.currentTimeMillis(), getShortcutModifiers(), KeyEvent.VK_F,  KeyEvent.CHAR_UNDEFINED );
+        long now = System.currentTimeMillis();
+        int modifiers = getShortcutModifiers();
+        KeyEvent pressed = new KeyEvent(
+                jf, KeyEvent.KEY_PRESSED, now, modifiers,
+                KeyEvent.VK_F, KeyEvent.CHAR_UNDEFINED);
+        KeyEvent typed = new KeyEvent(
+                jf, KeyEvent.KEY_TYPED, now, modifiers,
+                KeyEvent.VK_UNDEFINED, 'F');
+        KeyEvent released = new KeyEvent(
+                jf, KeyEvent.KEY_RELEASED, now, modifiers,
+                KeyEvent.VK_F, KeyEvent.CHAR_UNDEFINED);
         jf.dispatchEvent(pressed);
         jf.dispatchEvent(typed);
         jf.dispatchEvent(released);
 
         mChannel.writeAck("");
-   }
+    }
 
     /**
-     * Handles the RECONNECTACCOUNT command by simulating a keyboard shortcut to reconnect account data.
+     * Handles the RECONNECTACCOUNT command by simulating a keyboard shortcut
+     * to reconnect account data.
      * Not valid for FIX Gateway.
      */
     private void handleReconnectAccountCommand() {
         if (SessionManager.isFIX()) {
-            mChannel.writeNack("RECONNECTACCOUNT is not valid for the FIX Gateway");
+            mChannel.writeNack(
+                    "RECONNECTACCOUNT is not valid for the FIX Gateway");
             return;
         }
         JFrame jf = MainWindowManager.mainWindowManager().getMainWindow();
 
-        KeyEvent pressed=new KeyEvent(jf,  KeyEvent.KEY_PRESSED, System.currentTimeMillis(), getShortcutModifiers(), KeyEvent.VK_R, KeyEvent.CHAR_UNDEFINED);
-        KeyEvent typed=new KeyEvent(jf, KeyEvent.KEY_TYPED, System.currentTimeMillis(), getShortcutModifiers(), KeyEvent.VK_UNDEFINED, 'R' );
-        KeyEvent released=new KeyEvent(jf, KeyEvent.KEY_RELEASED, System.currentTimeMillis(), getShortcutModifiers(), KeyEvent.VK_R,  KeyEvent.CHAR_UNDEFINED );
+        long now = System.currentTimeMillis();
+        int modifiers = getShortcutModifiers();
+        KeyEvent pressed = new KeyEvent(
+                jf, KeyEvent.KEY_PRESSED, now, modifiers,
+                KeyEvent.VK_R, KeyEvent.CHAR_UNDEFINED);
+        KeyEvent typed = new KeyEvent(
+                jf, KeyEvent.KEY_TYPED, now, modifiers,
+                KeyEvent.VK_UNDEFINED, 'R');
+        KeyEvent released = new KeyEvent(
+                jf, KeyEvent.KEY_RELEASED, now, modifiers,
+                KeyEvent.VK_R, KeyEvent.CHAR_UNDEFINED);
         jf.dispatchEvent(pressed);
         jf.dispatchEvent(typed);
         jf.dispatchEvent(released);
@@ -150,7 +176,8 @@ class CommandDispatcher
      * Handles the STOP command by shutting down TWS/Gateway.
      */
     private void handleStopCommand() {
-        (new StopTask(mChannel, false, "STOP command")).run();     // run on the current thread
+        // run on the current thread
+        (new StopTask(mChannel, false, "STOP command")).run();
     }
 
     /**
@@ -162,7 +189,7 @@ class CommandDispatcher
             mChannel.writeNack("RESTART is not valid for the FIX Gateway");
             return;
         }
-        (new RestartTask(mChannel)).run();     // run on the current thread
+        // run on the current thread
+        (new RestartTask(mChannel)).run();
     }
-    
 }
