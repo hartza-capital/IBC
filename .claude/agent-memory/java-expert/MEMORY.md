@@ -1,0 +1,1 @@
+- [IBC testability](java-expert.md) — most classes are unit-testable despite being IB automation; avoid IBKR-only handlers.
