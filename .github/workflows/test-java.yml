@@ -76,7 +76,9 @@ jobs:
 
       - name: Resolve IBC_BIN
         run: |
-          jars_dir="$(find "$HOME/Jts" -maxdepth 2 -type d -name jars | sort -V | tail -n1)"
+          # maxdepth 4 covers both IB Gateway's default layout
+          # (~/Jts/ibgateway/<version>/jars) and TWS's (~/Jts/<version>/jars).
+          jars_dir="$(find "$HOME/Jts" -maxdepth 4 -type d -name jars | sort -V | tail -n1)"
           if [ -z "$jars_dir" ]; then
             echo "::error::Could not locate a jars/ directory under \$HOME/Jts after install/cache restore"
             exit 1
