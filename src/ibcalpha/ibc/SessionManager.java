@@ -90,7 +90,14 @@ public class SessionManager {
     }
     
     private static volatile boolean _InitialisationCompleted;
+    /**
+     * Synchronization lock protecting access to initialization state and condition variable.
+     */
     private static final Lock lock = new ReentrantLock();
+    /**
+     * Condition variable for signaling completion of Gateway initialization.
+     * Signals when both the splash screen closes and non-brokerage account dialog closes.
+     */
     private static final Condition initialised = lock.newCondition();
     static void awaitReady() {
         /*

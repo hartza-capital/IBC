@@ -56,6 +56,9 @@ public abstract class ConfigDialogManager
         return _ConfigDialogManager;
     }
 
+    /**
+     * Logs diagnostic information about the current state of the Global Configuration dialog.
+     */
     public abstract void logDiagnosticMessage();
 
     /**
@@ -63,6 +66,11 @@ public abstract class ConfigDialogManager
      */
     public abstract void clearConfigDialog();
 
+    /**
+     * Determines whether an API configuration change confirmation dialog is expected.
+     *
+     * @return true if a confirmation dialog is expected, false otherwise
+     */
     public abstract boolean getApiConfigChangeConfirmationExpected();
 
     /**
@@ -105,12 +113,26 @@ public abstract class ConfigDialogManager
      */
     public abstract JDialog getConfigDialog() throws IllegalStateException;
 
+    /**
+     * Marks the Global Configuration dialog as no longer in use after configuration tasks complete.
+     */
     public abstract void releaseConfigDialog();
 
+    /**
+     * Sets the flag indicating that an API configuration change confirmation dialog is expected.
+     */
     public abstract void setApiConfigChangeConfirmationExpected();
 
+    /**
+     * Clears the flag indicating that an API configuration change confirmation is expected.
+     */
     public abstract void setApiConfigChangeConfirmationHandled();
 
+    /**
+     * Records the specified Global Configuration dialog for later retrieval.
+     *
+     * @param window the Global Configuration dialog to store
+     */
     public abstract void setConfigDialog(JDialog window);
 
 }

@@ -57,6 +57,11 @@ public class ConfigureApiPrecautionsTask implements ConfigurationAction {
         this.bypassNoOverfillProtectionPrecaution = bypassNoOverfillProtectionPrecaution;
     }
 
+    /**
+     * Stores the Global Configuration dialog for use during configuration.
+     *
+     * @param configDialog the Global Configuration dialog where API precautions are configured
+     */
     @Override
     public void initialise(JDialog configDialog) {
         this.configDialog = configDialog;

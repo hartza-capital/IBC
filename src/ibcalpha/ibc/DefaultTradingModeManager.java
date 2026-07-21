@@ -42,10 +42,14 @@ public class DefaultTradingModeManager extends TradingModeManager {
         message = "constructor parameter tradingMode=" + tradingMode;
     }
 
-    /*
-     * Must be in either args[1] (if there are two args), or args[3] (if there are 
-     * four args), or args[5] (if there are six args)
-    */
+    /**
+     * Creates a new DefaultTradingModeManager with trading mode extracted from command-line arguments.
+     *
+     * Trading mode must be in args[1] (if there are two args), args[3] (if there are
+     * four args), or args[5] (if there are six args). If not found, trading mode is loaded from settings.
+     *
+     * @param args the command-line arguments containing trading mode at a specific position
+     */
     public DefaultTradingModeManager(String[] args) {
         if (args.length == 0) {
             setTradingMode(TRADING_MODE_LIVE);

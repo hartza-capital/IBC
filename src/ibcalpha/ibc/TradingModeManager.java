@@ -52,12 +52,21 @@ public abstract class TradingModeManager {
         return _TradingModeManager;
     }
 
+    /**
+     * Logs diagnostic information about the current trading mode configuration for
+     * troubleshooting.
+     */
     public abstract void logDiagnosticMessage();
 
 
     public static final String TRADING_MODE_LIVE = "live";
     public static final String TRADING_MODE_PAPER = "paper";
 
+    /**
+     * Returns the trading mode TWS/Gateway was instructed to log in with.
+     *
+     * @return {@link #TRADING_MODE_LIVE} or {@link #TRADING_MODE_PAPER}
+     */
     public abstract String getTradingMode();
 
 }

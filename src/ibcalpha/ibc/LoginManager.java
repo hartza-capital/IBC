@@ -210,18 +210,51 @@ public abstract class LoginManager {
         }
     }
 
+    /**
+     * Logs diagnostic information about the login manager and credential sources.
+     */
     public abstract void logDiagnosticMessage();
 
+    /**
+     * Returns the FIX login password from either arguments or settings.
+     *
+     * @return the FIX password
+     */
     public abstract String FIXPassword();
 
+    /**
+     * Returns the FIX login username from either arguments or settings.
+     *
+     * @return the FIX username
+     */
     public abstract String FIXUserName();
 
+    /**
+     * Returns the TWS login password from either arguments or settings.
+     *
+     * @return the TWS password
+     */
     public abstract String IBAPIPassword();
 
+    /**
+     * Returns the TWS login username from either arguments or settings.
+     *
+     * @return the TWS username
+     */
     public abstract String IBAPIUserName();
 
+    /**
+     * Returns the current login handler.
+     *
+     * @return the login handler instance
+     */
     public abstract AbstractLoginHandler getLoginHandler();
 
+    /**
+     * Sets the login handler to be used for login automation.
+     *
+     * @param handler the login handler instance to use
+     */
     public abstract void setLoginHandler(AbstractLoginHandler handler);
 
 }

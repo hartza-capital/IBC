@@ -31,6 +31,15 @@ class EnableApiTask implements ConfigurationAction{
         mChannel = channel;
     }
 
+    /**
+     * Enables API connections in the Global Configuration dialog.
+     *
+     * Navigates to the API settings, finds the "Enable ActiveX and Socket Clients" checkbox,
+     * and ensures it is selected. Closes the config dialog and sends appropriate acknowledgment
+     * to the client.
+     *
+     * @throws IbcException (caught internally) if required controls cannot be found
+     */
     @Override public void run() {
         try {
             Utils.logToConsole("Doing ENABLEAPI configuration");

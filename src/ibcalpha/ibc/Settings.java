@@ -49,6 +49,9 @@ public abstract class Settings {
         return _settings;
     }
 
+    /**
+     * Logs diagnostic information about the current settings configuration for troubleshooting.
+     */
     public abstract void logDiagnosticMessage();
 
 
@@ -63,10 +66,12 @@ public abstract class Settings {
     public abstract boolean getBoolean(String key, boolean defaultValue);
 
     /**
+     * Returns the character value associated with the specified property key.
+     * Returns the first character of defaultValue if the property does not exist or is empty.
      *
-     * @param key
-     * @param defaultValue
-     * @return
+     * @param key the property key
+     * @param defaultValue the default value string (first character is used as the fallback)
+     * @return the character value of the property, or the first character of defaultValue
      */
     public abstract char getChar(String key, String defaultValue);
 

@@ -80,6 +80,12 @@ public abstract class AbstractLoginHandler implements WindowHandler {
         }
     }
 
+    /**
+     * Identifies whether a window is a login frame that this handler should process.
+     *
+     * @param window the window to test
+     * @return true if this is a recognized login frame, false otherwise
+     */
     @Override
     public abstract boolean recogniseWindow(Window window);
     
@@ -171,14 +177,50 @@ public abstract class AbstractLoginHandler implements WindowHandler {
         }
     }
     
+    /**
+     * Initializes login dialog state and validates the frame for login processing.
+     *
+     * @param window the login frame
+     * @param eventID the AWT event ID that triggered this method
+     * @return true if initialization was successful, false if the dialog is invalid
+     * @throws IbcException if a required control cannot be found
+     */
     protected abstract boolean initialise(final Window window, int eventID) throws IbcException;
 
+    /**
+     * Performs pre-login configuration and validation before attempting login.
+     *
+     * @param window the login frame
+     * @param eventID the AWT event ID that triggered this method
+     * @return true if pre-login checks passed and login should proceed, false otherwise
+     * @throws IbcException if a required control cannot be found or updated
+     */
     protected abstract boolean preLogin(final Window window, int eventID) throws IbcException;
 
+    /**
+     * Populates credential fields in the login frame with username and password.
+     *
+     * @param window the login frame
+     * @param eventID the AWT event ID that triggered this method
+     * @return true if fields were successfully set, false if credentials are missing or unavailable
+     * @throws IbcException if a required control cannot be found or updated
+     */
     protected abstract boolean setFields(Window window, int eventID) throws IbcException;
     
+    /**
+     * Determines whether the username field is disabled or absent in the login frame.
+     *
+     * @param window the login frame
+     * @return true if the username field is not available for input, false otherwise
+     */
     protected abstract boolean isUserIdDisabledOrAbsent(Window window);
 
+    /**
+     * Determines whether the password field is disabled or absent in the login frame.
+     *
+     * @param window the login frame
+     * @return true if the password field is not available for input, false otherwise
+     */
     protected abstract boolean isPasswordDisabledOrAbsent(Window window);
 
     /**
