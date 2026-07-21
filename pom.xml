@@ -122,7 +122,17 @@ public class IbcVersionInfo {
                 <mkdir dir="${project.build.outputDirectory}"/>
                 <javac destdir="${project.build.outputDirectory}"
                        release="17"
+                       debug="true"
                        includeantruntime="false">
+                  <!--
+                    debug="true" keeps line-number/local-variable/source debug info in
+                    the compiled classes. Ant's <javac> defaults debug to false (unlike
+                    the javac CLI), which silently strips this metadata. Without it,
+                    JaCoCo can still count instructions/branches from raw bytecode but
+                    cannot map any of them back to source lines, so the coverage report
+                    has zero <sourcefile>/<line> data and line-coverage tools (octocov)
+                    read that as 0% regardless of actual test coverage.
+                  -->
                   <src path="${project.build.sourceDirectory}"/>
                   <src path="${project.build.directory}/generated-sources/java"/>
                   <classpath>
