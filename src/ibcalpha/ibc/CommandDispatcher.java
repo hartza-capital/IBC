@@ -60,10 +60,12 @@ class CommandDispatcher
     }
 
     /**
-     * Processes commands received from the connected client until exit is requested.
+     * Processes commands received from the connected client until exit is
+     * requested.
      *
      * Reads commands in a loop, dispatches each to the appropriate handler,
-     * and closes the channel when the client disconnects or sends the EXIT command.
+     * and closes the channel when the client disconnects or sends the EXIT
+     * command.
      */
     @Override public void run() {
         String cmd = mChannel.getCommand();

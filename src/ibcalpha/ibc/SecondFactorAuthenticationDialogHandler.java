@@ -32,8 +32,8 @@ import dev.samstevens.totp.code.DefaultCodeGenerator;
 
 public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
     /**
-     * Private constructor prevents external instantiation of this singleton handler;
-     * use {@link #getInstance()} to obtain the shared instance.
+     * Private constructor prevents external instantiation of this singleton
+     * handler; use {@link #getInstance()} to obtain the shared instance.
      */
     private SecondFactorAuthenticationDialogHandler() {};
 

@@ -29,17 +29,20 @@ import java.util.concurrent.TimeUnit;
 
 class TwsSettingsSaver {
     /**
-     * Singleton instance responsible for scheduling automatic TWS/Gateway settings saves.
+     * Singleton instance responsible for scheduling automatic TWS/Gateway
+     * settings saves.
      */
     private static final TwsSettingsSaver instance = new TwsSettingsSaver();
     /**
-     * Formats and parses the hh:mm times configured for automatic settings saving.
+     * Formats and parses the hh:mm times configured for automatic settings
+     * saving.
      */
     private static final DateFormat dateFormat = new SimpleDateFormat("HH:mm");
 
 
     /**
-     * Private constructor prevents external instantiation of this singleton scheduler.
+     * Private constructor prevents external instantiation of this singleton
+     * scheduler.
      */
     private TwsSettingsSaver() {};
 

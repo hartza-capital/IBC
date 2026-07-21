@@ -25,8 +25,8 @@ class StopTask
         implements Runnable {
 
     /**
-     * Guards against concurrent or re-entrant stop/shutdown sequences being triggered
-     * more than once at a time.
+     * Guards against concurrent or re-entrant stop/shutdown sequences being
+     * triggered more than once at a time.
      */
     private static final SwitchLock _Running = new SwitchLock();
 

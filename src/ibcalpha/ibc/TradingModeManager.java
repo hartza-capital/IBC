@@ -53,8 +53,8 @@ public abstract class TradingModeManager {
     }
 
     /**
-     * Logs diagnostic information about the current trading mode configuration for
-     * troubleshooting.
+     * Logs diagnostic information about the current trading mode
+     * configuration for troubleshooting.
      */
     public abstract void logDiagnosticMessage();
 

@@ -60,7 +60,8 @@ public class ConfigureApiPrecautionsTask implements ConfigurationAction {
     /**
      * Stores the Global Configuration dialog for use during configuration.
      *
-     * @param configDialog the Global Configuration dialog where API precautions are configured
+     * @param configDialog the Global Configuration dialog where API
+     *     precautions are configured
      */
     @Override
     public void initialise(JDialog configDialog) {

@@ -21,25 +21,27 @@ package ibcalpha.ibc;
 import java.awt.Window;
 
 /**
- * Defines the contract for GUI automation handlers that respond to Swing window events.
- * Implementations identify specific dialogs/frames and automate their interaction in response
- * to AWT events.
+ * Defines the contract for GUI automation handlers that respond to Swing
+ * window events. Implementations identify specific dialogs/frames and
+ * automate their interaction in response to AWT events.
  */
 interface WindowHandler {
     /**
-     * Determines whether the handler should process the given AWT event for this window.
-     * Implementations use this to filter events before expensive window recognition or
-     * automation occurs.
+     * Determines whether the handler should process the given AWT event for
+     * this window. Implementations use this to filter events before
+     * expensive window recognition or automation occurs.
      *
      * @param window the window that generated the event
      * @param eventId the AWT event ID (e.g. WindowEvent.WINDOW_OPENED)
-     * @return true if the handler should process this event, false to ignore it
+     * @return true if the handler should process this event, false to
+     *     ignore it
      */
     boolean filterEvent(Window window, int eventId);
 
     /**
-     * Performs the automation appropriate for this window in response to the given event.
-     * Called only after {@link #filterEvent} and {@link #recogniseWindow} have both matched.
+     * Performs the automation appropriate for this window in response to
+     * the given event. Called only after {@link #filterEvent} and
+     * {@link #recogniseWindow} have both matched.
      *
      * @param window the window to automate
      * @param eventID the AWT event ID that triggered this call
@@ -48,10 +50,12 @@ interface WindowHandler {
 
     /**
      * Determines whether this handler is responsible for the given window.
-     * Implementations typically match by title text or a distinctive component structure.
+     * Implementations typically match by title text or a distinctive
+     * component structure.
      *
      * @param window the window to inspect
-     * @return true if this handler recognises and should handle the window, false otherwise
+     * @return true if this handler recognises and should handle the
+     *     window, false otherwise
      */
     boolean recogniseWindow(Window window);
 }

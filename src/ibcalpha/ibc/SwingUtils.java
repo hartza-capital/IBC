@@ -585,13 +585,14 @@ class SwingUtils {
     /**
      * Returns a string representing the structure of the specified window.
      *
-     * Details of each component in the window are included, indented to reflect
-     * the component's position in the hierarchy. If an exception occurs while walking
-     * the component tree, its stack trace is appended to the returned string instead
-     * of being thrown.
+     * Details of each component in the window are included, indented to
+     * reflect the component's position in the hierarchy. If an exception
+     * occurs while walking the component tree, its stack trace is appended
+     * to the returned string instead of being thrown.
      *
      * @param window the Window whose structure is to be returned
-     * @return a human-readable, indented description of the window's component hierarchy
+     * @return a human-readable, indented description of the window's
+     *     component hierarchy
      */
     static String getWindowStructure(Window window) {
         StringBuilder builder = new StringBuilder();
@@ -628,9 +629,10 @@ class SwingUtils {
     }
 
     /**
-     * Selects the specified JRadioButton if it is not already selected, by simulating a click.
-     * Radio buttons cannot be programmatically cleared (only another button in the same
-     * group can deselect them), so this method only ever selects, never clears.
+     * Selects the specified JRadioButton if it is not already selected, by
+     * simulating a click. Radio buttons cannot be programmatically cleared
+     * (only another button in the same group can deselect them), so this
+     * method only ever selects, never clears.
      *
      * @param window the window in which to search for the required JRadioButton
      * @param buttonText the label for the required JRadioButton

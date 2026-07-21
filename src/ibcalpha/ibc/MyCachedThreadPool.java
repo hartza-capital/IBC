@@ -24,12 +24,14 @@ import java.util.concurrent.Executors;
 public class MyCachedThreadPool {
     /**
      * Creates a new cached thread pool for concurrent task execution.
-     * This static initializer provides a shared thread pool instance for use throughout the application.
+     * This static initializer provides a shared thread pool instance for use
+     * throughout the application.
      */
     private static final ExecutorService instance = Executors.newCachedThreadPool();
 
     /**
-     * Private constructor prevents instantiation of this singleton utility class.
+     * Private constructor prevents instantiation of this singleton utility
+     * class.
      */
     private MyCachedThreadPool() {}
 

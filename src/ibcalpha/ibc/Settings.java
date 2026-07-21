@@ -50,7 +50,8 @@ public abstract class Settings {
     }
 
     /**
-     * Logs diagnostic information about the current settings configuration for troubleshooting.
+     * Logs diagnostic information about the current settings configuration
+     * for troubleshooting.
      */
     public abstract void logDiagnosticMessage();
 
@@ -67,11 +68,14 @@ public abstract class Settings {
 
     /**
      * Returns the character value associated with the specified property key.
-     * Returns the first character of defaultValue if the property does not exist or is empty.
+     * Returns the first character of defaultValue if the property does not
+     * exist or is empty.
      *
      * @param key the property key
-     * @param defaultValue the default value string (first character is used as the fallback)
-     * @return the character value of the property, or the first character of defaultValue
+     * @param defaultValue the default value string (first character is used
+     *     as the fallback)
+     * @return the character value of the property, or the first character of
+     *     defaultValue
      */
     public abstract char getChar(String key, String defaultValue);
 

@@ -211,7 +211,8 @@ public abstract class LoginManager {
     }
 
     /**
-     * Logs diagnostic information about the login manager and credential sources.
+     * Logs diagnostic information about the login manager and credential
+     * sources.
      */
     public abstract void logDiagnosticMessage();
 
