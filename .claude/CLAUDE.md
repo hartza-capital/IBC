@@ -1,36 +1,32 @@
-<!-- CODEGRAPH_START -->
+## Codebase Memory
 
-## CodeGraph
+`codebase-memory-mcp` builds a semantic knowledge graph of codebases for faster,
+smarter code exploration. Its state lives in `~/.cache/codebase-memory-mcp/`
+(nothing is stored in the repo itself). Every query tool takes a **required
+`project`** argument — a project name, not the current directory.
 
-CodeGraph builds a semantic knowledge graph of codebases for faster, smarter code exploration.
+### At the start of a session
 
-### If `.codegraph/` exists in the project
+Probe with `index_status` (or `list_projects`). **If this repo is not indexed
+yet, run `index_repository(repo_path=.)` first**, then use the graph tools below
+for exploration.
 
-**Use codegraph tools for faster exploration.** These tools provide instant lookups via the code graph instead of scanning files:
+### Use these tools first (before grep/glob)
 
-| Tool                | Use For                                          |
-| ------------------- | ------------------------------------------------ |
-| `codegraph_search`  | Find symbols by name (functions, classes, types) |
-| `codegraph_context` | Get relevant code context for a task             |
-| `codegraph_callers` | Find what calls a function                       |
-| `codegraph_callees` | Find what a function calls                       |
-| `codegraph_impact`  | See what's affected by changing a symbol         |
-| `codegraph_node`    | Get details + source code for a symbol           |
+| Tool | Use For |
+|------|---------|
+| `search_graph` | Find symbols by name/pattern (`query` for natural language, `name_pattern` for regex, `label`, `file_pattern`) |
+| `get_code_snippet` | Get a symbol's source by `qualified_name` (find it first with `search_graph`) |
+| `get_architecture` | High-level overview — packages, routes, hotspots, clusters |
+| `trace_path` | Callers (`direction=inbound`) / callees (`direction=outbound`); add `risk_labels=true` for impact |
+| `search_code` | Graph-augmented text search (grep enriched with structure) |
+| `detect_changes` | Blast radius of a git diff (use only for diff-oriented impact) |
 
-**When spawning Explore agents in a codegraph-enabled project:**
-
-Tell the Explore agent to use codegraph tools for faster exploration.
+**When spawning Explore agents:** tell them to prefer these graph tools for
+faster exploration, passing `project=<name>` on every call.
 
 **For quick lookups in the main session:**
-
-- Use `codegraph_search` instead of grep for finding symbols
-- Use `codegraph_callers`/`codegraph_callees` to trace code flow
-- Use `codegraph_impact` before making changes to see what's affected
-
-### If `.codegraph/` does NOT exist
-
-At the start of a session, ask the user if they'd like to initialize CodeGraph:
-
-"I notice this project doesn't have CodeGraph initialized. Would you like me to run `codegraph init -i` to build a code knowledge graph?"
-
-<!-- CODEGRAPH_END -->
+- Use `search_graph` instead of grep for finding symbols
+- Use `trace_path` (inbound/outbound) to trace code flow
+- Use `trace_path direction=inbound risk_labels=true` before changing a symbol to
+  see what's affected

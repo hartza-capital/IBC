@@ -1,15 +1,21 @@
 {
   "mcpServers": {
-    "codegraph": {
-      "type": "stdio",
-      "command": "codegraph",
-      "args": ["serve", "--mcp"]
+    "codebase-memory-mcp": {
+      "command": "codebase-memory-mcp"
     },
     "github": {
       "command": "github-mcp-server",
-      "args": ["stdio"],
+      "args": [
+        "stdio"
+      ],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "gomuta": {
+      "command": "gomuta",
+      "env": {
+        "GOMUTA_ROOT": "${HOME}/go/src/github.com/hartza-capital"
       }
     }
   }
