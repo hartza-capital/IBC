@@ -75,6 +75,8 @@ class CommandDispatcher
                 handleReconnectAccountCommand();
             } else if (cmd.equalsIgnoreCase("RESTART")) {
                 handleRestartCommand();
+            } else if (cmd.equalsIgnoreCase("PAUSE")) {
+                handlePauseCommand();
             } else {
                 handleInvalidCommand(cmd);
             }
@@ -190,6 +192,20 @@ class CommandDispatcher
             return;
         }
         // run on the current thread
-        (new RestartTask(mChannel)).run();
+        (new RestartTask(mChannel, false)).run();
+    }
+
+    /**
+     * Handles the PAUSE command by pausing TWS/Gateway so that the next
+     * restart continues without re-authentication.
+     * Not valid for FIX Gateway.
+     */
+    private void handlePauseCommand() {
+        if (SessionManager.isFIX()) {
+            mChannel.writeNack("PAUSE is not valid for the FIX Gateway");
+            return;
+        }
+        // run on the current thread
+        (new RestartTask(mChannel, true)).run();
     }
 }

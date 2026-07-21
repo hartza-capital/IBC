@@ -66,6 +66,16 @@ class CommandDispatcherTest {
     }
 
     @Test
+    void pauseIsRejectedForFixGateway() {
+        TestUtils.setSessionState(false, true, true);
+        FakeCommandChannel fake = new FakeCommandChannel("PAUSE", "EXIT");
+
+        new CommandDispatcher(fake.channel()).run();
+
+        assertTrue(fake.output().contains("PAUSE is not valid for the FIX Gateway"));
+    }
+
+    @Test
     void enableApiIsRejectedForGateway() {
         TestUtils.setSessionState(true, false, true);
         FakeCommandChannel fake = new FakeCommandChannel("ENABLEAPI", "EXIT");

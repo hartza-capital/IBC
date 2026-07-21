@@ -34,10 +34,15 @@ class Utils {
 
     static final DateTimeFormatter _dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS");
 
-    // set these to the defaults, so that we can continue to use them 
+    // set these to the defaults, so that we can continue to use them
     // even when TWS redirects System.out and System.err to its own logfile
     private static final PrintStream out = System.out;
     private static final PrintStream err = System.err;
+
+    /**
+     * Banner string printed around error and exception messages.
+     */
+    private static final String ERROR_BANNER = "!".repeat(79);
 
     /**
      * Performs a click on the menu item at the specified path, waiting if necessary for the
@@ -90,17 +95,34 @@ class Utils {
         }
     }
 
-    static void exitWithError(int errorCode) {
-        logToConsole("Exiting with exit code=" + errorCode);
-        System.exit(errorCode);
+    /**
+     * Logs an error message and terminates the JVM with the given error code.
+     *
+     * @param errorCode the exit code to report
+     */
+    static void exitWithError(final int errorCode) {
+        logToConsole("Exiting after error with exit code=" + errorCode);
+        Runtime.getRuntime().halt(errorCode);
     }
 
-    static void exitWithError(int errorCode, String message) {
+    /**
+     * Logs the supplied message and terminates the JVM with the given error code.
+     *
+     * @param errorCode the exit code to report
+     * @param message the error message to log
+     */
+    static void exitWithError(final int errorCode, final String message) {
         logError(message);
         exitWithError(errorCode);
     }
 
-    static void exitWithException(int errorCode, Throwable t) {
+    /**
+     * Logs the supplied exception and terminates the JVM with the given code.
+     *
+     * @param errorCode the exit code to report
+     * @param t the exception to log
+     */
+    static void exitWithException(final int errorCode, final Throwable t) {
         logException(t);
         exitWithError(errorCode);
     }
@@ -109,21 +131,31 @@ class Utils {
         System.exit(0);
     }
 
-    static void logError(String message) {
-        getErrStream().println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        getErrStream().println(formatMessage(message));
-        getErrStream().println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    /**
+     * Logs an error message surrounded by banner lines.
+     *
+     * @param message the error message to log
+     */
+    static void logError(final String message) {
+        getOutStream().println(ERROR_BANNER);
+        getOutStream().println(formatMessage(message));
+        getOutStream().println(ERROR_BANNER);
     }
 
-    static void logException(Throwable t) {
-        getErrStream().println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        getErrStream().println(formatMessage("An exception has occurred:"));
+    /**
+     * Logs an exception surrounded by banner lines.
+     *
+     * @param t the exception to log
+     */
+    static void logException(final Throwable t) {
+        getOutStream().println(ERROR_BANNER);
+        getOutStream().println(formatMessage("An exception has occurred:"));
         if (Settings.settings().getBoolean("IncludeStackTraceForExceptions", false)) {
-            t.printStackTrace(getErrStream());
+            t.printStackTrace(getOutStream());
         } else {
-             getErrStream().println(t.getMessage() + "");
+             getOutStream().println(t.getMessage() + "");
         }
-        getErrStream().println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        getOutStream().println(ERROR_BANNER);
     }
 
     /**
