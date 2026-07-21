@@ -6,7 +6,7 @@ description: >
   user asks to "clean dead code", "remove unused code", "find dead code",
   "nettoie le code mort", "supprime le code inutilisé", or "cleanup unused".
   Supports Go, Python, Rust, TypeScript/React, and Java projects.
-allowed-tools: Read, Glob, Grep, Bash, Task
+allowed-tools: Read, Glob, Grep, Bash, Workflow, mcp__codebase-memory-mcp__index_status, mcp__codebase-memory-mcp__list_projects, mcp__codebase-memory-mcp__index_repository, mcp__codebase-memory-mcp__search_graph, mcp__codebase-memory-mcp__trace_path, mcp__codebase-memory-mcp__get_code_snippet
 ---
 
 # Dead Code Cleaner
@@ -21,9 +21,13 @@ code cleanup.
 | Resource                   | Limit  | On exceeded                                          |
 | -------------------------- | ------ | ---------------------------------------------------- |
 | Total workflow steps       | 20     | Stop, report progress, ask user to continue or abort |
-| Parallel expert agents     | 4 max  | Queue remaining languages sequentially               |
 | Per-agent timeout          | 10 min | Mark language as timed out, report partial findings  |
 | Dead code items to process | 100    | Truncate to top 100 by confidence, note truncation   |
+
+Agent concurrency (how many run at once) is capped automatically by the
+`Workflow` tool — do not hand-roll a "N max, queue the rest" batching rule
+here; pass every detected language to `parallel()` in one call and let the
+tool schedule them.
 
 If any limit is reached: report completed languages, pending languages, and ask whether to continue or stop.
 
@@ -80,40 +84,163 @@ Analyze the project structure to identify all languages present.
 
 **Output:** List of languages to process (e.g., `["rust", "typescript"]`)
 
-**Call `advisor()` before Step 2** — With the detected languages and project structure in your context, call `advisor()` to validate the cleanup strategy and tool selection before dispatching agents.
+---
+
+### Step 1b: Graph Pre-Analysis (codebase-memory-mcp)
+
+Before dispatching agents, build a dead-code candidate list from the knowledge
+graph.
+
+**Resolve & index the project:**
+
+Call `list_projects` and find the entry matching this repo. If none matches,
+run `index_repository(repo_path=".")` — this indexes the repo and returns its
+derived project **name**. Every graph call below takes a required
+`project=<name>` argument.
+
+**Build the candidate list:**
+
+1. Use `search_graph(project=<name>, label="Function")` to enumerate functions.
+   Prefer `min_degree`/`max_degree` filters: functions with in-degree 0 are the
+   primary dead-code candidates — page with `offset`/`limit` while `has_more`.
+
+2. Confirm each zero-in-degree function with
+   `trace_path(project=<name>, function_name=symbol, direction=inbound)` — an
+   empty inbound trace means no callers.
+
+3. Filter out false positives before passing to agents:
+   - Entry points: `main`, `init`, Lambda handlers, HTTP handlers, CLI commands
+   - Exported symbols in public packages / API surfaces (flag as "verify" not "remove")
+   - Test functions and test helpers
+   - Symbols annotated with framework decorators (`@Override`, `#[tauri::command]`, `@Bean`, etc.)
+
+4. For each remaining candidate, call
+   `trace_path(project=<name>, function_name=symbol, direction=outbound)` to find
+   its transitive dead subtree — code that would also become dead once the
+   candidate is removed (cascade analysis).
+
+5. Produce a **graph candidate list** structured as:
+
+   ```
+   ZERO-CALLERS (safe to remove):
+   - pkg/utils.formatInternal (Go, internal, 0 callers)
+   - src/helpers/unused.ts (TypeScript, not exported, 0 callers)
+
+   CASCADE DEAD (dead if parent removed):
+   - pkg/utils.helperForFormatInternal (only called by formatInternal)
+
+   EXPORTED-VERIFY (exported, 0 external callers — confirm before removing):
+   - pkg/api.LegacyEndpoint (exported, 0 callers in this repo)
+   ```
+
+6. Pass this list to agents in Step 2 as a **starting point** — agents must still verify with language tools but focus their effort on these candidates first.
+
+**If the graph server is unavailable:**
+
+Skip this step. Agents will rely on language-specific tools only (go vet, knip, cargo clippy, etc.).
 
 ---
 
-### Step 2: Dispatch to Expert Agents
+**Call `advisor()` before Step 2** — With the detected languages, project structure, and graph candidates (if any) in your context, call `advisor()` to validate the cleanup strategy and tool selection before dispatching agents.
 
-For each detected language, launch the appropriate agent using the Task tool.
+---
+
+### Step 2: Dispatch to Expert Agents (via Workflow)
+
+Run one `Workflow` call that fans out one cleanup agent per detected
+language, all in parallel, in a single tool call — the tool handles fan-out
+concurrency and result collection, so there is no manual "N max, queue the
+rest" batching rule to apply here.
 
 **Agent mapping:**
 
-| Language         | Agent           | Task Description                                           |
-| ---------------- | --------------- | ---------------------------------------------------------- |
-| Go               | `go-expert`     | "Analyze and remove dead code in Go project"               |
-| Python           | `python-expert` | "Analyze and remove dead code in Python project"           |
-| Rust             | `rust-expert`   | "Analyze and remove dead code in Rust project"             |
-| TypeScript/React | `react-expert`  | "Analyze and remove dead code in TypeScript/React project" |
-| Java             | `java-expert`   | "Analyze and remove dead code in Java project"             |
+| Language         | Agent           |
+| ---------------- | --------------- |
+| Go               | `go-expert`     |
+| Python           | `python-expert` |
+| Rust             | `rust-expert`   |
+| TypeScript/React | `react-expert`  |
+| Java             | `java-expert`   |
 
 **Instructions to provide to each agent:**
 
-See `references/agent-dispatch-guide.md` for detailed instructions per language.
+See `references/agent-dispatch-guide.md` for detailed instructions per
+language — the per-language prompt below tells the agent to follow that
+guide's steps verbatim.
 
-**Key points for agents:**
+**Key points for agents (baked into every prompt):**
 
-- **Advisor tool:** You have access to an `advisor` tool backed by a stronger reviewer model. Call `advisor()` before removing code (after the analysis phase), and when you believe the cleanup is complete. Give the advice serious weight.
+- **Advisor tool:** the agent has access to an `advisor` tool backed by a stronger reviewer model. Call `advisor()` before removing code (after the analysis phase), and when the cleanup is believed complete. Give the advice serious weight.
+- **Graph candidates:** if Step 1b produced a candidate list, it is passed to the agent as a prioritized starting point. The agent must still verify each item with language tools before removing.
 - Use language-specific tools (cargo clippy, knip, go vet, etc.)
+- Use codebase-memory-mcp tools (`trace_path direction=inbound` for callers, add `risk_labels=true` for impact) when the repo is indexed — these provide cross-file call graph verification that language tools miss
 - Identify unused code: functions, imports, types, files, dependencies
 - Remove dead code safely (verify before deleting)
-- Run validation after each batch of changes
+- Never auto-commit
 
-**Multi-language projects:**
+Call the `Workflow` tool with
+`args: { languages: [<detected languages>], candidates: <Step 1b candidate list or null> }`
+and this script:
 
-- Launch agents in parallel when languages are independent
-- Launch sequentially if there are cross-language dependencies (rare)
+```js
+export const meta = {
+  name: "dead-code-cleaner-cleanup",
+  description: "Analyze and remove dead code per detected language",
+  phases: [{ title: "Cleanup" }],
+}
+
+const AGENT_MAP = {
+  Go: "go-expert",
+  Python: "python-expert",
+  Rust: "rust-expert",
+  "TypeScript/React": "react-expert",
+  Java: "java-expert",
+}
+
+function cleanupPrompt(language, candidates) {
+  return `Analyze and remove dead code in this ${language} project.
+
+Follow the detailed steps for ${language} in
+skills/dead-code-cleaner/references/agent-dispatch-guide.md exactly — tool
+commands to run, what counts as dead code, and the safe-removal order.
+
+No Speculation Policy: base every removal on verified analysis from
+language-specific tools (and codebase-memory-mcp graph tools when available).
+If uncertain about safety, mark the code as potentially dead but do NOT remove
+it without verification. Never guess which code is unused.
+
+Advisor tool: call advisor() before removing code (after the analysis
+phase), and again when you believe the cleanup is complete. Give the advice
+serious weight.
+
+${
+  candidates
+    ? `Graph candidate list from the orchestrator's pre-analysis (starting
+point only — verify every item with language tools before removing):
+${JSON.stringify(candidates)}`
+    : "No graph candidate list was produced — rely on language-specific tools only."
+}
+
+Never auto-commit. Leave changes in the working tree for the user to review.`
+}
+
+phase("Cleanup")
+const results = await parallel(
+  args.languages.map(
+    (language) => () =>
+      agent(cleanupPrompt(language, args.candidates), {
+        label: `cleanup:${language}`,
+        agentType: AGENT_MAP[language],
+        phase: "Cleanup",
+      })
+  )
+)
+
+return args.languages.map((language, i) => ({ language, result: results[i] }))
+```
+
+A `results[i]` of `null` means that language's agent failed or timed out;
+report it in Step 4 rather than silently dropping it.
 
 ---
 
@@ -204,12 +331,13 @@ Next steps:
 
 ## Error Handling
 
-| Error                             | Action                                   |
-| --------------------------------- | ---------------------------------------- |
-| No languages detected             | Ask user to specify project type         |
-| Agent fails                       | Report error, continue with other agents |
-| Validation fails                  | Alert user, suggest git restore          |
-| Tools missing (knip, cargo, etc.) | Inform user, skip that language          |
+| Error                             | Action                                                                                               |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| No languages detected             | Ask user to specify project type                                                                     |
+| Agent fails                       | Report error, continue with other agents                                                             |
+| Validation fails                  | Alert user, suggest git restore                                                                      |
+| Tools missing (knip, cargo, etc.) | Inform user, skip that language                                                                      |
+| Workflow run aborted mid-way      | Resume with `Workflow({ scriptPath, resumeFromRunId })` — completed languages are cached and skipped |
 
 ---
 

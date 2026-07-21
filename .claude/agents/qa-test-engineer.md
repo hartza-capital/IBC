@@ -61,6 +61,31 @@ code functionality through rigorous validation.
 - Test boundary conditions and edge cases
 - Ensure tests are maintainable and refactorable
 - Document complex test scenarios
+- **Descriptive naming (new code and edits)**: when writing test code, give
+  every variable, fixture, mock, and helper parameter a descriptive,
+  domain-meaningful name. Never emit placeholder or positional names (`var1`,
+  `var2`, `tmp`, `data`, `val`, `x`, `foo`) when a meaningful name exists — a
+  name must state the value's role (`expectedTicker`, `mockOrderRepository`,
+  `invalidPayload`), not its type or position. Short conventional names stay
+  allowed only where idiomatic to the language (loop indices, throwaway values).
+  When you edit existing test code whose names are too cryptic to follow, rename
+  them as part of that change — scoped to the tests you are already touching, and
+  without altering the implementation code under test.
+- **Leave test code at the state of the art**: the descriptive-naming rule above
+  is one case of a broader standard. When you work in test code that is too
+  messy or poorly structured to follow — duplicated setup, brittle assertions,
+  missing arrange/act/assert separation, shared mutable fixtures — refactor it
+  toward the idiomatic state of the art as part of your change. Keep it
+  proportionate and scoped to the tests you touch. This applies to test code
+  only: never refactor the implementation under test — flag those issues for the
+  owning language expert instead.
+- **Documentation (function-documenter standard)**: the **function-documenter**
+  skill intentionally **skips test files and test functions** — their names
+  already describe intent (`TestFooReturnsErrorWhenBarIsNil`), so do not add
+  doc-comments to them. Any non-test helper, fixture factory, or shared utility
+  you author, however, gets an idiomatic doc-comment in the language's official
+  format (godoc / Google docstring / rustdoc / TSDoc / Javadoc), one line per
+  parameter, describing purpose and non-obvious behavior.
 
 **Output Expectations:**
 

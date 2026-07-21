@@ -10,9 +10,22 @@ Use Glob to search for language-specific marker files and source files.
 
 **Priority order:**
 
-1. Check for build/config files (highest confidence)
-2. Check for source files (medium confidence)
-3. Check directory structure (lowest confidence)
+1. Check whether the repo is indexed in codebase-memory-mcp — if so (or after auto-indexing), graph pre-analysis is available (see SKILL.md Step 1b)
+2. Check for build/config files (highest confidence)
+3. Check for source files (medium confidence)
+4. Check directory structure (lowest confidence)
+
+---
+
+## Codebase Memory graph
+
+**Detection:**
+
+Call `list_projects` (or `index_status` with the repo's project name). If the
+repo is not indexed yet, run `index_repository(repo_path=".")` — indexing
+happens automatically, so the graph is effectively always available.
+
+**Confidence boost:** When the graph is available, all language confidence levels are bumped one tier because the call graph provides cross-file reachability that static analysis tools cannot see. For example, a Go project detected at Medium confidence (source files only, no go.mod) with the graph available is treated as High confidence for the purposes of dead code detection.
 
 ---
 
