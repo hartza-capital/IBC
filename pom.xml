@@ -245,7 +245,14 @@ public class IbcVersionInfo {
           <systemPropertyVariables>
             <java.awt.headless>true</java.awt.headless>
           </systemPropertyVariables>
-          <argLine>--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.desktop/java.awt=ALL-UNNAMED</argLine>
+          <!--
+            @{argLine} is set by jacoco:prepare-agent (the -javaagent flag that
+            attaches JaCoCo's coverage instrumentation to the test JVM). It MUST
+            be interpolated here, or Surefire silently drops it and no coverage
+            data is ever recorded (jacoco:report then finds no jacoco.exec and
+            produces nothing, which is what was happening before this fix).
+          -->
+          <argLine>@{argLine} --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.desktop/java.awt=ALL-UNNAMED</argLine>
         </configuration>
       </plugin>
 
