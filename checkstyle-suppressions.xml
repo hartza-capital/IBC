@@ -5,4 +5,12 @@
 <suppressions>
     <!-- Tests are not subject to the production source style rules. -->
     <suppress files="^test[/\\].*\.java$" checks=".*"/>
+
+    <!-- LoginManager exposes the historical uppercase FIX/IBAPI credential
+         accessor names (FIXPassword, FIXUserName, IBAPIPassword, IBAPIUserName)
+         as part of the public API. Renaming them would require touching many
+         callers outside the PR scope, so their method-name style is suppressed
+         here rather than changed. -->
+    <suppress files="LoginManager\.java" checks="MethodName"/>
+
 </suppressions>

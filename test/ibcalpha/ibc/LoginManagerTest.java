@@ -4,12 +4,18 @@
 
 package ibcalpha.ibc;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -99,6 +105,51 @@ class LoginManagerTest {
         assertTrue(LoginManager.loginManager() instanceof DefaultLoginManager);
     }
 
+    @Test
+    void twoFaInProgressRecordsLoginStartTime() throws Exception {
+        loginManager.setLoginState(LoginManager.LoginState.TWO_FA_IN_PROGRESS);
+
+        Field field = LoginManager.class.getDeclaredField("loginStartTime");
+        field.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        AtomicReference<java.time.Instant> startTime = (AtomicReference<java.time.Instant>) field.get(loginManager);
+
+        assertNotNull(startTime.get());
+    }
+
+    @Test
+    void secondFactorDialogClosedClearsLoginStartTime() throws Exception {
+        loginManager.setLoginState(LoginManager.LoginState.TWO_FA_IN_PROGRESS);
+        loginManager.secondFactorAuthenticationDialogClosed();
+
+        Field field = LoginManager.class.getDeclaredField("loginStartTime");
+        field.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        AtomicReference<java.time.Instant> startTime = (AtomicReference<java.time.Instant>) field.get(loginManager);
+
+        assertNull(startTime.get());
+    }
+
+    @Test
+    void reloginPermittedPrefersNewSetting() throws Exception {
+        settings.set("ReloginAfterSecondFactorAuthenticationTimeout", true);
+
+        Method method = LoginManager.class.getDeclaredMethod("reloginPermitted");
+        method.setAccessible(true);
+
+        assertTrue((Boolean) method.invoke(loginManager));
+    }
+
+    @Test
+    void reloginPermittedFallsBackToDeprecatedSetting() throws Exception {
+        settings.set("ExitAfterSecondFactorAuthenticationTimeout", true);
+
+        Method method = LoginManager.class.getDeclaredMethod("reloginPermitted");
+        method.setAccessible(true);
+
+        assertTrue((Boolean) method.invoke(loginManager));
+    }
+
     private static final class StubLoginManager extends LoginManager {
 
         private AbstractLoginHandler handler;
@@ -109,8 +160,8 @@ class LoginManagerTest {
         }
 
         @Override
-        public String FIXPassword() {
-            return "fixpass";
+        public char[] FIXPassword() {
+            return "fixpass".toCharArray();
         }
 
         @Override
@@ -119,8 +170,8 @@ class LoginManagerTest {
         }
 
         @Override
-        public String IBAPIPassword() {
-            return "apipass";
+        public char[] IBAPIPassword() {
+            return "apipass".toCharArray();
         }
 
         @Override

@@ -19,6 +19,7 @@
 package ibcalpha.ibc;
 
 import java.awt.Window;
+import java.util.Arrays;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -153,14 +154,19 @@ final class LoginFrameHandler extends AbstractLoginHandler {
      */
     @Override
     protected final boolean preLogin(final Window window, int eventID) throws IbcException {
-        if (LoginManager.loginManager().IBAPIUserName().length() == 0) {
-            setMissingCredential(window, 0);
-        } else if (LoginManager.loginManager().IBAPIPassword().length() == 0) {
-            setMissingCredential(window, 1);
-        } else {
-            return true;
+        char[] apiPassword = LoginManager.loginManager().IBAPIPassword();
+        try {
+            if (LoginManager.loginManager().IBAPIUserName().length() == 0) {
+                setMissingCredential(window, 0);
+            } else if (apiPassword.length == 0) {
+                setMissingCredential(window, 1);
+            } else {
+                return true;
+            }
+            return false;
+        } finally {
+            Arrays.fill(apiPassword, '\0');
         }
-        return false;
     }
 
     /**
@@ -176,7 +182,7 @@ final class LoginFrameHandler extends AbstractLoginHandler {
         Utils.logToConsole("Setting user name");
         setCredential(window, "IBAPI user name", 0, LoginManager.loginManager().IBAPIUserName());
         Utils.logToConsole("Setting password");
-        setCredential(window, "IBAPI password", 1, LoginManager.loginManager().IBAPIPassword());
+        setPasswordCredential(window, "IBAPI password", 1, LoginManager.loginManager().IBAPIPassword());
         return true;
     }
 

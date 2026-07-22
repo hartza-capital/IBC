@@ -19,6 +19,7 @@
 package ibcalpha.ibc;
 
 import java.awt.Window;
+import java.util.Arrays;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
@@ -90,23 +91,30 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
      * @return true if all required FIX and optional IB API credentials are present; false otherwise.
      */
     private boolean setMissingFIXCredentials(Window window) {
-        boolean result = false;
-        if (LoginManager.loginManager().FIXUserName().length() == 0) {
-            setMissingCredential(window, 0);
-        } else if (LoginManager.loginManager().FIXPassword().length() == 0) {
-            setMissingCredential(window, 1);
-        } else if (LoginManager.loginManager().IBAPIUserName().length() != 0 || LoginManager.loginManager().IBAPIPassword().length() != 0) {
-            if (LoginManager.loginManager().IBAPIUserName().length() == 0) {
-                setMissingCredential(window, 3);
-            } else if (LoginManager.loginManager().IBAPIPassword().length() == 0) {
-                setMissingCredential(window, 4);
+        char[] fixPassword = LoginManager.loginManager().FIXPassword();
+        char[] apiPassword = LoginManager.loginManager().IBAPIPassword();
+        try {
+            boolean result = false;
+            if (LoginManager.loginManager().FIXUserName().length() == 0) {
+                setMissingCredential(window, 0);
+            } else if (fixPassword.length == 0) {
+                setMissingCredential(window, 1);
+            } else if (LoginManager.loginManager().IBAPIUserName().length() != 0 || apiPassword.length != 0) {
+                if (LoginManager.loginManager().IBAPIUserName().length() == 0) {
+                    setMissingCredential(window, 3);
+                } else if (apiPassword.length == 0) {
+                    setMissingCredential(window, 4);
+                } else {
+                    result = true;
+                }
             } else {
                 result = true;
             }
-        } else {
-            result = true;
+            return result;
+        } finally {
+            Arrays.fill(fixPassword, '\0');
+            Arrays.fill(apiPassword, '\0');
         }
-        return result;
     }
 
     /**
@@ -116,15 +124,20 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
      * @return true if all required IB API credentials are present; false otherwise.
      */
     private boolean setMissingIBAPICredentials(Window window) {
-        boolean result = false;
-        if (LoginManager.loginManager().IBAPIUserName().length() == 0) {
-            setMissingCredential(window, 0);
-        } else if (LoginManager.loginManager().IBAPIPassword().length() == 0) {
-            setMissingCredential(window, 1);
-        } else {
-            result = true;
+        char[] apiPassword = LoginManager.loginManager().IBAPIPassword();
+        try {
+            boolean result = false;
+            if (LoginManager.loginManager().IBAPIUserName().length() == 0) {
+                setMissingCredential(window, 0);
+            } else if (apiPassword.length == 0) {
+                setMissingCredential(window, 1);
+            } else {
+                result = true;
+            }
+            return result;
+        } finally {
+            Arrays.fill(apiPassword, '\0');
         }
-        return result;
     }
 
     @Override
@@ -142,16 +155,16 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
             Utils.logToConsole("Setting FIX user name");
             setCredential(window, "FIX user name", 0, LoginManager.loginManager().FIXUserName());
             Utils.logToConsole("Setting FIX password");
-            setCredential(window, "FIX password", 1, LoginManager.loginManager().FIXPassword());
+            setPasswordCredential(window, "FIX password", 1, LoginManager.loginManager().FIXPassword());
             Utils.logToConsole("Setting API user name");
             setCredential(window, "IBAPI user name", 2, LoginManager.loginManager().IBAPIUserName());
             Utils.logToConsole("Setting API password");
-            setCredential(window, "IBAPI password", 3, LoginManager.loginManager().IBAPIPassword());
+            setPasswordCredential(window, "IBAPI password", 3, LoginManager.loginManager().IBAPIPassword());
         } else {
             Utils.logToConsole("Setting user name");
             setCredential(window, "IBAPI user name", 0, LoginManager.loginManager().IBAPIUserName());
             Utils.logToConsole("Setting password");
-            setCredential(window, "IBAPI password", 1, LoginManager.loginManager().IBAPIPassword());
+            setPasswordCredential(window, "IBAPI password", 1, LoginManager.loginManager().IBAPIPassword());
         }
         return true;
     }

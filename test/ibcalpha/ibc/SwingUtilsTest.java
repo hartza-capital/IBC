@@ -10,6 +10,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
@@ -17,6 +18,7 @@ import javax.swing.JToggleButton;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -102,6 +104,43 @@ class SwingUtilsTest {
         String texts = SwingUtils.getLabelTexts(panel);
         assertTrue(texts.contains("One"));
         assertTrue(texts.contains("Two"));
+    }
+
+    @Test
+    void setPasswordFieldPrefersJPasswordField() {
+        JPanel panel = new JPanel();
+        JPasswordField passwordField = new JPasswordField(20);
+        JTextField textField = new JTextField(20);
+        panel.add(textField);
+        panel.add(passwordField);
+
+        char[] password = "secret".toCharArray();
+        assertTrue(SwingUtils.setPasswordField(panel, 1, password));
+
+        assertEquals("secret", new String(passwordField.getPassword()));
+        assertEquals("", textField.getText());
+    }
+
+    @Test
+    void setPasswordFieldFallsBackToJTextField() {
+        JPanel panel = new JPanel();
+        JTextField firstField = new JTextField(20);
+        JTextField secondField = new JTextField(20);
+        panel.add(firstField);
+        panel.add(secondField);
+
+        char[] password = "fallback".toCharArray();
+        assertTrue(SwingUtils.setPasswordField(panel, 1, password));
+
+        assertEquals("fallback", secondField.getText());
+    }
+
+    @Test
+    void setPasswordFieldReturnsFalseWhenNoFieldAtIndex() {
+        JPanel panel = new JPanel();
+        panel.add(new JTextField(20));
+
+        assertFalse(SwingUtils.setPasswordField(panel, 2, "secret".toCharArray()));
     }
 
     @Test
