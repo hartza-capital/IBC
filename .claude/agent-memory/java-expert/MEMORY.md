@@ -1,1 +1,2 @@
-- [IBC testability](java-expert.md) — most classes are unit-testable despite being IB automation; avoid IBKR-only handlers.
+- [IBC testability](ibc-testability.md) — most classes are unit-testable headlessly; blockers are static singletons and `System.exit`.
+- [IBC build requirements](ibc-build-requirements.md) — `IBC_BIN` needs a real TWS/Gateway jars dir; IBKR coupling is compile-time via fully-qualified calls.
