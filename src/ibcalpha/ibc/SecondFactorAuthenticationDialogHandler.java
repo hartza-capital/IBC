@@ -133,7 +133,9 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
 
         // Generate the TOTP and set it in the dialog
         try {
-            String totp = Totp.generate(secret, System.currentTimeMillis() / 30000);
+            long timeStepCounter =
+                    Totp.timeStepCounter(System.currentTimeMillis());
+            String totp = Totp.generate(secret, timeStepCounter);
             setCredential(window, "IBAPI 2FA", 0, totp);
         } catch (Exception e) {
             Utils.logError("could not generate TOTP: " + e.getMessage());

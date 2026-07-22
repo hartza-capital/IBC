@@ -76,9 +76,26 @@ class TotpTest {
     }
 
     @Test
+    void timeStepCounterDividesTheEpochIntoThirtySecondSteps() {
+        // Boundaries of the first two steps: the counter must only advance on a
+        // completed 30-second window, never part-way through one.
+        assertEquals(0L, Totp.timeStepCounter(0L));
+        assertEquals(0L, Totp.timeStepCounter(29_999L));
+        assertEquals(1L, Totp.timeStepCounter(30_000L));
+        assertEquals(1L, Totp.timeStepCounter(59_999L));
+        assertEquals(2L, Totp.timeStepCounter(60_000L));
+
+        // RFC 6238 Appendix B publishes the counter for T = 59s and T = 1111111109s
+        // as 1 and 37037036; reaching those values pins the step length at 30s.
+        assertEquals(1L, Totp.timeStepCounter(59_000L));
+        assertEquals(37037036L, Totp.timeStepCounter(1111111109_000L));
+    }
+
+    @Test
     void generateAlwaysProducesSixDigits() throws Exception {
         // A large time step, comparable to a real epoch/30 value.
-        String code = Totp.generate(RFC4226_KEY_BASE32, System.currentTimeMillis() / 30000);
+        String code = Totp.generate(RFC4226_KEY_BASE32,
+                                    Totp.timeStepCounter(System.currentTimeMillis()));
         assertEquals(6, code.length());
         assertTrue(code.matches("\\d{6}"), "expected six decimal digits but got " + code);
     }

@@ -51,6 +51,9 @@ final class Totp {
     /** Number of decimal digits in the passcodes IBKR expects. */
     private static final int CODE_DIGITS = 6;
 
+    /** Length of the RFC 6238 time step, in milliseconds. */
+    private static final long TIME_STEP_MILLIS = 30_000L;
+
     /** Width of the big-endian counter block fed to the HMAC. */
     private static final int COUNTER_BYTES = 8;
 
@@ -74,6 +77,24 @@ final class Totp {
             {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000};
 
     /**
+     * Converts an instant into the time-step counter that
+     * {@link #generate} expects.
+     *
+     * <p>Deliberately separate from {@link #generate}: the clock stays
+     * with the caller, so passcode generation remains deterministic and
+     * directly testable, while the 30-second step defined by RFC 6238
+     * lives here rather than being restated at every call site.
+     *
+     * @param epochMillis milliseconds elapsed since the Unix epoch,
+     *                normally {@code System.currentTimeMillis()}
+     * @return the number of whole 30-second time steps elapsed since
+     *                the Unix epoch
+     */
+    static long timeStepCounter(final long epochMillis) {
+        return epochMillis / TIME_STEP_MILLIS;
+    }
+
+    /**
      * Generates the 6-digit TOTP passcode for a Base32 secret at a
      * given time step.
      *
@@ -86,8 +107,8 @@ final class Totp {
      *                as supplied by IBKR and configured through IBC's
      *                {@code Ib2FA} setting
      * @param timeStepCounter the number of 30-second time steps elapsed
-     *                since the Unix epoch, that is
-     *                {@code System.currentTimeMillis() / 30000}
+     *                since the Unix epoch, as returned by
+     *                {@link #timeStepCounter(long)}
      * @return the 6-digit passcode, left-padded with zeros as needed
      * @throws IllegalArgumentException if base32Secret is null, blank,
      *                or not valid Base32
