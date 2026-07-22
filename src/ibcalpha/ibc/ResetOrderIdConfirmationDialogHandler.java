@@ -133,7 +133,7 @@ public final class ResetOrderIdConfirmationDialogHandler
                     break;
                 case ignoreDialog:
                     Utils.logToConsole(
-                            "User must handle order id reset confirmation dialog");
+                        "User must handle order id reset confirmation dialog");
                     break;
                 default:
                     // No other actions are possible because invalidSetting is

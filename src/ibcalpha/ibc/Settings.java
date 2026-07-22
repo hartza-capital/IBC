@@ -67,8 +67,8 @@ public abstract class Settings {
      * value cannot be converted to a boolean.
      *
      * @param key the property key
-     * @param defaultValue the default value to return if the property is missing
-     *     or not convertible
+     * @param defaultValue the value to return if the property is missing or
+     *     not convertible
      * @return the boolean value of the property, or defaultValue
      */
     public abstract boolean getBoolean(String key, boolean defaultValue);
@@ -94,8 +94,8 @@ public abstract class Settings {
      * value cannot be converted to a double.
      *
      * @param key the property key
-     * @param defaultValue the default value to return if the property is missing
-     *     or not convertible
+     * @param defaultValue the value to return if the property is missing or
+     *     not convertible
      * @return the double value of the property, or defaultValue
      */
     public abstract double getDouble(String key, double defaultValue);
@@ -107,8 +107,8 @@ public abstract class Settings {
      * value cannot be converted to an int.
      *
      * @param key the property key
-     * @param defaultValue the default value to return if the property is missing
-     *     or not convertible
+     * @param defaultValue the value to return if the property is missing or
+     *     not convertible
      * @return the int value of the property, or defaultValue
      */
     public abstract int getInt(String key, int defaultValue);
@@ -119,7 +119,7 @@ public abstract class Settings {
      * <p>Returns defaultValue if there is no such property.
      *
      * @param key the property key
-     * @param defaultValue the default value to return if the property is missing
+     * @param defaultValue the value to return if the property is missing
      * @return the string value of the property, or defaultValue
      */
     public abstract String getString(String key, String defaultValue);

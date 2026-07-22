@@ -71,7 +71,8 @@ public class ReconnectDataOrAccountConfirmationDialogHandler
      * title and label content.
      *
      * @param window the window to identify
-     * @return true if this is the reconnect confirmation dialog, false otherwise
+     * @return true if this is the reconnect confirmation dialog, false
+     *     otherwise
      */
     @Override
     public boolean recogniseWindow(final Window window) {

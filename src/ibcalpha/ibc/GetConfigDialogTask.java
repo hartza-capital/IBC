@@ -39,10 +39,10 @@ class GetConfigDialogTask implements Callable<JDialog> {
     /**
      * Retrieves the Global Configuration dialog from TWS or Gateway.
      *
-     * Opens the configuration dialog via the appropriate menu item and waits for
-     * it to appear. On Gateway, uses Configure > Settings; on TWS, tries Edit >
-     * Global Configuration (Classic layout) or File > Global Configuration
-     * (Mosaic layout). Blocks until the dialog is available.
+     * Opens the configuration dialog via the appropriate menu item and waits
+     * for it to appear. On Gateway, uses Configure > Settings; on TWS, tries
+     * Edit > Global Configuration (Classic layout) or File > Global
+     * Configuration (Mosaic layout). Blocks until the dialog is available.
      *
      * @return the Global Configuration dialog
      * @throws IbcException if the menu item cannot be invoked

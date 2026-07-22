@@ -58,14 +58,20 @@ class AcceptIncomingConnectionDialogHandler implements WindowHandler {
             // and the error is logged only if neither control is present.
             if (!SwingUtils.clickButton(window, "OK")
                     && !SwingUtils.clickButton(window, "Yes")) {
-                Utils.logError("could not accept incoming connection because we could not find one of the controls.");
+                Utils.logError(
+                        "could not accept incoming connection because we"
+                        + " could not find one of the controls.");
             }
         } else if (acceptIncomingConnectionAction.equalsIgnoreCase(Reject)) {
             if (!SwingUtils.clickButton(window, "No")) {
-                Utils.logError("could not accept incoming connection because we could not find one of the controls.");
+                Utils.logError(
+                        "could not accept incoming connection because we"
+                        + " could not find one of the controls.");
             }
         } else {
-            Utils.logError("could not accept incoming connection because the AcceptIncomingConnectionAction setting is invalid.");
+            Utils.logError(
+                    "could not accept incoming connection because the"
+                    + " AcceptIncomingConnectionAction setting is invalid.");
         }
     }
 

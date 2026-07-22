@@ -39,7 +39,8 @@ public abstract class ConfigDialogManager {
      *     not be null
      * @throws IllegalArgumentException if configDialogManager is null
      */
-    public static void initialise(final ConfigDialogManager configDialogManager) {
+    public static void initialise(
+            final ConfigDialogManager configDialogManager) {
         if (configDialogManager == null) {
             throw new IllegalArgumentException("configDialogManager");
         }
@@ -97,8 +98,8 @@ public abstract class ConfigDialogManager {
      *     dialog to become available. If this is negative, the calling thread
      *     blocks until the dialog becomes available.
      * @param unit the time units for the timeout parameter
-     * @return null if the timeout expires before the Global Configuration dialog
-     *     becomes available; otherwise the Global Configuration dialog
+     * @return null if the timeout expires before the Global Configuration
+     *     dialog becomes available; otherwise the Global Configuration dialog
      * @throws IllegalStateException the method has been called from the Swing
      *     event dispatch thread
      */

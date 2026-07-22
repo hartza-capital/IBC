@@ -52,12 +52,13 @@ class ConfigureTwsMasterClientIDTask implements ConfigurationAction {
     }
 
     /**
-     * Configures the TWS Master API client ID in the global configuration dialog.
+     * Configures the TWS Master API client ID in the global configuration
+     * dialog.
      *
      * Opens the API settings section, locates the Master API client ID text
-     * field, and updates it to the specified value if different from the current
-     * setting. If API is already enabled, flags that a confirmation dialog is
-     * expected.
+     * field, and updates it to the specified value if different from the
+     * current setting. If API is already enabled, flags that a confirmation
+     * dialog is expected.
      */
     @Override
     public void run() {
