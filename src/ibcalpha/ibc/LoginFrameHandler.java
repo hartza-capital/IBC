@@ -27,6 +27,12 @@ import javax.swing.event.DocumentListener;
 
 final class LoginFrameHandler extends AbstractLoginHandler {
 
+    /** Index of the IB API username field in the TWS login frame. */
+    private static final int IBAPI_USERNAME_FIELD_INDEX = 0;
+
+    /** Index of the IB API password field in the TWS login frame. */
+    private static final int IBAPI_PASSWORD_FIELD_INDEX = 1;
+
     /**
      * Identifies the TWS/Gateway Login frame by checking window type, title, and presence of login button.
      * Recognizes "New Login" or "Login" frames that have a "Log In" or "Paper Log In" button,
@@ -179,10 +185,24 @@ final class LoginFrameHandler extends AbstractLoginHandler {
      */
     @Override
     protected final boolean setFields(Window window, int eventID) throws IbcException {
+        final LoginManager loginManager = LoginManager.loginManager();
         Utils.logToConsole("Setting user name");
-        setCredential(window, "IBAPI user name", 0, LoginManager.loginManager().IBAPIUserName());
+        setCredential(
+                window,
+                "IBAPI user name",
+                IBAPI_USERNAME_FIELD_INDEX,
+                loginManager.IBAPIUserName());
         Utils.logToConsole("Setting password");
-        setPasswordCredential(window, "IBAPI password", 1, LoginManager.loginManager().IBAPIPassword());
+        final char[] ibapiPassword = loginManager.IBAPIPassword();
+        try {
+            setPasswordCredential(
+                    window,
+                    "IBAPI password",
+                    IBAPI_PASSWORD_FIELD_INDEX,
+                    ibapiPassword);
+        } finally {
+            Arrays.fill(ibapiPassword, '\0');
+        }
         return true;
     }
 
