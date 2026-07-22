@@ -23,7 +23,8 @@ import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
 public class LoginFailedDialogHandler implements WindowHandler  {
-    final String DIALOG_TITLE = "Login failed";
+    /** Substring matched against the window title to recognise this dialog. */
+    private static final String DIALOG_TITLE = "Login failed";
 
     /**
      * Determines whether to process the given AWT event for this window.

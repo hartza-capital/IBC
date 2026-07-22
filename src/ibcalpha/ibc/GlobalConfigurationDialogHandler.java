@@ -23,7 +23,6 @@ import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
 class GlobalConfigurationDialogHandler implements WindowHandler {
-    @Override
     /**
      * Determines whether this handler should act on the given window event.
      * Acts on both WINDOW_OPENED and WINDOW_CLOSED events.
@@ -32,6 +31,7 @@ class GlobalConfigurationDialogHandler implements WindowHandler {
      * @param eventId the AWT event ID.
      * @return true if this handler should process the event; false otherwise.
      */
+    @Override
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -43,7 +43,6 @@ class GlobalConfigurationDialogHandler implements WindowHandler {
         }
     }
 
-    @Override
     /**
      * Handles the Global Configuration dialog lifecycle.
      * Registers the dialog when opened and clears it when closed.
@@ -51,6 +50,7 @@ class GlobalConfigurationDialogHandler implements WindowHandler {
      * @param window the Global Configuration dialog.
      * @param eventId the AWT event ID (WINDOW_OPENED or WINDOW_CLOSED).
      */
+    @Override
     public void handleWindow(final Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -58,16 +58,20 @@ class GlobalConfigurationDialogHandler implements WindowHandler {
                 break;
             case WindowEvent.WINDOW_CLOSED:
                 ConfigDialogManager.configDialogManager().clearConfigDialog();
+                break;
+            default:
+                // Unreachable: filterEvent() admits only OPENED/CLOSED.
+                break;
         }
     }
 
-    @Override
     /**
      * Identifies whether the window is the Global Configuration dialog.
      *
      * @param window the window to identify.
      * @return true if this is the Global Configuration dialog; false otherwise.
      */
+    @Override
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;
 
