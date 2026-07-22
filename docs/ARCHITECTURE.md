@@ -1,70 +1,59 @@
-# Architecture d'IBC — Comment automatiser une application Java Swing
+# IBC Architecture — How to Automate a Java Swing Application
 
-## Le problème fondamental
+## The Fundamental Problem
 
-TWS (Trader Workstation) et IB Gateway sont des applications Java Swing fermées. Elles
-n'exposent aucune API d'automatisation, aucun webhook, aucune interface programmatique.
-La seule façon d'interagir avec elles, normalement, c'est un humain devant un écran.
+TWS (Trader Workstation) and IB Gateway are closed Java Swing applications. They expose no automation API, no webhook, and no programmatic interface. The normal way to interact with them is a human sitting in front of a screen.
 
-IBC résout ce problème en exploitant une propriété fondamentale du runtime Java : **tout ce
-qui tourne dans la même JVM partage le même espace d'événements graphiques.**
+IBC solves this problem by exploiting a fundamental property of the Java runtime: **everything running in the same JVM shares the same graphical event space.**
 
 ---
 
-## 1. La même JVM — l'insight central
+## 1. The Same JVM — the Central Insight
 
-IBC ne lance pas TWS comme un processus fils (`ProcessBuilder`, `Runtime.exec`). Il appelle
-directement le `main()` de TWS dans le **même processus Java** :
+IBC does not launch TWS as a child process (`ProcessBuilder`, `Runtime.exec`). It calls the `main()` of TWS directly in the **same Java process**:
 
 ```java
-// IbcTws.java, méthode startTws()
+// IbcTws.java, startTws() method
 jclient.LoginFrame.main(twsArgs);
 
-// IbcGateway.java, méthode startGateway()
+// IbcGateway.java, startGateway() method
 ibgateway.GWClient.main(twsArgs);
 ```
 
-Ces classes (`jclient.LoginFrame`, `ibgateway.GWClient`) viennent des jars TWS/Gateway,
-qui sont sur le classpath au moment de la compilation (variable `IBC_BIN`). C'est pourquoi
-cette variable est obligatoire pour builder IBC.
+These classes (`jclient.LoginFrame`, `ibgateway.GWClient`) come from the TWS/Gateway jars, which are on the classpath at compile time (the `IBC_BIN` variable). This is why that variable is mandatory for building IBC.
 
-**Conséquence directe :** IBC et TWS partagent :
+**Direct consequence:** IBC and TWS share:
 
-- La même heap JVM
-- Le même `Toolkit` AWT (gestionnaire d'événements graphiques)
-- La même EDT (Event Dispatch Thread)
-- Le même `SecurityManager` (ou son absence)
+- The same JVM heap
+- The same AWT `Toolkit` (graphical event manager)
+- The same EDT (Event Dispatch Thread)
+- The same `SecurityManager` (or its absence)
 
-IBC peut donc interagir avec les fenêtres de TWS exactement comme TWS lui-même le ferait.
+IBC can therefore interact with TWS windows exactly as TWS itself would.
 
 ---
 
-## 2. Le hook d'événements AWT
+## 2. The AWT Event Hook
 
-Une fois dans la même JVM, IBC installe un listener global sur le `Toolkit` AWT — le
-gestionnaire central de tous les événements graphiques de la JVM :
+Once in the same JVM, IBC installs a global listener on the AWT `Toolkit` — the central manager of all graphical events in the JVM:
 
 ```java
-// IbcTws.java, méthode createToolkitListener()
+// IbcTws.java, createToolkitListener() method
 Toolkit.getDefaultToolkit().addAWTEventListener(
     new TwsListener(createWindowHandlers()),
     AWTEvent.WINDOW_EVENT_MASK
 );
 ```
 
-`addAWTEventListener` est une API publique et officielle de Java (`java.awt.Toolkit`).
-Elle permet d'intercepter **tous** les événements fenêtre de **toutes** les fenêtres
-de la JVM, sans distinction d'origine. Quand TWS ouvre sa fenêtre de login, IBC le sait.
+`addAWTEventListener` is a public, official Java API (`java.awt.Toolkit`). It allows interception of **all** window events from **all** windows in the JVM, regardless of origin. When TWS opens its login window, IBC knows it.
 
-Le masque `AWTEvent.WINDOW_EVENT_MASK` filtre sur les événements de type fenêtre :
-`WINDOW_OPENED`, `WINDOW_ACTIVATED`, `WINDOW_CLOSED`, `WINDOW_CLOSING`, etc.
+The `AWTEvent.WINDOW_EVENT_MASK` mask filters on window-type events: `WINDOW_OPENED`, `WINDOW_ACTIVATED`, `WINDOW_CLOSED`, `WINDOW_CLOSING`, etc.
 
 ---
 
-## 3. Le TwsListener — dispatcher central
+## 3. TwsListener — the Central Dispatcher
 
-`TwsListener` implémente `AWTEventListener`. Sa méthode `eventDispatched` reçoit chaque
-événement fenêtre :
+`TwsListener` implements `AWTEventListener`. Its `eventDispatched` method receives each window event:
 
 ```java
 // TwsListener.java
@@ -86,42 +75,34 @@ public void eventDispatched(AWTEvent event) {
 }
 ```
 
-Points importants :
+Important points:
 
-1. **`eventDispatched` est appelé sur l'EDT** — le thread Swing principal. Le traitement
-   est immédiatement délégué via `GuiDeferredExecutor` (un `SwingUtilities.invokeLater`)
-   pour éviter de bloquer l'EDT pendant la reconnaissance et l'interaction.
+1. **`eventDispatched` is called on the EDT** — the main Swing thread. Processing is immediately delegated via `GuiDeferredExecutor` (a `SwingUtilities.invokeLater`) to avoid blocking the EDT during recognition and interaction.
 
-2. **La liste des handlers est parcourue dans l'ordre** — le premier `recogniseWindow()`
-   qui retourne `true` gagne. L'ordre dans `createWindowHandlers()` est donc significatif
-   (voir la note dans le code : `SecondFactorAuthenticationDialogHandler` doit précéder
-   `SecurityCodeDialogHandler` car ils partagent un bouton identique).
+2. **The handler list is traversed in order** — the first `recogniseWindow()` that returns `true` wins. The order in `createWindowHandlers()` is therefore significant (see the note in the code: `SecondFactorAuthenticationDialogHandler` must precede `SecurityCodeDialogHandler` because they share an identical button).
 
-3. **Deux étapes séparées** : `recogniseWindow` (est-ce que c'est la bonne fenêtre ?) et
-   `filterEvent` (est-ce le bon événement pour agir ?). Un handler peut reconnaître une
-   fenêtre sans agir à chaque événement.
+3. **Two separate steps:** `recogniseWindow` (is this the right window?) and `filterEvent` (is this the right event to act on?). A handler can recognize a window without acting on every event.
 
 ---
 
-## 4. Le modèle WindowHandler
+## 4. The WindowHandler Model
 
-Tous les handlers implémentent l'interface `WindowHandler` :
+All handlers implement the `WindowHandler` interface:
 
 ```java
 interface WindowHandler {
-    boolean recogniseWindow(Window window);  // identifier la fenêtre
-    boolean filterEvent(Window window, int eventId);  // filtrer les événements
-    void handleWindow(Window window, int eventID);  // agir
+    boolean recogniseWindow(Window window);  // identify the window
+    boolean filterEvent(Window window, int eventId);  // filter events
+    void handleWindow(Window window, int eventID);  // act
 }
 ```
 
-### Comment `recogniseWindow` fonctionne
+### How `recogniseWindow` Works
 
-TWS n'expose pas ses classes internes. IBC identifie les fenêtres par leur structure
-visible : titre et composants présents. Par exemple, pour la fenêtre de login TWS :
+TWS does not expose its internal classes. IBC identifies windows by their visible structure: title and components present. For example, for the TWS login window:
 
 ```java
-// LoginFrameHandler.java (simplifié)
+// LoginFrameHandler.java (simplified)
 @Override
 public boolean recogniseWindow(Window window) {
     if (!(window instanceof JFrame)) return false;
@@ -130,42 +111,38 @@ public boolean recogniseWindow(Window window) {
 }
 ```
 
-La combinaison titre + présence de composants spécifiques identifie la fenêtre de façon
-robuste même quand le titre seul ne suffit pas.
+The combination of title + presence of specific components identifies the window robustly even when the title alone is not enough.
 
-### Comment `handleWindow` agit
+### How `handleWindow` Acts
 
-Une fois la fenêtre identifiée, IBC parcourt son arbre de composants Swing et interagit
-directement avec eux :
+Once the window is identified, IBC traverses its Swing component tree and interacts directly with it:
 
 ```java
-// SwingUtils.java — cliquer sur un bouton par son texte
+// SwingUtils.java — click a button by its text
 static boolean clickButton(final Window window, final String buttonText) {
     final JButton button = findButton(window, buttonText);
     if (button == null) return false;
-    button.doClick();  // équivalent à un clic humain
+    button.doClick();  // equivalent to a human click
     return true;
 }
 
-// Remplir un champ texte
+// Fill a text field
 static JTextField findTextField(Container container, int index) { ... }
 ```
 
-`doClick()` est une méthode standard de `JButton` qui déclenche les mêmes `ActionEvent`
-qu'un vrai clic souris — pour TWS, c'est indiscernable d'une interaction humaine.
+`doClick()` is a standard `JButton` method that triggers the same `ActionEvent` as a real mouse click — for TWS, it is indistinguishable from a human interaction.
 
 ---
 
-## 5. La traversée de l'arbre de composants
+## 5. Traversing the Component Tree
 
-`ComponentIterator` effectue un parcours en profondeur (DFS) de l'arbre de composants
-Swing. Chaque `Container` contient des `Component[]` accessibles via `getComponents()`.
+`ComponentIterator` performs a depth-first search (DFS) of the Swing component tree. Each `Container` contains `Component[]` accessible via `getComponents()`.
 
 ```java
-// ComponentIterator.java — parcours DFS avec stack explicite
+// ComponentIterator.java — DFS traversal with explicit stack
 private class NodeState {
     NodeState(Component component) {
-        synchronized (component.getTreeLock()) {  // verrou Swing obligatoire
+        synchronized (component.getTreeLock()) {  // mandatory Swing lock
             if (component instanceof Container)
                 subComponents = ((Container)component).getComponents();
         }
@@ -173,122 +150,107 @@ private class NodeState {
 }
 ```
 
-Note critique : `component.getTreeLock()` est le verrou interne de Swing pour la
-modification de l'arbre de composants. Le prendre en lecture est la façon correcte
-d'itérer sans risque de `ConcurrentModificationException` pendant qu'une autre partie
-du code modifie l'UI.
+Critical note: `component.getTreeLock()` is Swing's internal lock for modifying the component tree. Taking it for reading is the correct way to iterate without risking a `ConcurrentModificationException` while another part of the code modifies the UI.
 
 ---
 
-## 6. Le modèle de threads
+## 6. Threading Model
 
 ```text
 Main thread
     └── IbcTws.main()
-            ├── startCommandServer()     → thread "CommandServer" (TCP)
-            ├── createToolkitListener()  → enregistre TwsListener sur Toolkit
-            └── jclient.LoginFrame.main() → démarre TWS → crée l'EDT
+            ├── startCommandServer()     → "CommandServer" thread (TCP)
+            ├── createToolkitListener()  → registers TwsListener on Toolkit
+            └── jclient.LoginFrame.main() → starts TWS → creates the EDT
 
-EDT (Event Dispatch Thread)  ← thread unique Swing
-    ├── Reçoit tous les AWTEvent de TWS
-    ├── TwsListener.eventDispatched()  ← appelé ici
+EDT (Event Dispatch Thread)  ← single Swing thread
+    ├── Receives all AWTEvent from TWS
+    ├── TwsListener.eventDispatched()  ← called here
     │       └── GuiDeferredExecutor.execute(handler)
-    │               └── SwingUtilities.invokeLater(handler)  ← reposte sur l'EDT
-    └── Handler s'exécute ici : doClick(), setText(), etc.
+    │               └── SwingUtilities.invokeLater(handler)  ← reposts on the EDT
+    └── Handler runs here: doClick(), setText(), etc.
 
 Thread "CommandServer"
-    └── Accepte connexions TCP
+    └── Accepts TCP connections
             └── CommandDispatcher → GuiSynchronousExecutor
-                    └── SwingUtilities.invokeAndWait()  ← bloque jusqu'à exécution sur EDT
+                    └── SwingUtilities.invokeAndWait()  ← blocks until execution on EDT
 ```
 
-**Pourquoi `invokeLater` dans `eventDispatched` ?**
+**Why `invokeLater` in `eventDispatched`?**
 
-`eventDispatched` est appelé pendant le dispatch d'un événement AWT — potentiellement
-au milieu d'un traitement TWS. Exécuter un handler directement ici bloquerait l'EDT
-et pourrait causer des deadlocks. `invokeLater` place le handler dans la queue de l'EDT
-pour exécution **après** que l'événement courant est traité.
+`eventDispatched` is called during the dispatching of an AWT event — potentially in the middle of TWS processing. Running a handler directly here would block the EDT and could cause deadlocks. `invokeLater` places the handler in the EDT queue for execution **after** the current event is processed.
 
-**`GuiSynchronousExecutor` vs `GuiDeferredExecutor` :**
+**`GuiSynchronousExecutor` vs `GuiDeferredExecutor`:**
 
-| Classe                   | Méthode Swing   | Usage                                            |
-| ------------------------ | --------------- | ------------------------------------------------ |
-| `GuiDeferredExecutor`    | `invokeLater`   | Handlers de fenêtres (asynchrone, ne bloque pas) |
-| `GuiSynchronousExecutor` | `invokeAndWait` | Commandes TCP (doit attendre le résultat)        |
+| Class                    | Swing Method    | Usage                                        |
+| ------------------------ | --------------- | -------------------------------------------- |
+| `GuiDeferredExecutor`    | `invokeLater`   | Window handlers (asynchronous, non-blocking) |
+| `GuiSynchronousExecutor` | `invokeAndWait` | TCP commands (must wait for the result)      |
 
 ---
 
-## 7. La séquence de démarrage complète
+## 7. Complete Startup Sequence
 
 ```text
 IbcTws.main(args)
     │
     ├─ 1. setupDefaultEnvironment()
     │       ├─ SessionManager.initialise()
-    │       ├─ Settings.initialise(new DefaultSettings(args))  ← lit config.ini
+    │       ├─ Settings.initialise(new DefaultSettings(args))  ← reads config.ini
     │       ├─ LoginManager.initialise(new DefaultLoginManager(args))
     │       └─ TradingModeManager.initialise()
     │
     ├─ 2. load()
-    │       ├─ startCommandServer()           → thread TCP démarre
-    │       ├─ startShutdownTimerIfRequired() → schedule StopTask si ClosedownAt configuré
-    │       ├─ createToolkitListener()        → TwsListener installé sur Toolkit
+    │       ├─ startCommandServer()           → TCP thread starts
+    │       ├─ startShutdownTimerIfRequired() → schedules StopTask if ClosedownAt is configured
+    │       ├─ createToolkitListener()        → TwsListener installed on Toolkit
     │       ├─ startSavingTwsSettingsAutomatically()
     │       └─ startTwsOrGateway()
-    │               ├─ JtsIniManager.initialise()  ← prépare jts.ini
-    │               └─ jclient.LoginFrame.main()   ← TWS démarre, crée ses fenêtres
+    │               ├─ JtsIniManager.initialise()  ← prepares jts.ini
+    │               └─ jclient.LoginFrame.main()   ← TWS starts, creates its windows
     │
-    └─ À partir de là, TWS tourne et IBC réagit aux événements
+    └─ From this point on, TWS runs and IBC reacts to events
             │
-            ├─ TWS ouvre LoginFrame
-            │       → TwsListener reçoit WINDOW_OPENED
+            ├─ TWS opens LoginFrame
+            │       → TwsListener receives WINDOW_OPENED
             │       → LoginFrameHandler.recogniseWindow() → true
-            │       → LoginFrameHandler.handleWindow() → remplit username/password, clique Login
+            │       → LoginFrameHandler.handleWindow() → fills username/password, clicks Login
             │
-            ├─ TWS affiche dialog 2FA
+            ├─ TWS displays 2FA dialog
             │       → SecondFactorAuthenticationDialogHandler
-            │       → génère code TOTP (classes internes Totp/Base32) ou attend IBKR Mobile
+            │       → generates TOTP code (internal Totp/Base32 classes) or waits for IBKR Mobile
             │
-            └─ TWS ouvre MainWindow
-                    → MainWindowFrameHandler détecte la connexion établie
-                    → Configure*Task s'exécutent (port API, master client ID, etc.)
+            └─ TWS opens MainWindow
+                    → MainWindowFrameHandler detects that the connection is established
+                    → Configure*Task run (API port, master client ID, etc.)
 ```
 
 ---
 
-## 8. Pourquoi cette approche fonctionne uniquement avec TWS
+## 8. Why This Approach Works Only with TWS
 
-| Application                | Technologie UI | Possible d'automatiser comme IBC ?                  |
-| -------------------------- | -------------- | --------------------------------------------------- |
-| TWS / IB Gateway           | Java Swing     | Oui — même JVM, AWTEventListener global             |
-| Application native Windows | Win32/GDI      | Non — nécessite FindWindow/SendMessage (WinAPI)     |
-| Application Electron       | Chromium/JS    | Non — nécessiterait DevTools Protocol ou Playwright |
-| Autre app Java Swing       | Java Swing     | Oui — même technique applicable                     |
+| Application                | UI Technology | Can it be automated like IBC?                      |
+| -------------------------- | ------------- | -------------------------------------------------- |
+| TWS / IB Gateway           | Java Swing    | Yes — same JVM, global AWTEventListener            |
+| Native Windows application | Win32/GDI     | No — requires FindWindow/SendMessage (WinAPI)      |
+| Electron application       | Chromium/JS   | No — would require DevTools Protocol or Playwright |
+| Another Java Swing app     | Java Swing    | Yes — same technique applicable                    |
 
-L'ouverture totale du runtime Java (pas de sandbox entre bibliothèques du même processus,
-arbre Swing entièrement accessible, Toolkit global) est ce qui rend IBC possible sans
-aucun patch de TWS ni accès au code source de TWS.
+The complete openness of the Java runtime (no sandbox between libraries in the same process, fully accessible Swing tree, global Toolkit) is what makes IBC possible without any patch to TWS or access to TWS source code.
 
 ---
 
-## 9. La robustesse face aux mises à jour de TWS
+## 9. Robustness Against TWS Updates
 
-Le point fragile d'IBC est la reconnaissance des fenêtres dans `recogniseWindow()` :
-si Interactive Brokers renomme un bouton ou change le titre d'un dialog, le handler
-cesse de fonctionner.
+The fragile point of IBC is window recognition in `recogniseWindow()`: if Interactive Brokers renames a button or changes a dialog title, the handler stops working.
 
-Les stratégies de robustesse dans le code :
+Robustness strategies in the code:
 
-- **Ne pas dépendre uniquement du titre** : combiner titre + présence de composants
-  spécifiques (`findButton("Login") != null`)
-- **`LogStructureScope` / `LogStructureWhen`** : paramètres de debug dans `config.ini`
-  qui font logguer la structure complète de l'arbre Swing de chaque fenêtre — permet
-  d'identifier comment reconnaître une nouvelle fenêtre après une mise à jour TWS
-- **`GatewayDialogHandler`** : handler générique de dernier recours pour les dialogs
-  Gateway inconnus, en bas de la liste des handlers
+- **Do not rely solely on the title**: combine title + presence of specific components (`findButton("Login") != null`)
+- **`LogStructureScope` / `LogStructureWhen`**: debug parameters in `config.ini` that log the complete Swing tree structure of every window — useful for identifying how to recognize a new window after a TWS update
+- **`GatewayDialogHandler`**: generic last-resort handler for unknown Gateway dialogs, at the bottom of the handler list
 
-La liste `createWindowHandlers()` dans `IbcTws.java` est le registre exhaustif de tout
-ce qu'IBC sait gérer. Toute nouvelle fenêtre TWS nécessite d'y ajouter un handler.
+The `createWindowHandlers()` list in `IbcTws.java` is the exhaustive registry of everything IBC knows how to handle. Any new TWS window requires adding a handler there.
 
 ---
 
@@ -296,48 +258,29 @@ ce qu'IBC sait gérer. Toute nouvelle fenêtre TWS nécessite d'y ajouter un han
 
 ### Why programmatic configuration is needed
 
-After login TWS is running with whatever settings were last saved to disk. For unattended
-operation, IBC must ensure that the API socket is enabled, the port matches what trading
-clients expect, and optional precautions (bond warnings, volatility warnings, etc.) are
-in the correct state. TWS offers no CLI flags or config-file overrides for these settings:
-the only interface is the **Global Configuration** dialog, which is normally opened by a
-human from the menu. IBC opens and drives this dialog programmatically after every login.
+After login TWS is running with whatever settings were last saved to disk. For unattended operation, IBC must ensure that the API socket is enabled, the port matches what trading clients expect, and optional precautions (bond warnings, volatility warnings, etc.) are in the correct state. TWS offers no CLI flags or config-file overrides for these settings: the only interface is the **Global Configuration** dialog, which is normally opened by a human from the menu. IBC opens and drives this dialog programmatically after every login.
 
 ### The ConfigDialogManager abstraction
 
-`ConfigDialogManager` is a singleton that acts as a shared handle to the Global
-Configuration dialog. Any code that needs to modify TWS settings calls
-`ConfigDialogManager.configDialogManager().getConfigDialog()` and receives the live
-`JDialog` reference, blocking until the dialog is ready.
+`ConfigDialogManager` is a singleton that acts as a shared handle to the Global Configuration dialog. Any code that needs to modify TWS settings calls `ConfigDialogManager.configDialogManager().getConfigDialog()` and receives the live `JDialog` reference, blocking until the dialog is ready.
 
-The default implementation is `DefaultConfigDialogManager`, which coordinates concurrent
-callers:
+The default implementation is `DefaultConfigDialogManager`, which coordinates concurrent callers:
 
-- It maintains a **usage counter** (`usageCount`). Each caller to `getConfigDialog()`
-  increments it; each call to `releaseConfigDialog()` decrements it.
-- When the counter reaches zero and the dialog was **not** opened by the user, the manager
-  automatically clicks the **OK** button to close the dialog, then iconizes the main window
-  if required.
-- If a caller changes the API port while the "Enable ActiveX and Socket Clients" checkbox
-  is already checked, TWS will show a confirmation prompt. The manager tracks this
-  expectation via `setApiConfigChangeConfirmationExpected()` so the confirmation handler
-  can dismiss it correctly.
+- It maintains a **usage counter** (`usageCount`). Each caller to `getConfigDialog()` increments it; each call to `releaseConfigDialog()` decrements it.
+- When the counter reaches zero and the dialog was **not** opened by the user, the manager automatically clicks the **OK** button to close the dialog, then iconizes the main window if required.
+- If a caller changes the API port while the "Enable ActiveX and Socket Clients" checkbox is already checked, TWS will show a confirmation prompt. The manager tracks this expectation via `setApiConfigChangeConfirmationExpected()` so the confirmation handler can dismiss it correctly.
 
 ### GetConfigDialogTask — opening the dialog
 
-`GetConfigDialogTask` implements `Callable<JDialog>` and runs on a dedicated single-thread
-executor. Its `call()` method:
+`GetConfigDialogTask` implements `Callable<JDialog>` and runs on a dedicated single-thread executor. Its `call()` method:
 
 1. Retrieves the main TWS/Gateway window via `MainWindowManager`.
-2. Calls `SessionManager.awaitReady()` — blocks until the splash screen has disappeared
-   and all initialisation is complete (critical for Gateway, where menus are unresponsive
-   during startup even after the window appears).
+2. Calls `SessionManager.awaitReady()` — blocks until the splash screen has disappeared and all initialisation is complete (critical for Gateway, where menus are unresponsive during startup even after the window appears).
 3. Invokes the appropriate menu item to open the dialog:
    - Gateway: `Configure > Settings`
    - TWS Classic layout: `Edit > Global Configuration...`
    - TWS Mosaic layout: `File > Global Configuration...`
-4. Waits on a `ReentrantLock` / `Condition` pair until `setConfigDialog()` is called by
-   the AWT event handler that detects the dialog opening (`WINDOW_OPENED` event).
+4. Waits on a `ReentrantLock` / `Condition` pair until `setConfigDialog()` is called by the AWT event handler that detects the dialog opening (`WINDOW_OPENED` event).
 
 ```java
 // GetConfigDialogTask.java — simplified flow
@@ -351,9 +294,7 @@ if (SessionManager.isGateway()) {
 
 ### Configure\*Task — the actual settings changes
 
-Each `ConfigurationAction` implementation receives the dialog reference via `initialise()`
-and then performs its specific settings changes in `run()`. The tasks that run after a
-normal login are:
+Each `ConfigurationAction` implementation receives the dialog reference via `initialise()` and then performs its specific settings changes in `run()`. The tasks that run after a normal login are:
 
 | Task                          | What it does                                                                                                                                                                                                      |
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -361,9 +302,7 @@ normal login are:
 | `ConfigureApiPrecautionsTask` | Navigates to `API > Precautions`, finds each precaution checkbox by its label text, and sets it to `yes` / `no` / leaves it unchanged (empty string).                                                             |
 | `EnableApiTask`               | Finds the "Enable ActiveX and Socket Clients" checkbox; if not already checked, clicks it and immediately closes the dialog. Used by the `ENABLEAPI` TCP command rather than the startup sequence.                |
 
-Navigation inside the dialog (e.g. `Utils.selectApiSettings()`, `Utils.selectConfigSection()`)
-works by clicking on tree nodes in the left-panel navigation tree of the Global Configuration
-dialog — the same way a human would expand "API" and then click "Settings".
+Navigation inside the dialog (e.g. `Utils.selectApiSettings()`, `Utils.selectConfigSection()`) works by clicking on tree nodes in the left-panel navigation tree of the Global Configuration dialog — the same way a human would expand "API" and then click "Settings".
 
 ### Execution sequence after login
 
@@ -398,28 +337,20 @@ MainWindowFrameHandler.handleWindow(WINDOW_OPENED)
 
 ### The `awaitReady()` barrier
 
-Before any code tries to access menus or configuration, it must call
-`SessionManager.awaitReady()`. This call blocks on a `ReentrantLock` / `Condition` until
-`_InitialisationCompleted` is set to `true`.
+Before any code tries to access menus or configuration, it must call `SessionManager.awaitReady()`. This call blocks on a `ReentrantLock` / `Condition` until `_InitialisationCompleted` is set to `true`.
 
-For **TWS**, initialisation completes as soon as `MainWindowFrameHandler` sees the main
-window open (`setMainWindow()` signals the condition directly).
+For **TWS**, initialisation completes as soon as `MainWindowFrameHandler` sees the main window open (`setMainWindow()` signals the condition directly).
 
 For **Gateway**, two independent events must both arrive before the condition is signalled:
 
 1. The splash screen (`"Starting application..."` frame) closes — `setSplashScreenClosed()`.
 2. The NonBrokerageAccount dialog closes (if shown) — `setNonBrokerageAccountDialogClosed()`.
 
-This two-gate design prevents `GetConfigDialogTask` from invoking the `Configure > Settings`
-menu before Gateway has finished loading, which would cause a logged exception inside
-Gateway even though the menu item is already visible.
+This two-gate design prevents `GetConfigDialogTask` from invoking the `Configure > Settings` menu before Gateway has finished loading, which would cause a logged exception inside Gateway even though the menu item is already visible.
 
 ### Daily auto-restart
 
-TWS and Gateway perform a mandatory daily restart at a configurable time (typically around
-23:45 ET). This restart is entirely managed by TWS itself: it closes the current session
-and relaunches the application. IBC does not orchestrate this restart — it simply stays
-resident in the JVM and waits for TWS to go through its normal window sequence again.
+TWS and Gateway perform a mandatory daily restart at a configurable time (typically around 23:45 ET). This restart is entirely managed by TWS itself: it closes the current session and relaunches the application. IBC does not orchestrate this restart — it simply stays resident in the JVM and waits for TWS to go through its normal window sequence again.
 
 From IBC's perspective, the auto-restart looks identical to the initial startup:
 
@@ -433,18 +364,11 @@ TWS daily restart
             → MainWindowFrameHandler triggers Configure*Task chain again
 ```
 
-If the restart is a **cold restart** (forced via IBC's `STOP` command with
-`ForceColdRestart=yes`), IBC creates a `COLDRESTART<sessionid>` flag file in the
-`jtsConfigDir` before exiting. The external wrapper script reads this file to decide
-whether to re-launch IBC from scratch rather than waiting for TWS's internal restart.
+If the restart is a **cold restart** (forced via IBC's `STOP` command with `ForceColdRestart=yes`), IBC creates a `COLDRESTART<sessionid>` flag file in the `jtsConfigDir` before exiting. The external wrapper script reads this file to decide whether to re-launch IBC from scratch rather than waiting for TWS's internal restart.
 
 ### Login timeout watchdog
 
-At `startSession()`, if `isRestart` is false, IBC schedules a watchdog that fires after
-`LoginDialogDisplayTimeout` seconds (default 60). If the login dialog has not been shown
-by then (`loginState == LOGGED_OUT`), IBC exits with error code
-`LOGIN_DIALOG_DISPLAY_TIMED_OUT`. This prevents IBC from hanging indefinitely if TWS
-fails to start.
+At `startSession()`, if `isRestart` is false, IBC schedules a watchdog that fires after `LoginDialogDisplayTimeout` seconds (default 60). If the login dialog has not been shown by then (`loginState == LOGGED_OUT`), IBC exits with error code `LOGIN_DIALOG_DISPLAY_TIMED_OUT`. This prevents IBC from hanging indefinitely if TWS fails to start.
 
 ---
 
@@ -452,24 +376,16 @@ fails to start.
 
 ### NonBrokerageAccount dialog (paper trading warning)
 
-When a paper-trading account is used with IB Gateway, Gateway displays a dialog with the
-label `"This is not a brokerage account"` immediately after login. This dialog must be
-dismissed before the Gateway menus become responsive.
+When a paper-trading account is used with IB Gateway, Gateway displays a dialog with the label `"This is not a brokerage account"` immediately after login. This dialog must be dismissed before the Gateway menus become responsive.
 
 `NonBrokerageAccountDialogHandler` handles two events:
 
-- `WINDOW_OPENED`: if `AcceptNonBrokerageAccountWarning=true` (the default), clicks
-  `"I understand and accept"` to dismiss the dialog automatically. Also schedules an
-  iconize of the main window.
-- `WINDOW_CLOSED`: calls `SessionManager.setNonBrokerageAccountDialogClosed()`, which
-  contributes to the two-gate `awaitReady()` barrier described above.
+- `WINDOW_OPENED`: if `AcceptNonBrokerageAccountWarning=true` (the default), clicks `"I understand and accept"` to dismiss the dialog automatically. Also schedules an iconize of the main window.
+- `WINDOW_CLOSED`: calls `SessionManager.setNonBrokerageAccountDialogClosed()`, which contributes to the two-gate `awaitReady()` barrier described above.
 
-If `AcceptNonBrokerageAccountWarning=false`, the handler does nothing on `WINDOW_OPENED`
-and the dialog stays open, blocking `GetConfigDialogTask` until a human dismisses it. This
-is intentional for users who want to confirm the paper-trading warning manually.
+If `AcceptNonBrokerageAccountWarning=false`, the handler does nothing on `WINDOW_OPENED` and the dialog stays open, blocking `GetConfigDialogTask` until a human dismisses it. This is intentional for users who want to confirm the paper-trading warning manually.
 
-The recognition is purely label-based (no title check, since Gateway does not set a title
-on this dialog):
+The recognition is purely label-based (no title check, since Gateway does not set a title on this dialog):
 
 ```java
 // NonBrokerageAccountDialogHandler.java
@@ -481,13 +397,9 @@ public boolean recogniseWindow(Window window) {
 
 ### ExitConfirmation dialog
 
-When IBC sends a STOP command, `StopTask.stop()` invokes the `File > Exit` menu item on
-TWS (or `File > Close` on Gateway). TWS responds by showing an "Are you sure you want to
-exit?" confirmation dialog. Without IBC intercepting it, the dialog would block the
-shutdown indefinitely.
+When IBC sends a STOP command, `StopTask.stop()` invokes the `File > Exit` menu item on TWS (or `File > Close` on Gateway). TWS responds by showing an "Are you sure you want to exit?" confirmation dialog. Without IBC intercepting it, the dialog would block the shutdown indefinitely.
 
-`ExitConfirmationDialogHandler` handles this dialog, but only when a shutdown is actually
-in progress:
+`ExitConfirmationDialogHandler` handles this dialog, but only when a shutdown is actually in progress:
 
 ```java
 // ExitConfirmationDialogHandler.java
@@ -497,10 +409,7 @@ public void handleWindow(Window window, int eventID) {
 }
 ```
 
-The `StopTask.shutdownInProgress()` guard is critical: the same dialog can appear if the
-user clicks the window close button manually. In that case IBC must not auto-confirm the
-exit (the user may have clicked it by accident). IBC only auto-confirms when it was IBC
-itself that triggered the shutdown via `StopTask`.
+The `StopTask.shutdownInProgress()` guard is critical: the same dialog can appear if the user clicks the window close button manually. In that case IBC must not auto-confirm the exit (the user may have clicked it by accident). IBC only auto-confirms when it was IBC itself that triggered the shutdown via `StopTask`.
 
 Recognition is label-based:
 
@@ -510,14 +419,9 @@ SwingUtils.findLabel(window, "Are you sure you want to exit?") != null
 
 ### Dialogs without a title (untitled)
 
-Some TWS/Gateway dialogs appear without a window title. This makes recognition via
-`SwingUtils.titleContains()` impossible, and forces IBC to identify them exclusively by
-the presence of specific labels or buttons inside the dialog.
+Some TWS/Gateway dialogs appear without a window title. This makes recognition via `SwingUtils.titleContains()` impossible, and forces IBC to identify them exclusively by the presence of specific labels or buttons inside the dialog.
 
-When a new untitled dialog appears and no existing handler matches it, it will be silently
-ignored by `TwsListener` (the handler loop exits with no match). To diagnose what the
-dialog contains, use the `LogStructureScope` and `LogStructureWhen` settings in
-`config.ini`:
+When a new untitled dialog appears and no existing handler matches it, it will be silently ignored by `TwsListener` (the handler loop exits with no match). To diagnose what the dialog contains, use the `LogStructureScope` and `LogStructureWhen` settings in `config.ini`:
 
 ```text
 # config.ini — log the full Swing component tree of every untitled dialog
@@ -525,14 +429,11 @@ LogStructureScope=untitled
 LogStructureWhen=open
 ```
 
-`LogStructureScope=untitled` restricts logging to windows whose title is empty or blank.
-The output lists every `Component` in the tree with its class, text/label, and position,
-giving enough information to write a new `recogniseWindow()` implementation.
+`LogStructureScope=untitled` restricts logging to windows whose title is empty or blank. The output lists every `Component` in the tree with its class, text/label, and position, giving enough information to write a new `recogniseWindow()` implementation.
 
 Common untitled dialogs in practice:
 
 - The NonBrokerageAccount paper-trading warning (Gateway only)
 - Occasional API connection warning dialogs that vary by TWS version
 
-Any handler for an untitled dialog must rely on a distinctive label or button text, and
-that text should be checked across multiple TWS versions to confirm stability.
+Any handler for an untitled dialog must rely on a distinctive label or button text, and that text should be checked across multiple TWS versions to confirm stability.
