@@ -1,6 +1,6 @@
 # ibcalpha.ibc — IBC Core Automation Engine
 
-IBC is a Java Swing automation agent for Interactive Brokers' TWS (Trader Workstation) and IB Gateway. The `ibcalpha.ibc` package contains the complete core automation engine: GUI event interception, window recognition, dialog automation, login flow, configuration management, and remote command dispatch.
+IBC is a Java Swing automation agent for Interactive Brokers' TWS (Trader Workstation) and IB Gateway. The `ibcalpha.ibc` package contains 83 classes that form the complete core automation engine: GUI event interception, window recognition, dialog automation, login flow, configuration management, and remote command dispatch.
 
 ## Core Concept
 
@@ -107,21 +107,20 @@ All singletons are initialized at startup in `IbcTws.setupDefaultEnvironment()`.
 - Depth-first traversal of Swing component hierarchies
 - Used by `SwingUtils` to find buttons, text fields, etc.
 
-### Window & Dialog Handlers (~50 classes, ~100 KB total)
+### Window & Dialog Handlers (~33 classes, ~100 KB total)
 
 All dialog handlers follow the `WindowHandler` pattern. Notable examples:
 
-| Handler                                                 | Dialog                               | Action                                                                   |
-| ------------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------ |
-| `LoginFrameHandler`                                     | TWS login dialog                     | Fill username, password, click Login; handle read-only mode              |
-| `GatewayLoginFrameHandler`                              | IB Gateway login dialog              | Same flow but for Gateway UI                                             |
-| `SecondFactorAuthenticationDialogHandler`               | 2FA prompt                           | Generate TOTP code from secret; handle IBKR Mobile push notifications    |
-| `ExistingSessionDetectedDialogHandler`                  | "Account already logged in"          | Handle per `ExistingSessionDetectedAction` setting                       |
-| `AcceptIncomingConnectionDialogHandler`                 | "Accept incoming API connection?"    | Handle per `AcceptIncomingConnectionAction` setting                      |
-| `GlobalConfigurationDialogHandler`                      | Edit > Global Configuration          | Dispatch to `Configure*Task` classes to set API port, trading mode, etc. |
-| `TradingModeConfirmationDialog...`                      | Paper/live mode switch confirmations | Confirm and log the mode change                                          |
-| `NewerVersionDialogHandler`, `NewerVersionFrameHandler` | "A newer version is available"       | Auto-dismiss (click No for Linux)                                        |
-| `ExitConfirmationDialogHandler`                         | "Exit TWS?" confirmation             | Auto-confirm based on `ClosedownAt` scheduling                           |
+| Handler                                                 | Dialog                            | Action                                                                   |
+| ------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------ |
+| `LoginFrameHandler`                                     | TWS login dialog                  | Fill username, password, click Login; handle read-only mode              |
+| `GatewayLoginFrameHandler`                              | IB Gateway login dialog           | Same flow but for Gateway UI                                             |
+| `SecondFactorAuthenticationDialogHandler`               | 2FA prompt                        | Generate TOTP code from secret; handle IBKR Mobile push notifications    |
+| `ExistingSessionDetectedDialogHandler`                  | "Account already logged in"       | Handle per `ExistingSessionDetectedAction` setting                       |
+| `AcceptIncomingConnectionDialogHandler`                 | "Accept incoming API connection?" | Handle per `AcceptIncomingConnectionAction` setting                      |
+| `GlobalConfigurationDialogHandler`                      | Edit > Global Configuration       | Dispatch to `Configure*Task` classes to set API port, trading mode, etc. |
+| `NewerVersionDialogHandler`, `NewerVersionFrameHandler` | "A newer version is available"    | Auto-dismiss (click No for Linux)                                        |
+| `ExitConfirmationDialogHandler`                         | "Exit TWS?" confirmation          | Auto-confirm based on `ClosedownAt` scheduling                           |
 
 Handlers for less critical dialogs (Tip of the Day, Blind Trading Warning, etc.) dismiss or auto-confirm based on settings.
 
@@ -267,7 +266,7 @@ Handlers for less critical dialogs (Tip of the Day, Blind Trading Warning, etc.)
 **CommandDispatcher.java** (7 KB)
 
 - Processes commands from a single client connection
-- Maps command strings to actions: `STOP`, `RESTART`, `RECONNECTDATA`, `RECONNECTACCOUNT`, `PAUSE`, `ENABLEAPI`, `EXIT`, `WAITINIT` (legacy)
+- Maps command strings to actions: `STOP`, `RESTART`, `RECONNECTDATA`, `RECONNECTACCOUNT`, `PAUSE`, `ENABLEAPI`, `EXIT`
 - Sends back `OK info`, `ERROR info`, or `INFO info` responses
 - Coordinates with `LoginManager` for login state queries
 
@@ -353,21 +352,21 @@ Handlers for less critical dialogs (Tip of the Day, Blind Trading Warning, etc.)
 
 These settings live in `config.ini` and are queried via `Settings.settings().get*()`:
 
-| Setting                          | Type   | Default       | Purpose                                      |
-| -------------------------------- | ------ | ------------- | -------------------------------------------- |
-| `IbLoginId`                      | string | (required)    | IBKR account username                        |
-| `IbPassword`                     | string | (required)    | IBKR account password (encrypted by default) |
-| `TradingMode`                    | string | `paper`       | `paper` or `live`                            |
-| `Ib2FA`                          | string | `none`        | TOTP base32 secret, `IBKR Mobile`, or `none` |
-| `CommandServerPort`              | int    | `0`           | TCP port for remote commands; `0` = disabled |
-| `AutoRestartTime`                | string | (not set)     | Time to auto-restart daily (HH:MM format)    |
-| `ClosedownAt`                    | string | (not set)     | Time to auto-shutdown daily (HH:MM format)   |
-| `AcceptIncomingConnectionAction` | string | `accept`      | `accept`, `reject`, or `manual`              |
-| `ExistingSessionDetectedAction`  | string | `manual`      | `primary`, `secondary`, or `manual`          |
-| `OverrideTwsApiPort`             | int    | (auto-detect) | Force a specific API listening port          |
-| `ReadOnlyLogin`                  | bool   | `false`       | Enable read-only API mode (TWS only)         |
-| `ReadOnlyApiMasterClientID`      | string | (not set)     | Master client ID for read-only connections   |
-| `FIX`                            | bool   | `false`       | Enable FIX protocol mode (Gateway only)      |
+| Setting                          | Type   | Default       | Purpose                                                |
+| -------------------------------- | ------ | ------------- | ------------------------------------------------------ |
+| `IbLoginId`                      | string | (required)    | IBKR account username                                  |
+| `IbPassword`                     | string | (required)    | IBKR account password (encrypted by default)           |
+| `TradingMode`                    | string | `live`        | `paper` or `live`                                      |
+| `Ib2FA`                          | string | (empty)       | TOTP base32 secret, `IBKR Mobile`, or empty string     |
+| `CommandServerPort`              | int    | `0`           | TCP port for remote commands; `0` = disabled           |
+| `AutoRestartTime`                | string | (not set)     | Time to auto-restart daily (HH:MM AM/PM format)        |
+| `ClosedownAt`                    | string | (not set)     | Time to auto-shutdown daily (HH:MM, or `Day HH:MM`)    |
+| `AcceptIncomingConnectionAction` | string | `manual`      | `accept`, `reject`, or `manual`                        |
+| `ExistingSessionDetectedAction`  | string | `manual`      | `primary`, `secondary`, `primaryoverride`, or `manual` |
+| `OverrideTwsApiPort`             | int    | (auto-detect) | Force a specific API listening port                    |
+| `ReadOnlyLogin`                  | bool   | `false`       | Enable read-only API mode (TWS only)                   |
+| `ShowAllTrades`                  | bool   | `false`       | TWS only: show all trades in Account Window            |
+| `FIX`                            | bool   | `false`       | Enable FIX protocol mode (Gateway only)                |
 
 See `/docs/CONFIGURATION_REFERENCE.md` for complete reference.
 

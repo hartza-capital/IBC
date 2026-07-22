@@ -238,6 +238,7 @@ ENABLEAPI
 RECONNECTDATA
 RECONNECTACCOUNT
 RESTART
+PAUSE
 ```
 
 Any other string, including commands with extra whitespace, trailing newlines without carriage returns, or misspellings, is rejected with `Command invalid`.
