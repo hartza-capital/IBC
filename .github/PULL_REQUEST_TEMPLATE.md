@@ -14,7 +14,9 @@
 
 ## Test plan
 
-- [ ] Build passes (`make dev`)
-- [ ] Manual testing against a paper trading account:
+- [ ] TypeScript type check passes (`make type-check`)
+- [ ] Rust check passes (`make rust-check`)
+- [ ] i18n validation passes (`make i18n-check`)
+- [ ] Manual testing:
 
 🤖 Generated with [Claude Code](https://claude.ai/claude-code)

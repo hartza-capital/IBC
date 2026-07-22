@@ -206,13 +206,14 @@ Handlers for less critical dialogs (Tip of the Day, Blind Trading Warning, etc.)
 - `initialise(JDialog)` — set the config dialog reference
 - `run()` — execute on the EDT; modify settings and click OK/Cancel
 
-**ConfigurationTask-derived classes** (6 classes, ~20 KB total):
+**ConfigurationTask-derived classes** (7 classes, ~20 KB total):
 
 - `ConfigureApiPrecautionsTask` — set API warnings/restrictions
 - `ConfigureReadOnlyApiTask` — enable read-only API mode
 - `ConfigureTwsApiPortTask` — set or override the API listening port
 - `ConfigureTwsMasterClientIDTask` — configure master client ID
 - `ConfigureAutoLogoffOrRestartTimeTask` — set auto-logoff or auto-restart time
+- `ConfigureResetOrderIdsTask` — reset the API order ID sequence
 - `ConfigureSendMarketDataInLotsForUSstocksTask` — configure market data display
 
 **ConfigDialogManager.java** (4 KB)
@@ -263,10 +264,10 @@ Handlers for less critical dialogs (Tip of the Day, Blind Trading Warning, etc.)
 - `run()` — main loop; accepts connections
 - `shutdown()` — gracefully stop the server
 
-**CommandDispatcher.java** (6 KB)
+**CommandDispatcher.java** (7 KB)
 
 - Processes commands from a single client connection
-- Maps command strings to actions: `STOP`, `RESTART`, `RECONNECTDATA`, `RECONNECTACCOUNT`, `WAITINIT` (legacy)
+- Maps command strings to actions: `STOP`, `RESTART`, `RECONNECTDATA`, `RECONNECTACCOUNT`, `PAUSE`, `ENABLEAPI`, `EXIT`, `WAITINIT` (legacy)
 - Sends back `OK info`, `ERROR info`, or `INFO info` responses
 - Coordinates with `LoginManager` for login state queries
 
@@ -305,9 +306,10 @@ Handlers for less critical dialogs (Tip of the Day, Blind Trading Warning, etc.)
 
 ### Lifecycle Tasks
 
-**RestartTask.java** (7 KB)
+**RestartTask.java** (10 KB)
 
 - Initiates a clean TWS/Gateway restart by clicking the Restart button in the Exit dialog
+- Supports both full restart and pause (continue without re-authentication) modes
 - Handles `AutoRestartTime` and daily restart scheduling
 
 **StopTask.java** (5 KB)

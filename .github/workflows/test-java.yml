@@ -1,0 +1,159 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+env:
+  JAVA_VERSION: "21"
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+      pull-requests: write # octocov posts the coverage report as a PR comment
+
+    steps:
+      # Mint an installation token from the org GitHub App to read private hartza-capital
+      # repos (dependencies/submodules). App tokens are not subject to SAML SSO, unlike a PAT.
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      # persist-credentials:false so the default GITHUB_TOKEN extraheader does not override the
+      # app-token credential injected below (git can't use two credentials for the same host).
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Configure private package access
+        run: git config --global url."https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      # mvn test compiles against the real TWS/Gateway jars via IBC_BIN (see pom.xml's
+      # require-ibc-bin enforcer rule + antrun classpath fileset) — these are IBKR's
+      # proprietary jars, not on Maven Central, so they can't be resolved as a normal
+      # dependency. Cache the extracted install (~335MB) so it's downloaded once, not
+      # on every run; the offline installer's exact version subdir under ~/Jts varies,
+      # so IBC_BIN is resolved by path lookup after restore/install, never hardcoded.
+      - name: Cache TWS/Gateway installer (IBC_BIN)
+        id: cache-ibc-bin
+        uses: actions/cache@v4
+        with:
+          path: ~/Jts
+          # Bump this v1 suffix to force a fresh download if IBKR's "stable" channel
+          # installer ever changes in a way that breaks compatibility with this
+          # repo's pinned IBC version (3.24.1).
+          key: ibc-bin-stable-v1
+
+      - name: Install TWS/Gateway offline (provides IBC_BIN jars)
+        if: steps.cache-ibc-bin.outputs.cache-hit != 'true'
+        run: |
+          # Public, unauthenticated download — same URL/channel convention used by
+          # hartza-capital/docker-ib-gateway's scheduled "stable" build. The installer
+          # is an InstallAnywhere/LAX shell wrapper; feeding blank input to every
+          # prompt (`yes ''`) runs it non-interactively even with no DISPLAY set,
+          # confirmed by docker-ib-gateway running the identical command on a plain
+          # Debian base with no X server present.
+          wget -q https://download2.interactivebrokers.com/installers/ibgateway/stable-standalone/ibgateway-stable-standalone-linux-x64.sh -O install.sh
+          chmod +x install.sh
+          yes '' | ./install.sh
+          rm install.sh
+
+      - name: Resolve IBC_BIN
+        run: |
+          # maxdepth 4 covers both IB Gateway's default layout
+          # (~/Jts/ibgateway/<version>/jars) and TWS's (~/Jts/<version>/jars).
+          jars_dir="$(find "$HOME/Jts" -maxdepth 4 -type d -name jars | sort -V | tail -n1)"
+          if [ -z "$jars_dir" ]; then
+            echo "::error::Could not locate a jars/ directory under \$HOME/Jts after install/cache restore"
+            exit 1
+          fi
+          echo "IBC_BIN=$jars_dir" >> "$GITHUB_ENV"
+          echo "Resolved IBC_BIN=$jars_dir"
+
+      - name: Run tests with coverage
+        run: mvn -B test
+
+      - name: Run octocov coverage check
+        uses: k1LoW/octocov-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  reviewdog:
+    name: Reviewdog (checkstyle)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # reviewdog posts checkstyle findings as inline PR review comments
+
+    steps:
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Configure private package access
+        run: git config --global url."https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Set up reviewdog
+        uses: reviewdog/action-setup@v1
+
+      # Reviewdog is the single lint pass: generate the checkstyle report using the
+      # project's own pom-configured ruleset (not a standalone google/sun config), then
+      # annotate the PR diff inline. checkstyle:checkstyle produces the XML without failing
+      # the build. Advisory only — fail-level defaults to none.
+      - name: Run checkstyle (reviewdog)
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mvn -B checkstyle:checkstyle
+          # Rewrite absolute file paths to repo-relative so reviewdog can match the diff.
+          sed -i "s|${GITHUB_WORKSPACE}/||g" target/checkstyle-result.xml
+          reviewdog -f=checkstyle -name=checkstyle -reporter=github-pr-review \
+            -filter-mode=added -level=warning < target/checkstyle-result.xml
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [test, reviewdog]
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.test.result }}" == "failure" ]; then
+            echo "Tests failed"
+            exit 1
+          elif [ "${{ needs.test.result }}" == "success" ]; then
+            echo "All tests passed"
+          fi

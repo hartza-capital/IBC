@@ -1,13 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "mcp__codegraph__codegraph_search",
-      "mcp__codegraph__codegraph_context",
-      "mcp__codegraph__codegraph_callers",
-      "mcp__codegraph__codegraph_callees",
-      "mcp__codegraph__codegraph_impact",
-      "mcp__codegraph__codegraph_node",
-      "mcp__codegraph__codegraph_status"
+      "mcp__codebase-memory-mcp__search_graph",
+      "mcp__codebase-memory-mcp__trace_path",
+      "mcp__codebase-memory-mcp__get_code_snippet",
+      "mcp__codebase-memory-mcp__get_architecture",
+      "mcp__codebase-memory-mcp__search_code",
+      "mcp__codebase-memory-mcp__index_status",
+      "mcp__codebase-memory-mcp__list_projects",
+      "mcp__codebase-memory-mcp__index_repository",
+      "mcp__codebase-memory-mcp__detect_changes"
     ]
   },
   "hooks": {
@@ -17,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "codegraph mark-dirty",
+            "command": "gomuta mark-dirty",
             "async": true
           }
         ]
@@ -29,7 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "codegraph sync-if-dirty"
+            "command": "GOMUTA_ROOT=\"$HOME/go/src/github.com/hartza-capital\" gomuta sync-if-dirty"
           }
         ]
       }

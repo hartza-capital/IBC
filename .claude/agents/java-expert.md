@@ -60,6 +60,37 @@ standards.
    conventions
 4. **Security-First**: Validate all inputs, secure credential handling
 5. **Testing**: Comprehensive testing including paper trading validation
+6. **Leave code at the state of the art**: the descriptive-naming rule below is
+   one case of a broader standard. When you work in code that is too messy or
+   poorly architected to follow — tangled control flow, duplicated logic, leaky
+   or wrong abstractions, broken layering, dead branches — refactor it toward
+   the idiomatic state of the art as part of your change. Keep it proportionate:
+   scope the refactor to the code your task touches, preserve behavior (guard it
+   with tests), and surface any larger restructuring that exceeds the task
+   instead of doing it silently. Do not gold-plate code that is already clean.
+
+## Code Style & Naming
+
+- **Descriptive naming (new code and edits)**: when writing code, give every
+  variable, method parameter, and field a descriptive, domain-meaningful name.
+  Never emit placeholder or positional names (`var1`, `var2`, `tmp`, `data`,
+  `val`, `x`, `foo`) when a meaningful name exists — a name must state the
+  value's role (`instrumentTicker`, `retryDelay`, `orderQuantity`), not its type
+  or position. Short conventional names stay allowed only where idiomatic: loop
+  indices (`i`, `j`) and trivial lambda parameters. When you edit existing code
+  whose names are too cryptic to follow, rename them to descriptive names as
+  part of that change — scoped to the code you are already touching, not a
+  repo-wide sweep.
+- **Document every method (function-documenter standard)**: above each method
+  you write or edit, add an idiomatic **Javadoc** block (`/** ... */`) whose
+  first sentence is a complete standalone summary, with `@param`/`@return`/
+  `@throws` tags in that order, one line per `@param` in declaration order.
+  Apply to public, protected, package-private AND private methods. Describe what
+  the method does and any non-obvious behavior (side effects, I/O, exceptions) —
+  never restate the signature. Evaluate an existing Javadoc and rewrite it only
+  when wrong, outdated, or insufficient. Full standard in the
+  **function-documenter** skill (`/function-documenter`,
+  `references/comment-formats.md`).
 
 ## Testing & Quality Assurance
 

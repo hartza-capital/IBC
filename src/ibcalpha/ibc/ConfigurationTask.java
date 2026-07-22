@@ -54,6 +54,13 @@ public class ConfigurationTask {
     }
 
     private class ConfigTaskRunner implements Runnable {
+        /**
+         * Executes the configuration action workflow.
+         *
+         * Retrieves the Global Configuration dialog, initializes the
+         * configuration action with it, executes the action on the Swing
+         * EDT, and releases the dialog on completion or error.
+         */
         @Override
         public void run() {
             try {

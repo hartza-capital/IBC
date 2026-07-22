@@ -35,7 +35,7 @@ Download the latest `IBCLinux-x.y.z.zip` from the
 [Releases page](https://github.com/hartza-capital/IBC/releases) and extract it:
 
 ```bash
-sudo unzip ~/Downloads/IBCLinux-3.23.0.zip -d /opt/ibc
+sudo unzip ~/Downloads/IBCLinux-3.24.1.zip -d /opt/ibc
 cd /opt/ibc
 sudo chmod o+x *.sh */*.sh
 ```
@@ -167,14 +167,15 @@ Ib2FA=none
 IBC listens on a TCP port for remote commands (configure `CommandServerPort` in
 `config.ini`). Send commands via `telnet` or the provided `commandsend.sh` script:
 
-| Command            | Effect                                                        |
-| ------------------ | ------------------------------------------------------------- |
-| `STOP`             | Shuts down TWS/Gateway cleanly                                |
-| `RESTART`          | Initiates auto-restart (no re-authentication needed)          |
-| `RECONNECTDATA`    | Refreshes all market data connections (Ctrl-Alt-F equivalent) |
-| `RECONNECTACCOUNT` | Reconnects to the IB login server (Ctrl-Alt-R equivalent)     |
-| `ENABLEAPI`        | Enables the ActiveX/Socket Clients API checkbox               |
-| `EXIT`             | Closes the command server connection                          |
+| Command            | Effect                                                                                                                                                               |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `STOP`             | Shuts down TWS/Gateway cleanly                                                                                                                                       |
+| `RESTART`          | Initiates auto-restart (no re-authentication needed)                                                                                                                 |
+| `PAUSE`            | Shuts down tidily like `STOP`, but preserves login credentials so the next IBC start resumes the session without re-authenticating (useful with a UPS on power loss) |
+| `RECONNECTDATA`    | Refreshes all market data connections (Ctrl-Alt-F equivalent)                                                                                                        |
+| `RECONNECTACCOUNT` | Reconnects to the IB login server (Ctrl-Alt-R equivalent)                                                                                                            |
+| `ENABLEAPI`        | Enables the ActiveX/Socket Clients API checkbox                                                                                                                      |
+| `EXIT`             | Closes the command server connection                                                                                                                                 |
 
 ## Multiple IBC Instances
 
@@ -206,7 +207,9 @@ make clean     # remove build artifacts
 make rebuild   # clean + dist
 ```
 
-Direct Maven equivalents: `mvn compile`, `mvn package`, `mvn clean`.
+Direct Maven equivalents: `mvn compile`, `mvn package -DskipAssembly=true` (jar
+only, matches `make jar`/`make dev`), `mvn package` (jar + distribution ZIP,
+matches `make dist`), `mvn clean`.
 
 The compiled output is `resources/IBC.jar` — a fat JAR with all dependencies bundled.
 

@@ -1,0 +1,21 @@
+coverage:
+  acceptable: 15%
+  paths:
+    - target/site/jacoco/jacoco.xml
+
+diff_coverage:
+  enabled: true
+
+comment:
+  updatePrevious: true
+
+report:
+  datastores:
+    - artifact://${GITHUB_REPOSITORY}
+
+diff:
+  datastores:
+    - artifact://${GITHUB_REPOSITORY}
+
+push:
+  if: is_default_branch

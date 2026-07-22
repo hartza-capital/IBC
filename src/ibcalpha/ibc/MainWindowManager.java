@@ -56,6 +56,9 @@ public abstract class MainWindowManager {
         return _mainWindowManager;
     }
 
+    /**
+     * Logs diagnostic information about the main window manager.
+     */
     public abstract void logDiagnosticMessage();
 
 
@@ -99,8 +102,16 @@ public abstract class MainWindowManager {
      */
     public abstract JFrame getMainWindow() throws IllegalStateException;
 
+    /**
+     * Sets the main window reference and completes initialization tasks.
+     *
+     * @param window the main application window
+     */
     public abstract void setMainWindow(JFrame window);
 
+    /**
+     * Minimizes the main window if configured to do so.
+     */
     public abstract void iconizeIfRequired();
 
 }

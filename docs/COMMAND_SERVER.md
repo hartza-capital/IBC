@@ -113,6 +113,22 @@ Execution path:
 2. If the menu item is absent (older TWS versions): computes a restart time of `now + 1 minute` (rounded to the next full minute, avoiding the last 2 seconds of the current minute), then calls `ConfigurationTask(ConfigureAutoLogoffOrRestartTimeTask(...)).executeAsync()` to set the auto-restart time in TWS configuration. Responds `OK Restarting at HH:MM AM/PM` and closes the channel.
 3. If the graphics environment supports window translucency, overlays a countdown timer on the main TWS window.
 
+### PAUSE
+
+**Handler:** `CommandDispatcher.handlePauseCommand()` → `RestartTask.run()`
+
+Not available for FIX Gateway (`ERROR PAUSE is not valid for the FIX Gateway`).
+
+Tells IBC to shut down TWS tidily, similarly to `STOP`, but preserves the user's current login credentials so that the next IBC start can resume the session without re-authenticating. This is primarily intended for environments protected by a UPS: an impending-power-failure notification can trigger a `PAUSE`, and once power returns IBC restarts automatically into the same session.
+
+Implementation:
+
+1. Creates an empty marker file named `PAUSE<ibcsessionid>` in `jtsConfigDir`.
+2. Attempts `File > Restart...`. If the menu item is available, TWS handles the shutdown and the startup script sees the marker file and exits instead of restarting.
+3. If the menu item is not available, falls back to the same auto-restart-time mechanism as `RESTART`, with messages using the "PAUSE" verb. The marker file is consumed by the Linux startup script in `resources/scripts/ibcstart.sh`.
+
+> Credentials preserved by `PAUSE` are invalidated at the start of the next week (IBKR's Sunday shutdown requirement), so `PAUSE` cannot be used to bypass the weekly re-authentication.
+
 ### ENABLEAPI
 
 **Handler:** `CommandDispatcher.handleEnableAPICommand()` → `ConfigurationTask(new EnableApiTask(mChannel)).execute()`

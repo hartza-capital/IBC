@@ -22,13 +22,24 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class MyScheduledExecutorService {
+    /**
+     * Creates a single-threaded scheduled executor for delayed and periodic
+     * task execution. This static initializer provides a shared scheduled
+     * executor instance for use throughout the application.
+     */
     private static final ScheduledExecutorService instance = Executors.newScheduledThreadPool(1);
 
     /**
-     * Private constructor for singleton pattern.
+     * Private constructor prevents instantiation of this singleton utility
+     * class.
      */
     private MyScheduledExecutorService() {}
 
+    /**
+     * Returns the singleton scheduled executor instance.
+     *
+     * @return the shared ScheduledExecutorService instance
+     */
     static ScheduledExecutorService getInstance() {return instance;}
 
 }

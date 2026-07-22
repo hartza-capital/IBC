@@ -1,0 +1,27 @@
+# Lefthook configuration — generated from claude-toolbox templates.
+# Install: lefthook install
+# Run manually: lefthook run pre-commit
+# Do not edit manually — changes will be overwritten by sync-repos.sh.
+
+pre-commit:
+  parallel: true
+
+  commands:
+    java-checkstyle:
+      glob: "*.java"
+      run: mvn -q checkstyle:check
+    
+    java-test:
+      glob: "*.java"
+      run: mvn -q -B test
+
+    prettier:
+      glob: "*.{md,yml,yaml,json}"
+      run: |
+        if command -v prettier &> /dev/null; then
+          prettier --config .prettierrc.json --ignore-path .prettierignore --write {staged_files}
+        else
+          echo "⚠️  prettier not found. Install with: npm install -g prettier"
+          exit 0
+        fi
+      stage_fixed: true

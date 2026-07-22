@@ -28,12 +28,21 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 class TwsSettingsSaver {
+    /**
+     * Singleton instance responsible for scheduling automatic TWS/Gateway
+     * settings saves.
+     */
     private static final TwsSettingsSaver instance = new TwsSettingsSaver();
+    /**
+     * Formats and parses the hh:mm times configured for automatic settings
+     * saving.
+     */
     private static final DateFormat dateFormat = new SimpleDateFormat("HH:mm");
 
 
     /**
-     * Private constructor for singleton pattern.
+     * Private constructor prevents external instantiation of this singleton
+     * scheduler.
      */
     private TwsSettingsSaver() {};
 
@@ -52,7 +61,7 @@ class TwsSettingsSaver {
 
         String[] times = timesSetting.split("[ ]+");
 
-        List<Date> saveTimes = null;
+        List<Date> saveTimes;
 
         try {
             if (!times[0].equalsIgnoreCase("Every")){

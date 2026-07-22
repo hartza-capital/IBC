@@ -29,9 +29,13 @@ creation across all detected languages.
 | Resource             | Limit        | On exceeded                                          |
 | -------------------- | ------------ | ---------------------------------------------------- |
 | Total workflow steps | 25           | Stop, report progress, ask user to continue or abort |
-| Parallel sub-agents  | 6 max        | Queue remaining languages for next batch             |
 | Per-agent timeout    | 10 min       | Mark language as failed, continue others             |
 | Test execution time  | 15 min total | Stop test runs, report partial results               |
+
+Agent concurrency (how many run at once) is capped automatically by the
+`Workflow` tool — do not hand-roll a "N max, queue the rest" batching rule
+here; pass every language to `parallel()` in one call and let the tool
+schedule them.
 
 If any limit is reached: report completed languages, pending languages, and ask whether to continue or stop.
 
@@ -153,62 +157,94 @@ Do NOT proceed until the user approves the test generation scope.
 ## Step 3: Parallel Test Generation
 
 **Goal:** Generate tests for all untested code in parallel using
-qa-test-engineer.
+qa-test-engineer, via a single `Workflow` tool call. `parallel()` is a
+barrier — it awaits every dispatched agent before the script returns — so it
+already gives us "do not proceed until all agents have returned results"
+without any extra logic here.
 
-**CRITICAL: Use parallel Task calls** — Launch all qa-test-engineer tasks in a
-SINGLE message with multiple Task tool calls to maximize parallelization.
+Call the `Workflow` tool with `args: { languages: [<per-language coverage
+data from Step 2>] }`, where each entry is
+`{ language, untestedModules, existingTestPatterns }`, and this script:
 
-**Actions:**
+```js
+export const meta = {
+  name: "qa-orchestrator-generate",
+  description: "Generate test suites per detected language in parallel",
+  phases: [{ title: "Generate" }],
+}
 
-1. For each detected language with coverage gaps, prepare a Task call to
-   qa-test-engineer:
+const AGENT_MAP = {
+  Go: "qa-test-engineer",
+  Python: "qa-test-engineer",
+  Java: "qa-test-engineer",
+  Rust: "qa-test-engineer",
+  "TypeScript/React": "qa-test-engineer",
+}
 
-   **Task structure:**
+const RESULT_SCHEMA = {
+  type: "object",
+  properties: {
+    testFilesCreated: { type: "number" },
+    testsWritten: { type: "number" },
+    passed: { type: "number" },
+    failed: { type: "number" },
+    errors: { type: "array", items: { type: "string" } },
+  },
+  required: ["testFilesCreated", "testsWritten", "passed", "failed"],
+}
 
-   ```
-   Task(
-     subagent_type: "qa-test-engineer",
-     description: "Generate tests for [language]",
-     prompt: "Generate comprehensive test coverage for [language] in this project.
+function genPrompt({ language, untestedModules, existingTestPatterns }) {
+  return `Generate comprehensive test coverage for ${language} in this project.
 
-     **Advisor tool:** You have access to an `advisor` tool backed by a stronger reviewer model. Call `advisor()` before writing test files (after reading the source code), and when you believe the test suite is complete. Give the advice serious weight.
+**Advisor tool:** You have access to an \`advisor\` tool backed by a stronger
+reviewer model. Call \`advisor()\` before writing test files (after reading
+the source code), and when you believe the test suite is complete. Give the
+advice serious weight.
 
-     Context:
-     - Language: [Go/Python/Java/Rust/TypeScript]
-     - Untested modules: [list from Step 2]
-     - Existing test patterns: [patterns found in Step 1]
+Context:
+- Language: ${language}
+- Untested modules: ${JSON.stringify(untestedModules)}
+- Existing test patterns: ${JSON.stringify(existingTestPatterns)}
 
-     Requirements:
-     - Generate unit tests for all untested functions/methods
-     - Generate integration tests where applicable
-     - Generate end-to-end tests for user-facing features
-     - Follow existing test conventions in this project
-     - Ensure all tests compile and run successfully
+Requirements:
+- Generate unit tests for all untested functions/methods
+- Generate integration tests where applicable
+- Generate end-to-end tests for user-facing features
+- Follow existing test conventions in this project
+- Ensure all tests compile and run successfully
 
-     Run all tests after generation to verify they pass."
-   )
-   ```
+Policies (must be followed strictly):
+- No speculation: base tests on the actual project setup and existing
+  frameworks; never invent test strategies, assertions, mocking, or fictional
+  test data.
+- No uncommitted work: never create a git commit; leave generated files in
+  the working tree for the user to review.
 
-2. **Launch all Task calls in parallel** in a single message. For example, if
-   Go, Python, and React are detected:
-   - Task 1: qa-test-engineer for Go
-   - Task 2: qa-test-engineer for Python
-   - Task 3: qa-test-engineer for React
-   - Send all three Task calls together (NOT sequentially)
+Run all tests after generation to verify they pass.`
+}
 
-3. Monitor the parallel tasks:
-   - Each task will create test files for its language
-   - Each task will run tests to verify functionality
-   - Wait for all tasks to complete
+phase("Generate")
+const results = await parallel(
+  args.languages.map(
+    (entry) => () =>
+      agent(genPrompt(entry), {
+        label: `generate:${entry.language}`,
+        agentType: AGENT_MAP[entry.language] ?? "qa-test-engineer",
+        schema: RESULT_SCHEMA,
+        phase: "Generate",
+      })
+  )
+)
 
-4. Collect results from each task:
-   - Number of test files created
-   - Number of tests written
-   - Test execution results (pass/fail)
-   - Any errors or warnings
+return args.languages.map((entry, i) => ({
+  language: entry.language,
+  result: results[i],
+}))
+```
 
-**Validation gate:** All spawned tasks must complete (success or controlled
-failure). Do NOT proceed until all parallel tasks have returned results.
+A `results[i]` of `null` means that language's agent failed or timed out —
+report it in Step 5 as a failed language and continue with the others (see
+"Error Handling" below).
 
 ---
 
@@ -303,9 +339,9 @@ Handle the following error scenarios gracefully:
 - Continue with supported languages
 - Inform the user which language was skipped
 
-**Task agent fails for a language:**
+**Agent fails for a language:**
 
-- Mark that language as failed in the report
+- Mark that language as failed in the report (`results[i]` is `null`)
 - Continue with other languages (fail-safe)
 - Include error details in the final report
 
@@ -320,24 +356,31 @@ Handle the following error scenarios gracefully:
 - Ask the user to manually specify the language
 - Or ask the user to confirm the working directory is correct
 
-**Task timeout:**
+**Agent timeout:**
 
-- Set a 10-minute timeout per Task agent
+- Set a 10-minute timeout per agent
 - If exceeded, mark as timed out and continue
 - Include timeout info in the final report
 
-**All tasks fail:**
+**All agents fail:**
 
 - Abort the workflow
 - Report all errors to the user
 - Suggest manual intervention
 
+**Workflow run interrupted mid-way:**
+
+- Resume with `Workflow({ scriptPath, resumeFromRunId })` — languages that
+  already completed are cached and skipped, so only the remaining languages
+  are dispatched again
+
 ---
 
 ## Important Reminders
 
-- **Always parallelize Task calls** — Send multiple Task tool invocations in a
-  single message when launching test generation for multiple languages
+- **Always dispatch through `Workflow`** — Pass every detected language to a
+  single `parallel()` call in Step 3's script rather than issuing sequential
+  agent calls
 - **Never skip validation gates** — Confirm with the user before moving to the
   next step
 - **Fail-safe architecture** — If one language fails, continue with others
