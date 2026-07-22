@@ -18,7 +18,7 @@ make format   # run prettier on *.md and *.json
 
 Direct Maven equivalents: `mvn compile`, `mvn package -DskipAssembly=true`, `mvn clean`.
 
-**Build output:** `resources/IBC.jar` — fat JAR with all dependencies (including `dev.samstevens.totp`).
+**Build output:** `resources/IBC.jar` — plain JAR of IBC's own classes. IBC has **no compile-scope dependencies**; anything added to `<dependencies>` in `pom.xml` outside test scope ends up shipped inside this JAR.
 
 **Non-standard Maven layout:** sources live in `src/ibcalpha/ibc/` (not `src/main/java`), tests in `test/`. The default `maven-compiler-plugin` is disabled; compilation is done via `maven-antrun-plugin` to include TWS/Gateway jars from `$IBC_BIN` on the compile classpath.
 
@@ -67,7 +67,7 @@ These run after login to configure TWS/Gateway programmatically by opening the G
 
 ### Two-Factor Authentication
 
-`SecondFactorAuthenticationDialogHandler` handles the 2FA flow. When `Ib2FA` is a base32 string, it calls into `dev.samstevens.totp` to generate a TOTP code automatically. When it's `IBKR Mobile`, it waits for the push notification and can retry on timeout.
+`SecondFactorAuthenticationDialogHandler` handles the 2FA flow. When `Ib2FA` is a base32 string, it generates a TOTP code automatically via the in-tree `Totp`/`Base32` classes (RFC 4226/4648/6238 over the JDK's HMAC-SHA1 — no external library). When it's `IBKR Mobile`, it waits for the push notification and can retry on timeout.
 
 ### GUI Execution Utilities
 

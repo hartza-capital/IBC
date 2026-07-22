@@ -21,6 +21,7 @@
     <!-- Keep existing src/ layout instead of src/main/java -->
     <sourceDirectory>src</sourceDirectory>
     <testSourceDirectory>test</testSourceDirectory>
+    <finalName>IBC</finalName>
 
     <plugins>
 
@@ -193,32 +194,13 @@ public class IbcVersionInfo {
         </executions>
       </plugin>
 
-      <!-- (5) Fat JAR including totp dependency → resources/IBC.jar -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.5.1</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <outputFile>${project.basedir}/resources/IBC.jar</outputFile>
-              <filters>
-                <filter>
-                  <artifact>*:*</artifact>
-                  <excludes>
-                    <exclude>META-INF/*.SF</exclude>
-                    <exclude>META-INF/*.DSA</exclude>
-                    <exclude>META-INF/*.RSA</exclude>
-                  </excludes>
-                </filter>
-              </filters>
-            </configuration>
-          </execution>
-        </executions>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.1</version>
+        <configuration>
+          <outputDirectory>${project.basedir}/resources</outputDirectory>
+        </configuration>
       </plugin>
 
       <!-- (6) Linux distribution ZIP → dist/IBCLinux-{version}.zip -->
@@ -305,12 +287,6 @@ public class IbcVersionInfo {
   </build>
 
   <dependencies>
-    <dependency>
-      <groupId>dev.samstevens.totp</groupId>
-      <artifactId>totp</artifactId>
-      <version>1.7.1</version>
-    </dependency>
-
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>

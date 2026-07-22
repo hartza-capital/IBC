@@ -163,7 +163,7 @@ Handlers for less critical dialogs (Tip of the Day, Blind Trading Warning, etc.)
 **SecondFactorAuthenticationDialogHandler.java** (9 KB)
 
 - Handles 2FA prompt when `Ib2FA` is configured
-- If `Ib2FA` is a base32 string: generates TOTP code using `dev.samstevens.totp`
+- If `Ib2FA` is a base32 string: generates TOTP code using the in-tree `Totp`/`Base32` classes (RFC 4226/4648/6238)
 - If `Ib2FA` is `"IBKR Mobile"`: waits for push notification, can retry on timeout
 - Manages 2FA timeout/exit intervals via settings
 

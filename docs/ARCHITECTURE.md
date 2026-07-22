@@ -247,7 +247,7 @@ IbcTws.main(args)
             │
             ├─ TWS affiche dialog 2FA
             │       → SecondFactorAuthenticationDialogHandler
-            │       → génère code TOTP (dev.samstevens.totp) ou attend IBKR Mobile
+            │       → génère code TOTP (classes internes Totp/Base32) ou attend IBKR Mobile
             │
             └─ TWS ouvre MainWindow
                     → MainWindowFrameHandler détecte la connexion établie

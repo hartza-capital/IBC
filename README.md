@@ -129,8 +129,9 @@ Ib2FA=YOUR_BASE32_TOTP_SECRET
 ```
 
 Set `Ib2FA` to the base32 secret key (the same key you would scan as a QR code into
-an authenticator app). IBC uses `dev.samstevens.totp` to compute the current 6-digit
-code and submits it automatically.
+an authenticator app). IBC computes the current 6-digit code itself — a small in-tree
+implementation of RFC 4226/6238 over the JDK's own HMAC-SHA1, with no external
+dependency — and submits it automatically.
 
 If you have multiple 2FA methods registered and need to select a specific device:
 
@@ -211,7 +212,8 @@ Direct Maven equivalents: `mvn compile`, `mvn package -DskipAssembly=true` (jar
 only, matches `make jar`/`make dev`), `mvn package` (jar + distribution ZIP,
 matches `make dist`), `mvn clean`.
 
-The compiled output is `resources/IBC.jar` — a fat JAR with all dependencies bundled.
+The compiled output is `resources/IBC.jar` — a plain JAR containing only IBC's own
+classes, since IBC has no external runtime dependencies.
 
 To update the version: change `<version>` in `pom.xml`.
 

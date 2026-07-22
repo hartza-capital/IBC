@@ -27,9 +27,6 @@ import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.ListModel;
 
-import dev.samstevens.totp.code.CodeGenerator;
-import dev.samstevens.totp.code.DefaultCodeGenerator;
-
 public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
     /**
      * Private constructor prevents external instantiation of this singleton
@@ -124,8 +121,6 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
      * @throws IbcException if the TOTP code field cannot be set
      */
     private void doValidate2FA(final Window window) throws IbcException {
-        CodeGenerator codeGenerator = new DefaultCodeGenerator();
-
         // Set the login state to TWO_FA_IN_PROGRESS
         LoginManager.loginManager().setLoginState(LoginManager.LoginState.TWO_FA_IN_PROGRESS);
 
@@ -138,7 +133,7 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
 
         // Generate the TOTP and set it in the dialog
         try {
-            String totp = codeGenerator.generate(secret, System.currentTimeMillis() / 30000);
+            String totp = Totp.generate(secret, System.currentTimeMillis() / 30000);
             setCredential(window, "IBAPI 2FA", 0, totp);
         } catch (Exception e) {
             Utils.logError("could not generate TOTP: " + e.getMessage());
