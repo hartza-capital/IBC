@@ -35,7 +35,7 @@ public class LoginFailedDialogHandler implements WindowHandler  {
      * @return true if eventId is WINDOW_OPENED, false otherwise
      */
     @Override
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -45,21 +45,24 @@ public class LoginFailedDialogHandler implements WindowHandler  {
     }
 
     /**
-     * Handles the Login Failed dialog by logging the failure and initiating a cold restart.
-     * Clicks the OK button to dismiss the dialog before stopping.
+     * Handles the Login Failed dialog by logging the failure and initiating
+     * a cold restart. Clicks the OK button to dismiss the dialog before
+     * stopping.
      *
      * @param window the Login Failed dialog
      * @param eventID the AWT event ID
      */
     @Override
-    public void handleWindow(Window window, int eventID) {
+    public void handleWindow(final Window window, final int eventID) {
         Utils.logToConsole("Login failed");
         Utils.logToConsole("Cold restart in progress");
         // stop tidily and do a cold restart
-        MyCachedThreadPool.getInstance().execute(new StopTask(null, true, "Cold restart after Login Failed dialog encountered"));
+        MyCachedThreadPool.getInstance().execute(new StopTask(null, true,
+                "Cold restart after Login Failed dialog encountered"));
 
-        if (! SwingUtils.clickButton(window, "OK")) {
-            Utils.logError("could not dismiss Login Failed dialog because we could not find the OK button");
+        if (!SwingUtils.clickButton(window, "OK")) {
+            Utils.logError("could not dismiss Login Failed dialog because "
+                    + "we could not find the OK button");
         }
     }
 
@@ -67,11 +70,14 @@ public class LoginFailedDialogHandler implements WindowHandler  {
      * Identifies the Login Failed dialog by checking the window type and title.
      *
      * @param window the window to check
-     * @return true if the window is a JDialog with "Login failed" in its title, false otherwise
+     * @return true if the window is a JDialog with "Login failed" in its
+     *         title, false otherwise
      */
     @Override
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
 
         return (SwingUtils.titleContains(window, DIALOG_TITLE));
     }

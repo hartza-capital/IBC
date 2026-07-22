@@ -32,7 +32,7 @@ class GlobalConfigurationDialogHandler implements WindowHandler {
      * @return true if this handler should process the event; false otherwise.
      */
     @Override
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -51,10 +51,11 @@ class GlobalConfigurationDialogHandler implements WindowHandler {
      * @param eventId the AWT event ID (WINDOW_OPENED or WINDOW_CLOSED).
      */
     @Override
-    public void handleWindow(final Window window, int eventId) {
+    public void handleWindow(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
-                ConfigDialogManager.configDialogManager().setConfigDialog((JDialog) window);
+                ConfigDialogManager.configDialogManager()
+                        .setConfigDialog((JDialog) window);
                 break;
             case WindowEvent.WINDOW_CLOSED:
                 ConfigDialogManager.configDialogManager().clearConfigDialog();
@@ -72,8 +73,10 @@ class GlobalConfigurationDialogHandler implements WindowHandler {
      * @return true if this is the Global Configuration dialog; false otherwise.
      */
     @Override
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
 
         return (SwingUtils.titleContains(window, "Configuration"));
     }

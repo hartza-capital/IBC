@@ -24,12 +24,13 @@ import javax.swing.JDialog;
 
 class AcceptIncomingConnectionDialogHandler implements WindowHandler {
     /**
-     * Determines whether to process window events for the accept incoming connection dialog.
+     * Determines whether to process window events for the accept incoming
+     * connection dialog.
      * @param window the window to check
      * @param eventId the AWT window event ID
      * @return true if this is a WINDOW_OPENED event, false otherwise
      */
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -39,21 +40,26 @@ class AcceptIncomingConnectionDialogHandler implements WindowHandler {
     }
 
     /**
-     * Handles the accept incoming connection dialog based on the AcceptIncomingConnectionAction setting.
-     * Accepts, rejects, or leaves the dialog for manual handling depending on configuration.
+     * Handles the accept incoming connection dialog based on the
+     * AcceptIncomingConnectionAction setting.
+     * Accepts, rejects, or leaves the dialog for manual handling depending on
+     * configuration.
      * @param window the dialog window
      * @param eventID the AWT window event ID
      */
-    public void handleWindow(Window window, int eventID) {
-        final String Accept = "accept";
-        final String Reject = "reject";
-        final String Manual = "manual";
+    public void handleWindow(final Window window, final int eventID) {
+        final String accept = "accept";
+        final String reject = "reject";
+        final String manual = "manual";
 
-        String acceptIncomingConnectionAction = Settings.settings().getString("AcceptIncomingConnectionAction", Manual);
+        String acceptIncomingConnectionAction = Settings.settings().getString(
+                "AcceptIncomingConnectionAction", manual);
 
-        if (acceptIncomingConnectionAction.equalsIgnoreCase(Manual)) return;
+        if (acceptIncomingConnectionAction.equalsIgnoreCase(manual)) {
+            return;
+        }
 
-        if (acceptIncomingConnectionAction.equalsIgnoreCase(Accept)) {
+        if (acceptIncomingConnectionAction.equalsIgnoreCase(accept)) {
             // Try "OK", then "Yes"; short-circuiting means at most one click,
             // and the error is logged only if neither control is present.
             if (!SwingUtils.clickButton(window, "OK")
@@ -62,7 +68,7 @@ class AcceptIncomingConnectionDialogHandler implements WindowHandler {
                         "could not accept incoming connection because we"
                         + " could not find one of the controls.");
             }
-        } else if (acceptIncomingConnectionAction.equalsIgnoreCase(Reject)) {
+        } else if (acceptIncomingConnectionAction.equalsIgnoreCase(reject)) {
             if (!SwingUtils.clickButton(window, "No")) {
                 Utils.logError(
                         "could not accept incoming connection because we"
@@ -76,14 +82,19 @@ class AcceptIncomingConnectionDialogHandler implements WindowHandler {
     }
 
     /**
-     * Identifies the accept incoming connection dialog by looking for a specific label.
+     * Identifies the accept incoming connection dialog by looking for a
+     * specific label.
      * @param window the window to identify
-     * @return true if this is the accept incoming connection dialog, false otherwise
+     * @return true if this is the accept incoming connection dialog,
+     *         false otherwise
      */
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
 
-        return (SwingUtils.findLabel(window, "Accept incoming connection") != null);
+        return (SwingUtils.findLabel(
+                window, "Accept incoming connection") != null);
     }
 }
 

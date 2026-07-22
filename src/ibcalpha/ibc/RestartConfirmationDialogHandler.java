@@ -24,12 +24,13 @@ import javax.swing.JDialog;
 
 public class RestartConfirmationDialogHandler implements WindowHandler {
     /**
-     * Determines whether to process window events for the restart confirmation dialog.
+     * Determines whether to process window events for the restart
+     * confirmation dialog.
      * @param window the window to check
      * @param eventId the AWT window event ID
      * @return true if this is a WINDOW_OPENED event, false otherwise
      */
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -43,20 +44,27 @@ public class RestartConfirmationDialogHandler implements WindowHandler {
      * @param window the dialog window
      * @param eventID the AWT window event ID
      */
-    public void handleWindow(Window window, int eventID) {
+    public void handleWindow(final Window window, final int eventID) {
         if (!SwingUtils.clickButton(window, "Yes")) {
-            Utils.logError("could not ignore shutdown confirmation dialog because we could not find one of the controls.");
+            Utils.logError(
+                    "could not ignore shutdown confirmation dialog because we "
+                    + "could not find one of the controls.");
         }
     }
 
     /**
-     * Identifies the restart confirmation dialog by checking for a specific label.
+     * Identifies the restart confirmation dialog by checking for a
+     * specific label.
      * @param window the window to identify
      * @return true if this is the restart confirmation dialog, false otherwise
      */
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
 
-        return (SwingUtils.findLabel(window, "Are you sure you would like to restart the application") != null);
+        return (SwingUtils.findLabel(window,
+                "Are you sure you would like to restart the application")
+                != null);
     }
 }

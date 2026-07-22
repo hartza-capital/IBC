@@ -128,7 +128,8 @@ class StopTask
             if (LoginManager.loginManager().getLoginState()
                     != LoginManager.LoginState.LOGGED_IN) {
                 CommandServer.commandServer().shutdown();
-                Utils.logToConsole("Login has not completed: exiting immediately");
+                Utils.logToConsole(
+                        "Login has not completed: exiting immediately");
                 Runtime.getRuntime().halt(0);
             } else {
                 String[] closeMenuPath = SessionManager.isGateway()

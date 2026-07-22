@@ -27,9 +27,10 @@ class NewerVersionFrameHandler implements WindowHandler {
      * Determines whether to process window events for the newer version frame.
      * @param window the window to check
      * @param eventId the AWT window event ID
-     * @return true if this is a WINDOW_OPENED or WINDOW_ACTIVATED event, false otherwise
+     * @return true if this is a WINDOW_OPENED or WINDOW_ACTIVATED event,
+     *     false otherwise
      */
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
             case WindowEvent.WINDOW_ACTIVATED:
@@ -44,12 +45,14 @@ class NewerVersionFrameHandler implements WindowHandler {
      * @param window the frame window
      * @param eventID the AWT window event ID
      */
-    public void handleWindow(Window window, int eventID) {
+    public void handleWindow(final Window window, final int eventID) {
         // "No" (Linux only) declines the offer to upgrade now. Short-circuiting
         // means at most one click; error logged only if neither is present.
         if (!SwingUtils.clickButton(window, "OK")
                 && !SwingUtils.clickButton(window, "No")) {
-            Utils.logError("could not dismiss Newer Version because we could not find one of the controls.");
+            Utils.logError(
+                    "could not dismiss Newer Version because we could not "
+                    + "find one of the controls.");
         }
     }
 
@@ -58,8 +61,10 @@ class NewerVersionFrameHandler implements WindowHandler {
      * @param window the window to identify
      * @return true if this is the newer version frame, false otherwise
      */
-    public boolean recogniseWindow(Window window) {
-        if (!(window instanceof JFrame)) return false;
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JFrame)) {
+            return false;
+        }
 
         return (SwingUtils.findLabel(window, "Newer Version") != null);
     }
