@@ -71,6 +71,7 @@ Each wrapper resolves its own directory with `dirname`/`realpath` so it can be c
 | --------------------- | ------------------ | -------------------------------------------------------------------------------------------- |
 | `stop.sh`             | `STOP`             | Initiates a clean shutdown of TWS or Gateway.                                                |
 | `restart.sh`          | `RESTART`          | Initiates a clean shutdown followed by an automatic restart of TWS or Gateway.               |
+| `pause.sh`            | `PAUSE`            | Shuts down TWS or Gateway so the next restart resumes the session without re-authentication. |
 | `reconnectdata.sh`    | `RECONNECTDATA`    | Refreshes all market data connections. Equivalent to pressing Ctrl-Alt-F inside TWS/Gateway. |
 | `reconnectaccount.sh` | `RECONNECTACCOUNT` | Reconnects to the IB login server. Equivalent to pressing Ctrl-Alt-R inside TWS/Gateway.     |
 | `enableapi.sh`        | `ENABLEAPI`        | Ensures the "Enable ActiveX and Socket Clients" checkbox in the API settings is checked.     |

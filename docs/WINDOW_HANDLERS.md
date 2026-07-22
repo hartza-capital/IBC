@@ -106,7 +106,7 @@ logWindowStructure(window, eventID, false);
    `recogniseWindow` implementations would return `true` for the same window.
 
 2. **Order is critical for overlapping recognisers.** The clearest documented
-   example in the code is the comment at line 325–328 of `IbcTws.java`:
+   example in the code is the comment at line 353–354 of `IbcTws.java`:
 
    ```java
    // this line must come before the one for SecurityCodeDialogHandler
@@ -131,7 +131,7 @@ logWindowStructure(window, eventID, false);
 
 ## 3. Handler Registry
 
-Handlers are registered in `IbcTws.createWindowHandlers()` (lines 304–346) in the
+Handlers are registered in `IbcTws.createWindowHandlers()` (lines 332–373) in the
 order shown below. The `#` column reflects registration order and therefore dispatch
 priority.
 
@@ -157,7 +157,7 @@ priority.
 | 18  | `SecondFactorAuthenticationDialogHandler`         | JDialog or JFrame with title containing "Second Factor Authentication" or "Security Code Card Authentication"                                                                    | OPENED, CLOSED                                         | `Ib2FA` (TOTP secret), `SecondFactorDevice` (device name)                                                          |
 | 19  | `SecurityCodeDialogHandler`                       | JDialog with an "Enter Read Only" button                                                                                                                                         | OPENED                                                 | `ReadOnlyLogin` (boolean)                                                                                          |
 | 20  | `ReloginDialogHandler`                            | JDialog with title containing "Re-login is required"                                                                                                                             | OPENED                                                 | — (auto-clicks Re-login)                                                                                           |
-| 21  | `NonBrokerageAccountDialogHandler`                | JDialog with label containing "This is not a brokerage account"                                                                                                                  | OPENED, CLOSED                                         | `AcceptNonBrokerageAccountWarning` (boolean, default true)                                                         |
+| 21  | `NonBrokerageAccountDialogHandler`                | JDialog with label containing "This is not a brokerage account"                                                                                                                  | OPENED, CLOSED                                         | `AcceptNonBrokerageAccountWarning` (boolean, default false)                                                        |
 | 22  | `ExitConfirmationDialogHandler`                   | JDialog with label "Are you sure you want to exit?"                                                                                                                              | OPENED                                                 | — (auto-clicks Yes only when `StopTask` is running)                                                                |
 | 23  | `TradingLoginHandoffDialogHandler`                | JDialog with title containing "Trading Login Handoff"                                                                                                                            | OPENED                                                 | `ExistingSessionDetectedAction`                                                                                    |
 | 24  | `LoginFailedDialogHandler`                        | JDialog with title containing "Login failed"                                                                                                                                     | OPENED                                                 | — (triggers cold restart)                                                                                          |
@@ -166,11 +166,10 @@ priority.
 | 27  | `BidAskLastSizeDisplayUpdateDialogHandler`        | JDialog with a JTextPane containing "Bid, Ask and Last Size Display Update"                                                                                                      | OPENED                                                 | `AcceptBidAskLastSizeDisplayUpdateNotification` (ignore/accept/defer), `SendMarketDataInLotsForUSstocks` (boolean) |
 | 28  | `LoginErrorDialogHandler`                         | JDialog with title containing "Login Error"                                                                                                                                      | OPENED                                                 | — (triggers cold restart)                                                                                          |
 | 29  | `CryptoOrderConfirmationDialogHandler`            | JDialog with title containing "Cryptocurrency order confirmation"                                                                                                                | OPENED                                                 | `ConfirmCryptoCurrencyOrders` (manual/transmit/cancel)                                                             |
-| 30  | `AutoRestartConfirmationDialog`                   | (registered but source not listed above — see `IbcTws.java` line 340)                                                                                                            | —                                                      | —                                                                                                                  |
-| 31  | `RestartConfirmationDialogHandler`                | JDialog with label "Are you sure you would like to restart the application"                                                                                                      | OPENED                                                 | — (auto-clicks Yes)                                                                                                |
-| 32  | `ResetOrderIdConfirmationDialogHandler`           | JDialog with label "Are you sure you want to reset API order ID sequence?"                                                                                                       | OPENED                                                 | `ConfirmOrderIdReset` (confirm/reject/ignore format: `<atStart>/<userInitiated>`)                                  |
-| 33  | `ReconnectDataOrAccountConfirmationDialogHandler` | JDialog with title containing "IBKR Trader Workstation" or "IBKR Gateway" AND label containing "Are you sure you want to execute \"simulate"                                     | OPENED                                                 | — (auto-clicks OK)                                                                                                 |
-| 34  | `GatewayDialogHandler`                            | JDialog with title containing "Gateway"                                                                                                                                          | OPENED                                                 | — (logs text; triggers cold restart on "Connection to server failed")                                              |
+| 30  | `RestartConfirmationDialogHandler`                | JDialog with label "Are you sure you would like to restart the application"                                                                                                      | OPENED                                                 | — (auto-clicks Yes)                                                                                                |
+| 31  | `ResetOrderIdConfirmationDialogHandler`           | JDialog with label "Are you sure you want to reset API order ID sequence?"                                                                                                       | OPENED                                                 | `ConfirmOrderIdReset` (confirm/reject/ignore format: `<atStart>/<userInitiated>`)                                  |
+| 32  | `ReconnectDataOrAccountConfirmationDialogHandler` | JDialog with title containing "IBKR Trader Workstation" or "IBKR Gateway" AND label containing "Are you sure you want to execute \"simulate"                                     | OPENED                                                 | — (auto-clicks OK)                                                                                                 |
+| 33  | `GatewayDialogHandler`                            | JDialog with title containing "Gateway"                                                                                                                                          | OPENED                                                 | — (logs text; triggers cold restart on "Connection to server failed")                                              |
 
 **Note on `AbstractLoginHandler`:** `LoginFrameHandler` and `GatewayLoginFrameHandler`
 both extend `AbstractLoginHandler`, which provides the shared `filterEvent` and
@@ -444,7 +443,7 @@ class MyNewDialogHandler implements WindowHandler {
 ### 7.2 Registration in `IbcTws.createWindowHandlers()`
 
 **File:** `src/ibcalpha/ibc/IbcTws.java`, method `createWindowHandlers()`, around
-line 304.
+line 332.
 
 ```java
 private static List<WindowHandler> createWindowHandlers() {

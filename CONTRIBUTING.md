@@ -38,7 +38,7 @@ make clean
 make rebuild
 ```
 
-The fat JAR is written to `resources/IBC.jar`. It bundles the TOTP dependency and is the only artifact IBC needs at runtime.
+The JAR is written to `resources/IBC.jar` and is the only artifact IBC needs at runtime. It contains just IBC's own classes — there are no external runtime dependencies to bundle.
 
 ---
 

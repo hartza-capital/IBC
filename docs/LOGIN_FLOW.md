@@ -192,19 +192,19 @@ doValidate2FA()
     ├─ reads secret = Settings.getString("Ib2FA", "")
     │     └─ if empty: logs error and returns (no code submitted)
     │
-    ├─ codeGenerator = new DefaultCodeGenerator()          [dev.samstevens.totp]
-    ├─ totp = codeGenerator.generate(secret, System.currentTimeMillis() / 30000)
-    │     └─ standard TOTP: 30-second time window, HMAC-SHA1, 6 digits (DefaultCodeGenerator defaults)
+    ├─ totp = Totp.generate(secret, System.currentTimeMillis() / 30000)    [in-tree, no external library]
+    │     └─ standard TOTP: 30-second time window, HMAC-SHA1, 6 digits
     │
     ├─ SwingUtils.setTextField(window, 0, totp)            [inserts code into first text field]
     │
     └─ deferred: SwingUtils.clickButton(window, "OK")      [submits the dialog]
 ```
 
-The TOTP secret is read from `config.ini` via the key `Ib2FA`. The `dev.samstevens.totp`
-`DefaultCodeGenerator` is used directly with no custom configuration (default algorithm and digit
-count). The time counter is `System.currentTimeMillis() / 30000` (floor-divided, matching RFC 6238
-with T0=0 and time step=30 s).
+The TOTP secret is read from `config.ini` via the key `Ib2FA` and decoded by the in-tree `Base32`
+class (RFC 4648). Code generation is handled by the in-tree `Totp` class, which implements RFC 4226
+dynamic truncation over the JDK's own HMAC-SHA1 — HMAC-SHA1 with 6 digits, fixed, with no external
+dependency. The time counter is `System.currentTimeMillis() / 30000` (floor-divided, matching
+RFC 6238 with T0=0 and time step=30 s).
 
 ### 3.3 Multiple 2FA devices (`SecondFactorDevice` configured)
 
