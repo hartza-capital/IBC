@@ -13,4 +13,11 @@
          here rather than changed. -->
     <suppress files="LoginManager\.java" checks="MethodName"/>
 
+    <!-- ConfigureApiPrecautionsTask receives nine positional configuration
+         settings that map one-to-one to the TWS API > Precautions checkboxes.
+         Collapsing them would require an invasive caller-side refactor, so the
+         constructor's parameter count is suppressed as a structural constraint
+         rather than a style issue. -->
+    <suppress files="ConfigureApiPrecautionsTask\.java" checks="ParameterNumber"/>
+
 </suppressions>
