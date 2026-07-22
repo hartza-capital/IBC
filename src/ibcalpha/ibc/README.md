@@ -191,6 +191,28 @@ Handlers for less critical dialogs (Tip of the Day, Blind Trading Warning, etc.)
 - `mainWindowManager()` — get singleton
 - `logDiagnosticMessage()` — log configuration state
 
+**GetMainWindowTask.java** (2 KB)
+
+- Package-private `Callable<JFrame>` that blocks until the main window exists
+- `call()` — awaits a `ReentrantLock`/`Condition` pair, then returns the frame
+- `setMainWindow(JFrame)` — called when the window is detected; signals the waiter
+
+**TradingModeManager.java** (2 KB)
+
+- Abstract base; singleton factory pattern, defaulting to `DefaultTradingModeManager`
+- `tradingModeManager()` / `initialise()` / `setDefault()` — singleton accessors
+- `TRADING_MODE_LIVE` (`"live"`) and `TRADING_MODE_PAPER` (`"paper"`) constants
+- `getTradingMode()` — abstract; returns the mode TWS/Gateway was told to log in with
+
+**DefaultTradingModeManager.java** (4 KB)
+
+- Concrete implementation; resolves the trading mode from constructor args or settings
+- Constructors accept no args (assumes `live`), an explicit mode, or the command-line
+  `String[]` — where the mode is read from `args[1]`, `args[3]`, or `args[5]` depending
+  on argument count
+- Falls back to the `TradingMode` setting when the mode is absent from the arguments
+- Exits via `ErrorCodes.INVALID_TRADING_MODE` if the value is neither `live` nor `paper`
+
 ### Configuration Tasks
 
 **ConfigurationTask.java** (2 KB)
@@ -205,7 +227,7 @@ Handlers for less critical dialogs (Tip of the Day, Blind Trading Warning, etc.)
 - `initialise(JDialog)` — set the config dialog reference
 - `run()` — execute on the EDT; modify settings and click OK/Cancel
 
-**ConfigurationTask-derived classes** (7 classes, ~20 KB total):
+**ConfigurationAction implementations** (8 classes, ~30 KB total):
 
 - `ConfigureApiPrecautionsTask` — set API warnings/restrictions
 - `ConfigureReadOnlyApiTask` — enable read-only API mode
@@ -214,6 +236,7 @@ Handlers for less critical dialogs (Tip of the Day, Blind Trading Warning, etc.)
 - `ConfigureAutoLogoffOrRestartTimeTask` — set auto-logoff or auto-restart time
 - `ConfigureResetOrderIdsTask` — reset the API order ID sequence
 - `ConfigureSendMarketDataInLotsForUSstocksTask` — configure market data display
+- `EnableApiTask` — enable the TWS/Gateway API (used by remote command server)
 
 **ConfigDialogManager.java** (4 KB)
 
@@ -226,6 +249,15 @@ Handlers for less critical dialogs (Tip of the Day, Blind Trading Warning, etc.)
 - Concrete implementation
 - Opens the Edit > Global Configuration menu and waits for the dialog to appear
 - Implements a queue so multiple configuration tasks don't interfere
+
+**GetConfigDialogTask.java** (3 KB)
+
+- Package-private `Callable<JDialog>` that opens and returns the Global Configuration dialog
+- `call()` — waits for `SessionManager.awaitReady()`, then invokes the correct menu path:
+  Configure > Settings on Gateway; Edit > Global Configuration (Classic) or
+  File > Global Configuration (Mosaic) on TWS
+- Blocks on a `ReentrantLock`/`Condition` until `setConfigDialog(JDialog)` supplies the dialog
+- Throws `IbcException` when none of the expected menu items can be invoked
 
 ### Settings Management
 
@@ -438,7 +470,7 @@ Use `SwingUtils.getWindowStructure()` to dump the component tree of any window �
 | Pattern                | Classes                                                                                             | Purpose                                                    |
 | ---------------------- | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
 | **Static Factory**     | `Settings`, `LoginManager`, `SessionManager`, `MainWindowManager`, `CommandServer`                  | Thread-safe singleton access via static methods            |
-| **WindowHandler**      | ~50 handler classes                                                                                 | Plug-in model for dialog automation                        |
+| **WindowHandler**      | ~33 handler classes                                                                                 | Plug-in model for dialog automation                        |
 | **Executor Wrappers**  | `GuiDeferredExecutor`, `GuiSynchronousExecutor`, `MyCachedThreadPool`, `MyScheduledExecutorService` | Consistent exception handling, naming, and EDT integration |
 | **Configuration Task** | `ConfigurationTask` + `ConfigurationAction` + `Configure*Task` classes                              | Multi-step dialogs with async/sync coordination            |
 | **State Machine**      | `LoginManager.LoginState`                                                                           | Tracks login progress atomically                           |

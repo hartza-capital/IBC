@@ -116,7 +116,7 @@ IBC/
 ├── CONTRIBUTING.md                    ← Contributor guide
 ├── src/
 │   └── ibcalpha/ibc/
-│       └── README.md                  ← Developer package reference (81 classes)
+│       └── README.md                  ← Developer package reference (83 classes)
 └── docs/
     ├── ARCHITECTURE.md                ← System architecture overview
     ├── COMMAND_SERVER.md              ← TCP command server protocol
@@ -133,7 +133,7 @@ IBC/
 
 | Module         | Path                                                       | Language | Description                                                                                                                                    |
 | -------------- | ---------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ibcalpha.ibc` | [`src/ibcalpha/ibc/README.md`](src/ibcalpha/ibc/README.md) | Java     | Core IBC package — 81 classes covering event dispatch, dialog handlers, login/2FA, configuration tasks, command server, and session management |
+| `ibcalpha.ibc` | [`src/ibcalpha/ibc/README.md`](src/ibcalpha/ibc/README.md) | Java     | Core IBC package — 83 classes covering event dispatch, dialog handlers, login/2FA, configuration tasks, command server, and session management |
 
 ### By Category
 
