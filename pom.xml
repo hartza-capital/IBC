@@ -29,7 +29,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-clean-plugin</artifactId>
-        <version>3.3.2</version>
+        <version>3.5.0</version>
         <configuration>
           <filesets>
             <fileset>
@@ -50,7 +50,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.4.1</version>
+        <version>3.6.3</version>
         <executions>
           <execution>
             <id>require-maven-version</id>
@@ -91,7 +91,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.0</version>
         <executions>
           <execution>
             <id>generate-version-info</id>
@@ -164,7 +164,7 @@ public class IbcVersionInfo {
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.5.0</version>
+        <version>3.6.1</version>
         <executions>
           <execution>
             <id>add-generated-sources</id>
@@ -185,7 +185,7 @@ public class IbcVersionInfo {
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
+        <version>3.15.0</version>
         <executions>
           <execution>
             <id>default-compile</id>
@@ -197,7 +197,7 @@ public class IbcVersionInfo {
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.4.1</version>
+        <version>3.5.0</version>
         <configuration>
           <outputDirectory>${project.basedir}/resources</outputDirectory>
         </configuration>
@@ -207,7 +207,7 @@ public class IbcVersionInfo {
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.6.0</version>
+        <version>3.8.0</version>
         <executions>
           <execution>
             <id>ibc-linux</id>
@@ -232,7 +232,7 @@ public class IbcVersionInfo {
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.3.1</version>
+        <version>3.5.6</version>
         <configuration>
           <systemPropertyVariables>
             <java.awt.headless>true</java.awt.headless>
@@ -252,7 +252,7 @@ public class IbcVersionInfo {
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.12</version>
+        <version>0.8.15</version>
         <executions>
           <execution>
             <id>prepare-agent</id>
@@ -286,17 +286,40 @@ public class IbcVersionInfo {
     </plugins>
   </build>
 
+  <!--
+    junit-bom keeps org.junit.jupiter:* and org.junit.platform:* on matching
+    versions. Required since JUnit 6: junit-jupiter does not pull in
+    junit-platform-launcher transitively, and Surefire bundles its own launcher.
+    A launcher out of sync with Jupiter makes Surefire discover zero tests and
+    still report BUILD SUCCESS, so the launcher is declared explicitly below.
+  -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>6.1.2</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>5.11.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-launcher</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>5.12.0</version>
+      <version>5.23.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
