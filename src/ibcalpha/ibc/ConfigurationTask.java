@@ -23,22 +23,26 @@ import javax.swing.JDialog;
 
 public class ConfigurationTask {
 
+    /**
+     * The configuration action to execute.
+     */
     private final ConfigurationAction configAction;
 
     /**
      * Constructs a ConfigurationTask that wraps a ConfigurationAction.
      *
-     * @param configAction the configuration action to execute
+     * @param configurationAction the configuration action to execute
      */
-    public ConfigurationTask(ConfigurationAction configAction) {
-        this.configAction = configAction;
+    public ConfigurationTask(final ConfigurationAction configurationAction) {
+        this.configAction = configurationAction;
     }
 
     /**
      * Executes the configuration action asynchronously on a background thread.
      *
-     * This method obtains the global configuration dialog, initializes the action with it,
-     * executes the action on the Swing EDT, and releases the dialog when complete.
+     * <p>This method obtains the global configuration dialog, initializes the
+     * action with it, executes the action on the Swing EDT, and releases the
+     * dialog when complete.
      */
     public void executeAsync() {
         MyCachedThreadPool.getInstance().execute(new ConfigTaskRunner());
@@ -47,7 +51,8 @@ public class ConfigurationTask {
     /**
      * Executes the configuration action synchronously on the calling thread.
      *
-     * This method runs the same workflow as executeAsync but blocks until completion.
+     * <p>This method runs the same workflow as executeAsync but blocks until
+     * completion.
      */
     public void execute() {
         (new ConfigTaskRunner()).run();
@@ -57,26 +62,28 @@ public class ConfigurationTask {
         /**
          * Executes the configuration action workflow.
          *
-         * Retrieves the Global Configuration dialog, initializes the
-         * configuration action with it, executes the action on the Swing
-         * EDT, and releases the dialog on completion or error.
+         * <p>Retrieves the Global Configuration dialog, initializes the
+         * configuration action with it, executes the action on the Swing EDT,
+         * and releases the dialog on completion or error.
          */
         @Override
         public void run() {
             try {
-                final JDialog configDialog = ConfigDialogManager.configDialogManager().getConfigDialog();    // blocks the thread until the config dialog is available
+                final JDialog configDialog =
+                        ConfigDialogManager.configDialogManager()
+                                .getConfigDialog();
                 configAction.initialise(configDialog);
-   
-                FutureTask<?> t = new FutureTask<>((Runnable)configAction, null);
-                GuiExecutor.instance().execute(t);
-                t.get();
+
+                FutureTask<?> futureTask =
+                        new FutureTask<>((Runnable) configAction, null);
+                GuiExecutor.instance().execute(futureTask);
+                futureTask.get();
 
                 ConfigDialogManager.configDialogManager().releaseConfigDialog();
-            } catch (Exception e){
+            } catch (Exception e) {
                 Utils.logException(e);
             }
         }
     }
-
 
 }

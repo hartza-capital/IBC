@@ -25,13 +25,17 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 
 class NotCurrentlyAvailableDialogHandler implements WindowHandler {
+
     /**
-     * Determines whether to process window events for the "not currently available" dialog.
+     * Determines whether to process window events for the "not currently
+     * available" dialog.
+     *
      * @param window the window to check
      * @param eventId the AWT window event ID
-     * @return true if this is a WINDOW_OPENED or WINDOW_ACTIVATED event, false otherwise
+     * @return true if this is a WINDOW_OPENED or WINDOW_ACTIVATED event;
+     *     false otherwise
      */
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
             case WindowEvent.WINDOW_ACTIVATED:
@@ -42,40 +46,49 @@ class NotCurrentlyAvailableDialogHandler implements WindowHandler {
     }
 
     /**
-     * Handles the "not currently available" dialog by closing it and the login frame.
+     * Handles the "not currently available" dialog by closing it and the login
+     * frame.
+     *
      * @param window the dialog window
      * @param eventID the AWT window event ID
      */
-    public void handleWindow(Window window, int eventID) {
-        if (! SwingUtils.clickButton(window, "OK")) {
+    public void handleWindow(final Window window, final int eventID) {
+        if (!SwingUtils.clickButton(window, "OK")) {
             Utils.logError("The system is not currently available.");
             return;
         }
 
         if (LoginManager.loginManager().getLoginFrame() != null) {
-            JButton button2 =
-                    SwingUtils.findButton(LoginManager.loginManager().getLoginFrame(), "Login");
-            button2.requestFocus();
-            KeyEvent ke =
-                     new KeyEvent(button2, KeyEvent.KEY_PRESSED,
-                                  System.currentTimeMillis(),
-                                  KeyEvent.ALT_DOWN_MASK,
-                                  KeyEvent.VK_F4,
-                                  KeyEvent.CHAR_UNDEFINED);
-            button2.dispatchEvent(ke);
+            final JButton loginButton = SwingUtils.findButton(
+                    LoginManager.loginManager().getLoginFrame(), "Login");
+            loginButton.requestFocus();
+            final KeyEvent keyEvent = new KeyEvent(
+                    loginButton,
+                    KeyEvent.KEY_PRESSED,
+                    System.currentTimeMillis(),
+                    KeyEvent.ALT_DOWN_MASK,
+                    KeyEvent.VK_F4,
+                    KeyEvent.CHAR_UNDEFINED);
+            loginButton.dispatchEvent(keyEvent);
         }
     }
 
     /**
-     * Identifies the "not currently available" dialog by checking for a login window with specific text.
+     * Identifies the "not currently available" dialog by checking for a login
+     * window with specific text.
+     *
      * @param window the window to identify
-     * @return true if this is the "not currently available" dialog, false otherwise
+     * @return true if this is the "not currently available" dialog;
+     *     false otherwise
      */
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
 
-        return (SwingUtils.titleContains(window, "Login") &&
-                SwingUtils.findLabel(window, "not currently available") != null);
+        return SwingUtils.titleContains(window, "Login")
+                && SwingUtils.findLabel(window, "not currently available")
+                        != null;
     }
 }
 

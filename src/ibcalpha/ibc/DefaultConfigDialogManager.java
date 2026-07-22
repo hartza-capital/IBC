@@ -30,27 +30,45 @@ import javax.swing.SwingUtilities;
 
 public class DefaultConfigDialogManager extends ConfigDialogManager {
 
+    /**
+     * The cached reference to the Global Configuration dialog.
+     */
     private volatile JDialog configDialog = null;
+
+    /**
+     * The task that waits for the Global Configuration dialog to be created.
+     */
     private volatile GetConfigDialogTask configDialogTask;
 
+    /**
+     * Guards creation of the future used to wait for the config dialog.
+     */
     private final Object futureCreationLock = new Object();
+
+    /**
+     * The future that resolves when the Global Configuration dialog becomes
+     * available.
+     */
     private Future<JDialog> configDialogFuture;
 
-    /* records the number of 'things' (including possibly the user) that
-     * are currently accessing the config dialog
-    */
+    /**
+     * Records the number of callers (including possibly the user) that are
+     * currently accessing the config dialog.
+     */
     private int usageCount;
 
     /**
-     * Logs a diagnostic message indicating that the default config dialog manager is in use.
+     * Logs a diagnostic message indicating that the default config dialog
+     * manager is in use.
      */
     @Override
-    public void logDiagnosticMessage(){
+    public void logDiagnosticMessage() {
         Utils.logToConsole("using default config dialog manager");
     }
 
     /**
-     * Records the fact that the config dialog has closed and clears the cached reference.
+     * Records the fact that the config dialog has closed and clears the cached
+     * reference.
      */
     @Override
     public void clearConfigDialog() {
@@ -59,28 +77,35 @@ public class DefaultConfigDialogManager extends ConfigDialogManager {
     }
 
     /**
-     * Returns the Global Configuration dialog, if necessary blocking the calling thread until
-     * either it is available or a specified timeout has elapsed.
+     * Returns the Global Configuration dialog, if necessary blocking the
+     * calling thread until either it is available or a specified timeout has
+     * elapsed.
      *
-     * If the Global Configuration dialog is currently open, it is returned immediately without blocking
-     * the calling thread.
+     * <p>If the Global Configuration dialog is currently open, it is returned
+     * immediately without blocking the calling thread.
      *
-     * Calling this method from the Swing event dispatch thread results in an IllegalStateException
-     * being thrown.
+     * <p>Calling this method from the Swing event dispatch thread results in
+     * an IllegalStateException being thrown.
      *
-     * @param timeout the length of time to wait for the Global Configuration dialog to become available. If negative, blocks until available
+     * @param timeout the length of time to wait for the Global Configuration
+     *     dialog to become available. If negative, blocks until available
      * @param unit the time units for the timeout parameter
-     * @return null if the timeout expires before the Global Configuration dialog becomes available; otherwise the Global Configuration dialog
-     * @throws IllegalStateException if the method has been called from the Swing event dispatch thread
+     * @return null if the timeout expires before the Global Configuration
+     *     dialog becomes available; otherwise the Global Configuration dialog
+     * @throws IllegalStateException if the method has been called from the
+     *     Swing event dispatch thread
      */
     @Override
-    public JDialog getConfigDialog(long timeout, TimeUnit unit) throws IllegalStateException {
+    public JDialog getConfigDialog(final long timeout, final TimeUnit unit)
+            throws IllegalStateException {
         /* Note that caching a config dialog doesn't work, since they seem to
-         * be one-time-only. So we have to go via the menu each time this 
+         * be one-time-only. So we have to go via the menu each time this
          * method is called (if it isn't currently open or being opened).
-        */
+         */
 
-        if (SwingUtilities.isEventDispatchThread()) throw new IllegalStateException();
+        if (SwingUtilities.isEventDispatchThread()) {
+            throw new IllegalStateException();
+        }
 
         Utils.logToConsole("Getting config dialog");
 
@@ -91,14 +116,16 @@ public class DefaultConfigDialogManager extends ConfigDialogManager {
             return configDialog;
         }
 
-        synchronized(futureCreationLock) {
+        synchronized (futureCreationLock) {
             if (configDialogFuture != null) {
-                    Utils.logToConsole("Waiting for config dialog future to complete");
+                Utils.logToConsole(
+                        "Waiting for config dialog future to complete");
             } else {
                 Utils.logToConsole("Creating config dialog future");
                 configDialogTask = new GetConfigDialogTask();
                 ExecutorService exec = Executors.newSingleThreadExecutor();
-                configDialogFuture = exec.submit((Callable<JDialog>)configDialogTask);
+                configDialogFuture = exec.submit(
+                        (Callable<JDialog>) configDialogTask);
                 exec.shutdown();
             }
         }
@@ -116,41 +143,54 @@ public class DefaultConfigDialogManager extends ConfigDialogManager {
         } catch (ExecutionException e) {
             Throwable t = e.getCause();
             if (t instanceof IbcException) {
-                Utils.logError("getConfigDialog could not find " + t.getMessage());
+                Utils.logError("getConfigDialog could not find "
+                        + t.getMessage());
                 return null;
             }
-            if (t instanceof RuntimeException) throw (RuntimeException)t;
-            if (t instanceof Error) throw (Error)t;
+            if (t instanceof RuntimeException) {
+                throw (RuntimeException) t;
+            }
+            if (t instanceof Error) {
+                throw (Error) t;
+            }
             throw new IllegalStateException(t);
         }
     }
 
     /**
-     * Returns the Global Configuration dialog, if necessary blocking the calling thread until
-     * it is available.
+     * Returns the Global Configuration dialog, if necessary blocking the
+     * calling thread until it is available.
      *
-     * If the Global Configuration dialog is currently open, it is returned immediately without blocking
-     * the calling thread.
+     * <p>If the Global Configuration dialog is currently open, it is returned
+     * immediately without blocking the calling thread.
      *
-     * Calling this method from the Swing event dispatch thread results in an IllegalStateException
-     * being thrown.
+     * <p>Calling this method from the Swing event dispatch thread results in
+     * an IllegalStateException being thrown.
      *
-     * @return the Global Configuration dialog, or null if the relevant menu entries cannot be found
-     * @throws IllegalStateException if the method has been called from the Swing event dispatch thread
+     * @return the Global Configuration dialog, or null if the relevant menu
+     *     entries cannot be found
+     * @throws IllegalStateException if the method has been called from the
+     *     Swing event dispatch thread
      */
     @Override
     public JDialog getConfigDialog() throws IllegalStateException {
         return getConfigDialog(-1, TimeUnit.MILLISECONDS);
     }
 
-    private boolean openedByUser;
     /**
-     * Sets the Global Configuration dialog and records whether it was opened by an automated task or the user.
+     * Records whether the Global Configuration dialog was opened by the user
+     * rather than by an automated task.
+     */
+    private boolean openedByUser;
+
+    /**
+     * Sets the Global Configuration dialog and records whether it was opened
+     * by an automated task or the user.
      *
      * @param window the Global Configuration dialog
      */
     @Override
-    public void setConfigDialog(JDialog window) {
+    public void setConfigDialog(final JDialog window) {
         configDialog = window;
         if (configDialogTask == null) {
             // config dialog opened by user
@@ -162,9 +202,15 @@ public class DefaultConfigDialogManager extends ConfigDialogManager {
         }
     }
 
-    private boolean apiConfigChangeConfirmationExpected;
     /**
-     * Indicates whether an API configuration change confirmation dialog is expected to appear.
+     * Indicates whether an API configuration change confirmation dialog is
+     * expected to appear.
+     */
+    private boolean apiConfigChangeConfirmationExpected;
+
+    /**
+     * Returns whether an API configuration change confirmation dialog is
+     * expected to appear.
      *
      * @return true if a confirmation dialog is expected; false otherwise
      */
@@ -174,7 +220,8 @@ public class DefaultConfigDialogManager extends ConfigDialogManager {
     }
 
     /**
-     * Releases a reference to the Global Configuration dialog, potentially closing it if no other references remain.
+     * Releases a reference to the Global Configuration dialog, potentially
+     * closing it if no other references remain.
      */
     @Override
     public void releaseConfigDialog() {
@@ -182,7 +229,8 @@ public class DefaultConfigDialogManager extends ConfigDialogManager {
     }
 
     /**
-     * Records that an API configuration change confirmation dialog is expected to appear.
+     * Records that an API configuration change confirmation dialog is expected
+     * to appear.
      */
     @Override
     public void setApiConfigChangeConfirmationExpected() {
@@ -190,7 +238,8 @@ public class DefaultConfigDialogManager extends ConfigDialogManager {
     }
 
     /**
-     * Records that the expected API configuration change confirmation dialog has been handled.
+     * Records that the expected API configuration change confirmation dialog
+     * has been handled.
      */
     @Override
     public void setApiConfigChangeConfirmationHandled() {
@@ -205,20 +254,23 @@ public class DefaultConfigDialogManager extends ConfigDialogManager {
     }
 
     /**
-     * Decrements the usage counter for the Global Configuration dialog and closes it if the count reaches zero.
+     * Decrements the usage counter for the Global Configuration dialog and
+     * closes it if the count reaches zero.
      */
     private synchronized void decrementUsage() {
         usageCount--;
-        if (openedByUser) return;
-        if (usageCount == 0){
+        if (openedByUser) {
+            return;
+        }
+        if (usageCount == 0) {
             GuiDeferredExecutor.instance().execute(() -> {
                 Utils.logToConsole("Configuration tasks completed");
                 SwingUtils.clickButton(configDialog, "OK");
-                GuiDeferredExecutor.instance().execute(() -> MainWindowManager.mainWindowManager().iconizeIfRequired());
+                GuiDeferredExecutor.instance().execute(
+                        () -> MainWindowManager.mainWindowManager()
+                                .iconizeIfRequired());
             });
         }
     }
-
-
 
 }

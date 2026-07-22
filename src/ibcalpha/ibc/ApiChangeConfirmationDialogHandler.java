@@ -25,17 +25,25 @@ import javax.swing.JDialog;
 class ApiChangeConfirmationDialogHandler implements WindowHandler {
 
     /**
-     * Determines whether to process window events for the API change confirmation dialog.
-     * Processes WINDOW_OPENED events only if an API config change confirmation is expected.
+     * Determines whether to process window events for the API change
+     * confirmation dialog.
+     *
+     * <p>Processes WINDOW_OPENED events only if an API config change
+     * confirmation is expected.</p>
+     *
      * @param window the window to check
      * @param eventId the AWT window event ID
-     * @return true if this is a WINDOW_OPENED event and an API change confirmation is pending, false otherwise
+     * @return true if this is a WINDOW_OPENED event and an API change
+     *     confirmation is pending; false otherwise
      */
     @Override
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
-                if (ConfigDialogManager.configDialogManager().getApiConfigChangeConfirmationExpected()) return true;
+                if (ConfigDialogManager.configDialogManager()
+                        .getApiConfigChangeConfirmationExpected()) {
+                    return true;
+                }
                 return false;
             default:
                 return false;
@@ -43,30 +51,40 @@ class ApiChangeConfirmationDialogHandler implements WindowHandler {
     }
 
     /**
-     * Handles the API change confirmation dialog by confirming the socket port change.
-     * Clicks the Yes button to apply the new API socket port setting.
+     * Handles the API change confirmation dialog by confirming the socket port
+     * change.
+     *
+     * <p>Clicks the Yes button to apply the new API socket port setting.</p>
+     *
      * @param window the dialog window
      * @param eventID the AWT window event ID
      */
     @Override
-    public void handleWindow(Window window, int eventID) {
-        ConfigDialogManager.configDialogManager().setApiConfigChangeConfirmationHandled();
-        if (SwingUtils.clickButton(window, "Yes")) {
-        } else {
-            Utils.logError("can't apply new API socket port: 'Yes' button not found");
+    public void handleWindow(final Window window, final int eventID) {
+        ConfigDialogManager.configDialogManager()
+                .setApiConfigChangeConfirmationHandled();
+        if (!SwingUtils.clickButton(window, "Yes")) {
+            Utils.logError(
+                    "can't apply new API socket port: 'Yes' button not found");
         }
     }
 
     /**
-     * Identifies the API change confirmation dialog by checking for a specific label.
+     * Identifies the API change confirmation dialog by checking for a specific
+     * label.
+     *
      * @param window the window to identify
-     * @return true if this is the API change confirmation dialog, false otherwise
+     * @return true if this is the API change confirmation dialog;
+     *     false otherwise
      */
     @Override
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
 
-        return (SwingUtils.findLabel(window, "apply the new socket port setting") != null);
+        return SwingUtils.findLabel(window,
+                "apply the new socket port setting") != null;
     }
 
 }

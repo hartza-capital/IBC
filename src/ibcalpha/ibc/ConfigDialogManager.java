@@ -21,30 +21,37 @@ package ibcalpha.ibc;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JDialog;
 
-public abstract class ConfigDialogManager
-{
-    private static ConfigDialogManager _ConfigDialogManager;
+public abstract class ConfigDialogManager {
+    /**
+     * The global ConfigDialogManager instance.
+     */
+    private static ConfigDialogManager instance;
 
     static {
-        _ConfigDialogManager = new DefaultConfigDialogManager();
+        instance = new DefaultConfigDialogManager();
     }
 
     /**
-     * Sets the global ConfigDialogManager instance to the specified implementation.
+     * Sets the global ConfigDialogManager instance to the specified
+     * implementation.
      *
-     * @param configDialogManager the ConfigDialogManager instance to use; must not be null
+     * @param configDialogManager the ConfigDialogManager instance to use; must
+     *     not be null
      * @throws IllegalArgumentException if configDialogManager is null
      */
-    public static void initialise(ConfigDialogManager configDialogManager){
-        if (configDialogManager == null) throw new IllegalArgumentException("configDialogManager");
-        _ConfigDialogManager = configDialogManager;
+    public static void initialise(final ConfigDialogManager configDialogManager) {
+        if (configDialogManager == null) {
+            throw new IllegalArgumentException("configDialogManager");
+        }
+        instance = configDialogManager;
     }
 
     /**
-     * Resets the global ConfigDialogManager instance to a new DefaultConfigDialogManager.
+     * Resets the global ConfigDialogManager instance to a new
+     * DefaultConfigDialogManager.
      */
     public static void setDefault() {
-        _ConfigDialogManager = new DefaultConfigDialogManager();
+        instance = new DefaultConfigDialogManager();
     }
 
     /**
@@ -53,7 +60,7 @@ public abstract class ConfigDialogManager
      * @return the active ConfigDialogManager instance
      */
     public static ConfigDialogManager configDialogManager() {
-        return _ConfigDialogManager;
+        return instance;
     }
 
     /**
@@ -76,42 +83,42 @@ public abstract class ConfigDialogManager
     public abstract boolean getApiConfigChangeConfirmationExpected();
 
     /**
-     * Returns the Global Configuration dialog, if necessary blocking the calling thread until
-     * either it is available or a specified timeout has elapsed.
+     * Returns the Global Configuration dialog, if necessary blocking the
+     * calling thread until either it is available or a specified timeout has
+     * elapsed.
      *
-     * If the Global Configuration dialog is currently open, it is returned immediately without blocking
-     * the calling thread.
+     * <p>If the Global Configuration dialog is currently open, it is returned
+     * immediately without blocking the calling thread.
      *
-     * Calling this method from the Swing event dispatch thread results in an IllegalStateException
-     * being thrown.
+     * <p>Calling this method from the Swing event dispatch thread results in an
+     * IllegalStateException being thrown.
      *
-     * @param timeout
-     * the length of time to wait for the Global Configuration dialog to become available. If this is
-     * negative, the calling thread blocks until the dialog becomes available.
-     * @param unit
-     * the time units for the timeout parameter
-     * @return
-     * null if the timeout expires before the Global Configuration dialog becomes available; otherwise
-     * the Global Configuration dialog
-     * @throws IllegalStateException
-     * the method has been called from the Swing event dispatch thread
+     * @param timeout the length of time to wait for the Global Configuration
+     *     dialog to become available. If this is negative, the calling thread
+     *     blocks until the dialog becomes available.
+     * @param unit the time units for the timeout parameter
+     * @return null if the timeout expires before the Global Configuration dialog
+     *     becomes available; otherwise the Global Configuration dialog
+     * @throws IllegalStateException the method has been called from the Swing
+     *     event dispatch thread
      */
-    public abstract JDialog getConfigDialog(long timeout, TimeUnit unit) throws IllegalStateException;
+    public abstract JDialog getConfigDialog(long timeout, TimeUnit unit)
+            throws IllegalStateException;
 
     /**
-     * Returns the Global Configuration dialog, if necessary blocking the calling thread until
-     * it is available.
+     * Returns the Global Configuration dialog, if necessary blocking the
+     * calling thread until it is available.
      *
-     * If the Global Configuration dialog is currently open, it is returned immediately without blocking
-     * the calling thread.
+     * <p>If the Global Configuration dialog is currently open, it is returned
+     * immediately without blocking the calling thread.
      *
-     * Calling this method from the Swing event dispatch thread results in an IllegalStateException
-     * being thrown.
+     * <p>Calling this method from the Swing event dispatch thread results in an
+     * IllegalStateException being thrown.
      *
-     * @return
-     * the Global Configuration dialog, or null if the relevant menu entries cannot be found
-     * @throws IllegalStateException
-     * the method has been called from the Swing event dispatch thread
+     * @return the Global Configuration dialog, or null if the relevant menu
+     *     entries cannot be found
+     * @throws IllegalStateException the method has been called from the Swing
+     *     event dispatch thread
      */
     public abstract JDialog getConfigDialog() throws IllegalStateException;
 
@@ -128,8 +135,8 @@ public abstract class ConfigDialogManager
     public abstract void setApiConfigChangeConfirmationExpected();
 
     /**
-     * Clears the flag indicating that an API configuration change
-     * confirmation is expected.
+     * Clears the flag indicating that an API configuration change confirmation
+     * is expected.
      */
     public abstract void setApiConfigChangeConfirmationHandled();
 

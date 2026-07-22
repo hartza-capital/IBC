@@ -21,17 +21,31 @@ package ibcalpha.ibc;
 import static ibcalpha.ibc.IbcTws.checkArguments;
 import static ibcalpha.ibc.IbcTws.setupDefaultEnvironment;
 
-public class IbcGateway {
+/**
+ * Entry point for the IB Gateway automation agent.
+ */
+public final class IbcGateway {
+
+    /**
+     * Prevents instantiation of this utility class.
+     */
+    private IbcGateway() {
+        // utility class
+    }
+
     /**
      * Starts the IB Gateway automation agent.
-     * Sets up exception handling, validates arguments, initializes the environment, and loads the Gateway.
+     * Sets up exception handling, validates arguments, initializes the
+     * environment, and loads the Gateway.
      *
-     * @param args command-line arguments (optional: config file, credentials, trading mode).
-     * @throws Exception if an error occurs during Gateway initialization.
+     * @param args command-line arguments (optional: config file, credentials,
+     *     trading mode)
+     * @throws Exception if an error occurs during Gateway initialization
      */
-    public static void main(String[] args) throws Exception {
+    public static void main(final String[] args) throws Exception {
         if (Thread.getDefaultUncaughtExceptionHandler() == null) {
-            Thread.setDefaultUncaughtExceptionHandler(new ibcalpha.ibc.UncaughtExceptionHandler());
+            Thread.setDefaultUncaughtExceptionHandler(
+                    new ibcalpha.ibc.UncaughtExceptionHandler());
         }
         checkArguments(args);
         setupDefaultEnvironment(args, true);

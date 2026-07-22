@@ -24,21 +24,40 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JTextField;
 
-class ConfigureTwsApiPortTask implements ConfigurationAction{
+class ConfigureTwsApiPortTask implements ConfigurationAction {
 
+    /** The configured TWS API socket port. */
     private final int portNumber;
+
+    /** The TWS Global Configuration dialog. */
     private JDialog configDialog;
 
-    ConfigureTwsApiPortTask(int portNumber) {
-        this.portNumber = portNumber;
+    /**
+     * Creates a task that configures the TWS API socket port.
+     *
+     * @param configuredPortNumber the desired API socket port
+     */
+    ConfigureTwsApiPortTask(final int configuredPortNumber) {
+        this.portNumber = configuredPortNumber;
+    }
+
+    /**
+     * Initializes this task with the global configuration dialog.
+     *
+     * @param newConfigDialog the TWS Global Configuration dialog
+     */
+    @Override
+    public void initialise(final JDialog newConfigDialog) {
+        this.configDialog = newConfigDialog;
     }
 
     /**
      * Configures the TWS API socket port in the global configuration dialog.
      *
-     * Opens the API settings section, locates the socket port text field, and updates it
-     * to the specified port number if different from the current setting.
-     * If API is already enabled, flags that a confirmation dialog is expected.
+     * Opens the API settings section, locates the socket port text field, and
+     * updates it to the specified port number if different from the current
+     * setting. If API is already enabled, flags that a confirmation dialog is
+     * expected.
      */
     @Override
     public void run() {
@@ -47,37 +66,45 @@ class ConfigureTwsApiPortTask implements ConfigurationAction{
 
             Utils.selectApiSettings(configDialog);
 
-            Component comp = SwingUtils.findComponent(configDialog, "Socket port");
-            if (comp == null) throw new IbcException("could not find socket port component");
+            Component comp = SwingUtils.findComponent(configDialog,
+                    "Socket port");
+            if (comp == null) {
+                throw new IbcException(
+                        "could not find socket port component");
+            }
 
-            JTextField tf = SwingUtils.findTextField((Container)comp, 0);
-            if (tf == null) throw new IbcException("could not find socket port field");
+            JTextField tf = SwingUtils.findTextField((Container) comp, 0);
+            if (tf == null) {
+                throw new IbcException(
+                        "could not find socket port field");
+            }
 
             int currentPort = Integer.parseInt(tf.getText());
             if (currentPort == portNumber) {
-                Utils.logToConsole("TWS API socket port is already set to " + tf.getText());
+                Utils.logToConsole(
+                        "TWS API socket port is already set to "
+                        + tf.getText());
             } else {
                 if (!SessionManager.isGateway()) {
-                    JCheckBox cb = SwingUtils.findCheckBox(configDialog, "Enable ActiveX and Socket Clients");
-                    if (cb == null) throw new IbcException("could not find Enable ActiveX checkbox");
-                    if (cb.isSelected()) ConfigDialogManager.configDialogManager().setApiConfigChangeConfirmationExpected();
+                    JCheckBox cb = SwingUtils.findCheckBox(configDialog,
+                            "Enable ActiveX and Socket Clients");
+                    if (cb == null) {
+                        throw new IbcException(
+                                "could not find Enable ActiveX checkbox");
+                    }
+                    if (cb.isSelected()) {
+                        ConfigDialogManager.configDialogManager()
+                                .setApiConfigChangeConfirmationExpected();
+                    }
                 }
-                Utils.logToConsole("TWS API socket port was set to " + tf.getText());
+                Utils.logToConsole(
+                        "TWS API socket port was set to " + tf.getText());
                 tf.setText(Integer.toString(portNumber));
-                Utils.logToConsole("TWS API socket port now set to " + tf.getText());
+                Utils.logToConsole(
+                        "TWS API socket port now set to " + tf.getText());
             }
         } catch (IbcException e) {
             Utils.logException(e);
         }
-    }
-
-    /**
-     * Initializes this task with the global configuration dialog.
-     *
-     * @param configDialog the TWS Global Configuration dialog
-     */
-    @Override
-    public void initialise(JDialog configDialog) {
-        this.configDialog = configDialog;
     }
 }

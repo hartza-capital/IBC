@@ -22,18 +22,39 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
-public class ResetOrderIdConfirmationDialogHandler implements WindowHandler {
-    
-    static volatile boolean orderIdResetRequestedAtStart;
+/**
+ * Handles the confirmation dialog shown when TWS requests to reset the API
+ * order ID sequence.
+ */
+public final class ResetOrderIdConfirmationDialogHandler
+        implements WindowHandler {
 
     /**
-     * Determines whether to process window events for the reset order ID confirmation dialog.
+     * Indicates whether the order ID reset was requested automatically at
+     * startup (as opposed to being triggered by a user action).
+     */
+    private static volatile boolean orderIdResetRequestedAtStart;
+
+    /**
+     * Sets whether the order ID reset was requested at startup.
+     *
+     * @param requested true if the reset was requested at startup
+     */
+    public static void setOrderIdResetRequestedAtStart(
+            final boolean requested) {
+        orderIdResetRequestedAtStart = requested;
+    }
+
+    /**
+     * Determines whether to process window events for the reset order ID
+     * confirmation dialog.
+     *
      * @param window the window to check
      * @param eventId the AWT window event ID
      * @return true if this is a WINDOW_OPENED event, false otherwise
      */
     @Override
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -43,64 +64,81 @@ public class ResetOrderIdConfirmationDialogHandler implements WindowHandler {
     }
 
     /**
-     * Handles the reset order ID confirmation dialog based on the ConfirmOrderIdReset setting.
-     * Behavior depends on whether the reset was initiated at startup or by user action.
+     * Handles the reset order ID confirmation dialog based on the
+     * ConfirmOrderIdReset setting.
+     *
+     * <p>Behavior depends on whether the reset was initiated at startup or by
+     * user action.
+     *
      * @param window the dialog window
      * @param eventID the AWT window event ID
      */
     @Override
-    public void handleWindow(Window window, int eventID) {
-        final String CONFIRM_RESET = "confirm";
-        final String REJECT_RESET = "reject";
-        final String IGNORE_DIALOG = "ignore";
-        final String INVALID_SETTING = "invalid";
-        
-        String confirmSetting=Settings.settings().getString("ConfirmOrderIdReset", "");
-        
+    public void handleWindow(final Window window, final int eventID) {
+        final String confirmReset = "confirm";
+        final String rejectReset = "reject";
+        final String ignoreDialog = "ignore";
+        final String invalidSetting = "invalid";
+
+        String confirmSetting =
+                Settings.settings().getString("ConfirmOrderIdReset", "");
+
         String[] confirmSettings = confirmSetting.split("/");
-        String confirmAtStart=confirmSettings[0];
-        String confirmUserInitiated=confirmSettings[1];
-        
+        String confirmAtStart = confirmSettings[0];
+        String confirmUserInitiated = confirmSettings[1];
+
         String action;
         if (orderIdResetRequestedAtStart) {
             Utils.logToConsole("Order id reset requested at startup");
             switch (confirmAtStart) {
-                case CONFIRM_RESET:
-                case REJECT_RESET:
-                case IGNORE_DIALOG:
+                case confirmReset:
+                case rejectReset:
+                case ignoreDialog:
                     action = confirmAtStart;
                     break;
                 default:
-                    action = INVALID_SETTING;
+                    action = invalidSetting;
             }
             orderIdResetRequestedAtStart = false;
         } else {
             Utils.logToConsole("Order id reset requested by user");
             switch (confirmUserInitiated) {
-                case CONFIRM_RESET:
-                case REJECT_RESET:
-                case IGNORE_DIALOG:
+                case confirmReset:
+                case rejectReset:
+                case ignoreDialog:
                     action = confirmUserInitiated;
                     break;
                 default:
-                    action = INVALID_SETTING;
+                    action = invalidSetting;
             }
         }
-        
+
         try {
             switch (action) {
-                case INVALID_SETTING:
-                    throw new IbcException("Invalid setting ConfirmOrderIdReset=" + confirmSetting);
-                case CONFIRM_RESET:
+                case invalidSetting:
+                    throw new IbcException(
+                            "Invalid setting ConfirmOrderIdReset="
+                                    + confirmSetting);
+                case confirmReset:
                     Utils.logToConsole("Accepting order id reset");
-                    if (!SwingUtils.clickButton(window, "Yes")) throw new IbcException("Can't find 'Yes' button");
+                    if (!SwingUtils.clickButton(window, "Yes")) {
+                        throw new IbcException("Can't find 'Yes' button");
+                    }
                     break;
-                case REJECT_RESET:
+                case rejectReset:
                     Utils.logToConsole("Rejecting order id reset");
-                    if (!SwingUtils.clickButton(window, "No")) throw new IbcException("Can't find 'Yes' button");
+                    if (!SwingUtils.clickButton(window, "No")) {
+                        throw new IbcException("Can't find 'Yes' button");
+                    }
                     break;
-                case IGNORE_DIALOG:
-                    Utils.logToConsole("User must handle order id reset confirmation dialog");
+                case ignoreDialog:
+                    Utils.logToConsole(
+                            "User must handle order id reset confirmation dialog");
+                    break;
+                default:
+                    // No other actions are possible because invalidSetting is
+                    // already handled above.
+                    break;
             }
         } catch (IbcException e) {
             Utils.logException(e);
@@ -108,15 +146,22 @@ public class ResetOrderIdConfirmationDialogHandler implements WindowHandler {
     }
 
     /**
-     * Identifies the reset order ID confirmation dialog by checking for a specific label.
+     * Identifies the reset order ID confirmation dialog by checking for a
+     * specific label.
+     *
      * @param window the window to identify
-     * @return true if this is the reset order ID confirmation dialog, false otherwise
+     * @return true if this is the reset order ID confirmation dialog, false
+     *         otherwise
      */
     @Override
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
 
-        return (SwingUtils.findLabel(window, "Are you sure you want to reset API order ID sequence?") != null);
+        return (SwingUtils.findLabel(window,
+                "Are you sure you want to reset API order ID sequence?")
+                != null);
     }
-    
+
 }

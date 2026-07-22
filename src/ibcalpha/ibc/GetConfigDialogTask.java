@@ -25,17 +25,24 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 
-class GetConfigDialogTask implements Callable<JDialog>{
+class GetConfigDialogTask implements Callable<JDialog> {
+
+    /** The Global Configuration dialog once it has been located. */
     private volatile JDialog mConfigDialog;
+
+    /** Lock used to wait for the configuration dialog to appear. */
     private final Lock lock = new ReentrantLock();
+
+    /** Condition signalled when the configuration dialog is available. */
     private final Condition gotConfigDialog = lock.newCondition();
 
     /**
      * Retrieves the Global Configuration dialog from TWS or Gateway.
      *
-     * Opens the configuration dialog via the appropriate menu item and waits for it to appear.
-     * On Gateway, uses Configure > Settings; on TWS, tries Edit > Global Configuration (Classic layout)
-     * or File > Global Configuration (Mosaic layout). Blocks until the dialog is available.
+     * Opens the configuration dialog via the appropriate menu item and waits for
+     * it to appear. On Gateway, uses Configure > Settings; on TWS, tries Edit >
+     * Global Configuration (Classic layout) or File > Global Configuration
+     * (Mosaic layout). Blocks until the dialog is available.
      *
      * @return the Global Configuration dialog
      * @throws IbcException if the menu item cannot be invoked
@@ -43,17 +50,35 @@ class GetConfigDialogTask implements Callable<JDialog>{
      */
     @Override
     public JDialog call() throws IbcException, InterruptedException {
-        final JFrame mainForm = MainWindowManager.mainWindowManager().getMainWindow();
-        
+        final JFrame mainForm =
+                MainWindowManager.mainWindowManager().getMainWindow();
+
         SessionManager.awaitReady();
 
         Utils.logToConsole("Invoking config dialog menu");
+
         if (SessionManager.isGateway()) {
-            if (!Utils.invokeMenuItem(mainForm, new String[] {"Configure", "Settings"})) throw new IbcException("'Configure > Settings' menu item");
-        } else if (Utils.invokeMenuItem(mainForm, new String[] {"Edit", "Global Configuration..."})) /* TWS's Classic layout */ {
-        } else if (Utils.invokeMenuItem(mainForm, new String[] {"File", "Global Configuration..."})) /* TWS's Mosaic layout */ {
+            if (!Utils.invokeMenuItem(
+                    mainForm,
+                    new String[] {"Configure", "Settings"})) {
+                throw new IbcException("'Configure > Settings' menu item");
+            }
         } else {
-            throw new IbcException("'Edit > Global Configuration' or 'File > Global Configuration' menu items");
+            boolean invoked = Utils.invokeMenuItem(
+                    mainForm,
+                    new String[] {"Edit", "Global Configuration..."});
+
+            if (!invoked) {
+                invoked = Utils.invokeMenuItem(
+                        mainForm,
+                        new String[] {"File", "Global Configuration..."});
+            }
+
+            if (!invoked) {
+                throw new IbcException(
+                        "'Edit > Global Configuration' or "
+                        + "'File > Global Configuration' menu items");
+            }
         }
 
         lock.lock();
@@ -65,9 +90,14 @@ class GetConfigDialogTask implements Callable<JDialog>{
             lock.unlock();
         }
         return mConfigDialog;
-    }  
+    }
 
-    void setConfigDialog(JDialog configDialog) {
+    /**
+     * Stores the located configuration dialog and signals waiting threads.
+     *
+     * @param configDialog the TWS Global Configuration dialog
+     */
+    void setConfigDialog(final JDialog configDialog) {
         lock.lock();
         try {
             mConfigDialog = configDialog;
@@ -76,5 +106,4 @@ class GetConfigDialogTask implements Callable<JDialog>{
             lock.unlock();
         }
     }
-
 }

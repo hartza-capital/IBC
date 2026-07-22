@@ -22,17 +22,36 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Handles the "Existing session detected" dialog that appears when multiple
+ * sessions attempt to log in to the same account.
+ */
 public class ExistingSessionDetectedDialogHandler implements WindowHandler {
 
+    /** Tracks whether a session-continuation attempt has already been made. */
     private boolean attempted;
 
+    /** Action that leaves the dialog for the user to handle manually. */
+    private static final String ACTION_MANUAL = "manual";
+
+    /** Action that keeps the current session as the primary session. */
+    private static final String ACTION_PRIMARY = "primary";
+
+    /** Action that overrides another session as the primary session. */
+    private static final String ACTION_PRIMARY_OVERRIDE = "primaryoverride";
+
+    /** Action that ends the current session in favour of the other session. */
+    private static final String ACTION_SECONDARY = "secondary";
+
     /**
-     * Determines whether to process window events for the existing session detected dialog.
+     * Determines whether to process window events for the existing session
+     * detected dialog.
+     *
      * @param window the window to check
      * @param eventId the AWT window event ID
      * @return true if this is a WINDOW_OPENED event, false otherwise
      */
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -42,127 +61,240 @@ public class ExistingSessionDetectedDialogHandler implements WindowHandler {
     }
 
     /**
-     * Handles the existing session detected dialog based on the ExistingSessionDetectedAction setting.
-     * Implements complex logic for handling multiple session scenarios (primary, secondary, override).
+     * Handles the existing session detected dialog based on the
+     * ExistingSessionDetectedAction setting.
+     *
+     * Implements complex logic for handling multiple session scenarios
+     * (primary, secondary, override).
+     *
      * @param window the dialog window
      * @param eventID the AWT window event ID
      */
-    public void handleWindow(Window window, int eventID) {
-        final String MANUAL = "manual";
-        final String PRIMARY = "primary";
-        final String PRIMARY_OVERRIDE = "primaryoverride";
-        final String SECONDARY = "secondary";
-        
-        String setting = Settings.settings().getString("ExistingSessionDetectedAction", "manual").toLowerCase();
-        
+    public void handleWindow(final Window window, final int eventID) {
+        String setting = Settings.settings().getString(
+                "ExistingSessionDetectedAction", "manual").toLowerCase();
+
+        setting = validateSetting(setting);
+
+        if (ACTION_MANUAL.equals(setting)) {
+            Utils.logToConsole(
+                    "User must choose whether to continue with this "
+                    + "session (scenario 1)");
+            return;
+        }
+
+        if (ACTION_SECONDARY.equals(setting)) {
+            handleSecondarySession(window);
+            return;
+        }
+
+        handleActiveSession(window, setting);
+    }
+
+    /**
+     * Validates the ExistingSessionDetectedAction setting.
+     *
+     * If the setting is not one of the recognised actions, logs a warning and
+     * returns {@link #ACTION_SECONDARY}.
+     *
+     * @param setting the raw setting value
+     * @return the validated action
+     */
+    private String validateSetting(final String setting) {
         switch (setting) {
-            case MANUAL:
-            case PRIMARY:
-            case PRIMARY_OVERRIDE:
-            case SECONDARY:
-                break;
+            case ACTION_MANUAL:
+            case ACTION_PRIMARY:
+            case ACTION_PRIMARY_OVERRIDE:
+            case ACTION_SECONDARY:
+                return setting;
             default:
-                Utils.logToConsole("ExistingSessionDetectedAction has an invalid value: " + setting + ": assuming 'secondary'");
-                setting = SECONDARY;
+                Utils.logToConsole(
+                        "ExistingSessionDetectedAction has an invalid "
+                        + "value: " + setting + ": assuming 'secondary'");
+                return ACTION_SECONDARY;
         }
+    }
 
-        if (setting.equals(MANUAL)) {
-            Utils.logToConsole("User must choose whether to continue with this session (scenario 1)");
-            // nothing to do
-            return;
+    /**
+     * Ends this session in favour of the other session.
+     *
+     * @param window the dialog window
+     */
+    private void handleSecondarySession(final Window window) {
+        Utils.logToConsole(
+                "End this session and let the other session "
+                + "proceed (scenario 2)");
+        if (!SwingUtils.clickButton(window, "Cancel")
+                && !SwingUtils.clickButton(
+                        window, "Exit Application")) {
+            Utils.logError(
+                    "could not handle 'Existing session detected' "
+                    + "dialog because the "
+                    + "'Cancel' or 'Exit Application' "
+                    + "button wasn't found.");
         }
+    }
 
-        if (setting.equals(SECONDARY)) {
-            Utils.logToConsole("End this session and let the other session proceed (scenario 2)");
-            if (!SwingUtils.clickButton(window, "Cancel") && !SwingUtils.clickButton(window, "Exit Application")) {
-                Utils.logError("could not handle 'Existing session detected' dialog because the 'Cancel' or 'Exit Application' button wasn't found.");
-            }
-            return;
-        }
+    /**
+     * Handles the dialog when this IBC instance already has an active login
+     * session, or is in the process of establishing one.
+     *
+     * @param window the dialog window
+     * @param setting the validated session action
+     */
+    private void handleActiveSession(
+            final Window window, final String setting) {
+        /* The handling of this dialog is based on the following
+           observed sequence of events.
 
-        /* The handling of this dialog is based on the following observed
-           sequence of events.
+           If session A is logged in, and session B tries tologin,
+           session B displays the'Existing Session Detected' dialog.
 
-           If session A is logged in, and session B tries tologin, session B
-           displays the'Existing Session Detected' dialog.
+           If session B chooses to continue login, session A displays
+           the 'Re-login is required' dialog. If session A clicks the
+           'Re-login' button, session B then also displays the
+           'Re-login is required' dialog.
 
-           If session B chooses to continue login, session A displays the
-           'Re-login is required' dialog. If session A clicks the 'Re-login'
-           button, session B then also displays the 'Re-login is required'
-           dialog.
-
-           If session B clicks the 'Re-login' button then session A now displays
-           the 'Existing Session Detected' dialog.
+           If session B clicks the 'Re-login' button then session A
+           now displays the 'Existing Session Detected' dialog.
 
            If session A chooses to terminate, then session B continues
-           automatically; but if session A chooses to continue then, session B
-           displays the 'Existing Session Detected' dialog again and must now
-           terminate.
+           automatically; but if session A chooses to continue then,
+           session B displays the 'Existing Session Detected' dialog
+           again and must now terminate.
         */
 
-        if (LoginManager.loginManager().getLoginState() != LoginManager.LoginState.LOGGED_IN){
-            /* The login has not yet been completed, so this is a new IBC instance, ie we are
-               session B.
+        if (LoginManager.loginManager().getLoginState()
+                != LoginManager.LoginState.LOGGED_IN) {
+            handleNewSession(window);
+        } else {
+            handleExistingSession(window, setting);
+        }
+    }
 
-               We don't know the type of session A, so we continue this one.
+    /**
+     * Handles the dialog when the login has not yet completed.
+     *
+     * This IBC instance is the new session (session B).
+     *
+     * @param window the dialog window
+     */
+    private void handleNewSession(final Window window) {
+        /* The login has not yet been completed, so this is a new
+           IBC instance, ie we are session B.
 
-               If session A is primary it won't shut down, and this dialog will
-               be invoked again, at which point we terminate this session.
+           We don't know the type of session A, so we continue
+           this one.
 
-               If session A is primaryoverride it will shut down, and that'll be
-               that.
-            */
-            if (!attempted) {
-                attempted = true;
-                Utils.logToConsole("Don't know the type of the other session, so continue this one (scenario 3)");
-                if (!SwingUtils.clickButton(window, "OK") &&
-                        !SwingUtils.clickButton(window, "Continue Login") &&
-                        !SwingUtils.clickButton(window, "Reconnect This Session"))  {
-                    Utils.logError("could not handle 'Existing session detected' dialog because the 'OK' or 'Continue Login' or 'Reconnect This Session' button wasn't found.");
-                }
-            } else {
-                Utils.logToConsole("Other session must be primary or primary override, so end this session and let the other one proceed (scenario 4)");
-                if (!SwingUtils.clickButton(window, "Cancel") && !SwingUtils.clickButton(window, "Exit Application")) {
-                    Utils.logError("could not handle 'Existing session detected' dialog because the 'Cancel' or 'Exit Application' button wasn't found.");
-                }
+           If session A is primary it won't shut down, and this
+           dialog will be invoked again, at which point we
+           terminate this session.
+
+           If session A is primaryoverride it will shut down,
+           and that'll be that.
+        */
+        if (!attempted) {
+            attempted = true;
+            Utils.logToConsole(
+                    "Don't know the type of the other session, "
+                    + "so continue this one (scenario 3)");
+            if (!SwingUtils.clickButton(window, "OK")
+                    && !SwingUtils.clickButton(window, "Continue Login")
+                    && !SwingUtils.clickButton(
+                            window, "Reconnect This Session")) {
+                Utils.logError(
+                        "could not handle 'Existing session detected' "
+                        + "dialog because the "
+                        + "'OK' or 'Continue Login' or "
+                        + "'Reconnect This Session' button wasn't found.");
             }
         } else {
-            /* The login has already been completed so we are session A. The
-               case where we are Secondary has already been handled, so we must
-               be either Primary or PrimaryOverride. If
-               we are primary we must continue this session. If we are
-               PrimaryOverride, we must allow the other session to proceed in case it
-               is primary.
-            */
-            if (setting.equals(PRIMARY)) {
-                Utils.logToConsole("Continue this session and let the other session exit (scenario 5)");
-                if (!SwingUtils.clickButton(window, "OK") &&
-                        !SwingUtils.clickButton(window, "Continue Login") &&
-                        !SwingUtils.clickButton(window, "Reconnect This Session"))  {
-                    Utils.logError("could not handle 'Existing session detected' dialog because the 'OK' or 'Continue Login' or 'Reconnect This Session' button wasn't found.");
-                }
-            } else if (setting.equals(PRIMARY_OVERRIDE)) {
-                Utils.logToConsole("Other session may be primary, so end this session and let the other one proceed (scenario 6)");
-
-                // ideally we'd just click the "Exit Application" button, but TWS doesn't react to
-                // it properly in these circumstances, so we have to click the button and then exit the program
-                if (!SwingUtils.clickButton(window, "Cancel") && !SwingUtils.clickButton(window, "Exit Application")) {
-                    Utils.logError("could not handle 'Existing session detected' dialog because the 'Cancel' or 'Exit Application' button wasn't found.");
-                }
-            } else {
-                Utils.exitWithError(ErrorCodes.INVALID_STATE, "Unexpected setting value: " + setting);
+            Utils.logToConsole(
+                    "Other session must be primary or primary override, "
+                    + "so end this session and let the other one "
+                    + "proceed (scenario 4)");
+            if (!SwingUtils.clickButton(window, "Cancel")
+                    && !SwingUtils.clickButton(
+                            window, "Exit Application")) {
+                Utils.logError(
+                        "could not handle 'Existing session detected' "
+                        + "dialog because the "
+                        + "'Cancel' or 'Exit Application' "
+                        + "button wasn't found.");
             }
         }
     }
 
     /**
-     * Identifies the existing session detected dialog by checking the window title.
-     * @param window the window to identify
-     * @return true if this is the existing session detected dialog, false otherwise
+     * Handles the dialog when the login has already completed.
+     *
+     * This IBC instance is the existing session (session A).
+     *
+     * @param window the dialog window
+     * @param setting the validated session action
      */
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
+    private void handleExistingSession(
+            final Window window, final String setting) {
+        /* The login has already been completed so we are session
+           A. The case where we are Secondary has already been
+           handled, so we must be either Primary or
+           PrimaryOverride. If we are primary we must continue this
+           session. If we are PrimaryOverride, we must allow the
+           other session to proceed in case it is primary.
+        */
+        if (ACTION_PRIMARY.equals(setting)) {
+            Utils.logToConsole(
+                    "Continue this session and let the other session "
+                    + "exit (scenario 5)");
+            if (!SwingUtils.clickButton(window, "OK")
+                    && !SwingUtils.clickButton(window, "Continue Login")
+                    && !SwingUtils.clickButton(
+                            window, "Reconnect This Session")) {
+                Utils.logError(
+                        "could not handle 'Existing session detected' "
+                        + "dialog because the "
+                        + "'OK' or 'Continue Login' or "
+                        + "'Reconnect This Session' button wasn't found.");
+            }
+        } else if (ACTION_PRIMARY_OVERRIDE.equals(setting)) {
+            Utils.logToConsole(
+                    "Other session may be primary, so end this "
+                    + "session and let the other one "
+                    + "proceed (scenario 6)");
 
-        return (SwingUtils.titleContains(window, "Existing session detected"));
+            // ideally we'd just click the "Exit Application" button,
+            // but TWS doesn't react to it properly in these
+            // circumstances, so we have to click the button and then
+            // exit the program
+            if (!SwingUtils.clickButton(window, "Cancel")
+                    && !SwingUtils.clickButton(
+                            window, "Exit Application")) {
+                Utils.logError(
+                        "could not handle 'Existing session detected' "
+                        + "dialog because the "
+                        + "'Cancel' or 'Exit Application' "
+                        + "button wasn't found.");
+            }
+        } else {
+            Utils.exitWithError(
+                    ErrorCodes.INVALID_STATE,
+                    "Unexpected setting value: " + setting);
+        }
+    }
+
+    /**
+     * Identifies the existing session detected dialog by checking the window
+     * title.
+     *
+     * @param window the window to identify
+     * @return true if this is the existing session detected dialog,
+     *         false otherwise
+     */
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
+
+        return SwingUtils.titleContains(window, "Existing session detected");
     }
 }

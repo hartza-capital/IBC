@@ -23,9 +23,11 @@ import javax.swing.JDialog;
 public interface ConfigurationAction extends Runnable {
 
     /**
-     * Initializes this configuration action with the global configuration dialog.
+     * Initializes this configuration action with the global configuration
+     * dialog.
      *
-     * Called before run() to provide the dialog instance that the action will interact with.
+     * Called before run() to provide the dialog instance that the action will
+     * interact with.
      *
      * @param configDialog the TWS Global Configuration dialog
      */

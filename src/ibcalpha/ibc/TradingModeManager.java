@@ -19,28 +19,36 @@
 package ibcalpha.ibc;
 
 public abstract class TradingModeManager {
-    private static TradingModeManager _TradingModeManager;
+    /**
+     * The global TradingModeManager instance.
+     */
+    private static TradingModeManager instance;
 
     static {
-        _TradingModeManager = new DefaultTradingModeManager();
+        instance = new DefaultTradingModeManager();
     }
 
     /**
-     * Sets the global TradingModeManager instance to the specified implementation.
+     * Sets the global TradingModeManager instance to the specified
+     * implementation.
      *
-     * @param tradingModeManager the TradingModeManager instance to use; must not be null
+     * @param tradingModeManager the TradingModeManager instance to use; must
+     *     not be null
      * @throws IllegalArgumentException if tradingModeManager is null
      */
-    public static void initialise(TradingModeManager tradingModeManager){
-        if (tradingModeManager == null) throw new IllegalArgumentException("tradingModeManager");
-        _TradingModeManager = tradingModeManager;
+    public static void initialise(final TradingModeManager tradingModeManager) {
+        if (tradingModeManager == null) {
+            throw new IllegalArgumentException("tradingModeManager");
+        }
+        instance = tradingModeManager;
     }
 
     /**
-     * Resets the global TradingModeManager instance to a new DefaultTradingModeManager.
+     * Resets the global TradingModeManager instance to a new
+     * DefaultTradingModeManager.
      */
     public static void setDefault() {
-        _TradingModeManager = new DefaultTradingModeManager();
+        instance = new DefaultTradingModeManager();
     }
 
     /**
@@ -49,17 +57,23 @@ public abstract class TradingModeManager {
      * @return the active TradingModeManager instance
      */
     public static TradingModeManager tradingModeManager() {
-        return _TradingModeManager;
+        return instance;
     }
 
     /**
-     * Logs diagnostic information about the current trading mode
-     * configuration for troubleshooting.
+     * Logs diagnostic information about the current trading mode configuration
+     * for troubleshooting.
      */
     public abstract void logDiagnosticMessage();
 
-
+    /**
+     * Trading mode identifier for live trading accounts.
+     */
     public static final String TRADING_MODE_LIVE = "live";
+
+    /**
+     * Trading mode identifier for paper trading accounts.
+     */
     public static final String TRADING_MODE_PAPER = "paper";
 
     /**

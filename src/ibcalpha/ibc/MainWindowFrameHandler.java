@@ -23,15 +23,16 @@ import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 
 class MainWindowFrameHandler implements WindowHandler {
-    @Override
+
     /**
      * Determines whether this handler should act on the given window event.
      *
-     * @param window the AWT window associated with the event.
-     * @param eventId the AWT event ID (e.g., WINDOW_OPENED).
-     * @return true if this handler should process the event; false otherwise.
+     * @param window the AWT window associated with the event
+     * @param eventId the AWT event ID (e.g., WINDOW_OPENED)
+     * @return true if this handler should process the event; false otherwise
      */
-    public boolean filterEvent(Window window, int eventId) {
+    @Override
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -40,30 +41,35 @@ class MainWindowFrameHandler implements WindowHandler {
         }
     }
 
-    @Override
     /**
      * Records the TWS main window when it opens.
      *
-     * @param window the TWS main window.
-     * @param eventID the AWT event ID.
+     * @param window the TWS main window
+     * @param eventID the AWT event ID
      */
-    public void handleWindow(Window window, int eventID) {
-        if (eventID != WindowEvent.WINDOW_OPENED) return;
+    @Override
+    public void handleWindow(final Window window, final int eventID) {
+        if (eventID != WindowEvent.WINDOW_OPENED) {
+            return;
+        }
 
         SessionManager.setMainWindow((JFrame) window);
     }
 
-    @Override
     /**
-     * Identifies the TWS main window by looking for the File > Lock Application menu item.
+     * Identifies the TWS main window by looking for the File > Lock
+     * Application menu item.
      *
-     * @param window the window to identify.
-     * @return true if this is the TWS main window; false otherwise.
+     * @param window the window to identify
+     * @return true if this is the TWS main window; false otherwise
      */
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JFrame)) return false;
+    @Override
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JFrame)) {
+            return false;
+        }
 
-        return (SwingUtils.findMenuItemInAnyMenuBar(window, new String [] {"File", "Lock Application"}) != null);
+        return SwingUtils.findMenuItemInAnyMenuBar(window,
+                new String[]{"File", "Lock Application"}) != null;
     }
 }
-

@@ -28,13 +28,33 @@ class StopTask
      * Guards against concurrent or re-entrant stop/shutdown sequences being
      * triggered more than once at a time.
      */
-    private static final SwitchLock _Running = new SwitchLock();
+    private static final SwitchLock RUNNING_LOCK = new SwitchLock();
 
+    /**
+     * The command channel used to communicate shutdown status to the client.
+     */
     private final CommandChannel mChannel;
+
+    /**
+     * Whether to force a cold restart on the next TWS/Gateway start.
+     */
     private final boolean mForceColdRestart;
+
+    /**
+     * The reason for the shutdown, reported to the client.
+     */
     private final String mReason;
 
-    StopTask(final CommandChannel channel, final boolean forceColdRestart, final String reason) {
+    /**
+     * Creates a new stop task that will shut down TWS/Gateway.
+     *
+     * @param channel the command channel to notify
+     * @param forceColdRestart true to create a cold-restart flag file
+     * @param reason the reason for the shutdown
+     */
+    StopTask(final CommandChannel channel,
+             final boolean forceColdRestart,
+             final String reason) {
         mChannel = channel;
         mForceColdRestart = forceColdRestart;
         mReason = reason;
@@ -47,7 +67,7 @@ class StopTask
      */
     @Override
     public void run() {
-        if (! _Running.set()) {
+        if (!RUNNING_LOCK.set()) {
             Utils.logToConsole("STOP already in progress");
             writeNack("STOP already in progress");
             mChannel.close();
@@ -56,24 +76,27 @@ class StopTask
 
         try {
             writeInfo("Closing IBC");
-            if (mForceColdRestart) createColdRestartFlagFile();
+            if (mForceColdRestart) {
+                createColdRestartFlagFile();
+            }
             stop(mReason);
         } catch (Exception ex) {
             writeNack(ex.getMessage());
             Utils.exitWithException(ErrorCodes.UNHANDLED_EXCEPTION, ex);
         }
     }
-    
+
     /**
-     * Creates a cold restart flag file in the JTS config directory to force a cold restart on the next start.
+     * Creates a cold restart flag file in the JTS config directory to force a
+     * cold restart on the next start.
      */
     private void createColdRestartFlagFile() {
         try {
-        new File(System.getProperty("jtsConfigDir") + 
-                 File.separator + 
-                 "COLDRESTART" + 
-                 System.getProperty("ibcsessionid"))
-                .createNewFile();
+            new File(System.getProperty("jtsConfigDir")
+                    + File.separator
+                    + "COLDRESTART"
+                    + System.getProperty("ibcsessionid"))
+                    .createNewFile();
         } catch (java.io.IOException e) {
             Utils.exitWithException(ErrorCodes.UNHANDLED_EXCEPTION, e);
         }
@@ -84,33 +107,43 @@ class StopTask
      *
      * @return true if a shutdown is in progress, false otherwise
      */
-    public final static boolean shutdownInProgress()
-    {
-        return _Running.query();
+    public static final boolean shutdownInProgress() {
+        return RUNNING_LOCK.query();
     }
 
     /**
      * Performs the actual shutdown of TWS/Gateway.
-     * Sends acknowledgment to the client, closes the CommandServer, and either halts immediately
-     * or invokes the File menu to cleanly close the application depending on login state.
+     * Sends acknowledgment to the client, closes the CommandServer, and either
+     * halts immediately or invokes the File menu to cleanly close the
+     * application depending on login state.
      *
      * @param reason a description of why the shutdown was initiated
      */
-    private void stop(String reason) {
+    private void stop(final String reason) {
         try {
             writeAck("Shutting down: " + reason);
-            if (mChannel != null) mChannel.close();
-            if (LoginManager.loginManager().getLoginState() != LoginManager.LoginState.LOGGED_IN) {
+            if (mChannel != null) {
+                mChannel.close();
+            }
+            if (LoginManager.loginManager().getLoginState()
+                    != LoginManager.LoginState.LOGGED_IN) {
                 CommandServer.commandServer().shutdown();
                 Utils.logToConsole("Login has not completed: exiting immediately");
                 Runtime.getRuntime().halt(0);
             } else {
-                String[] closeMenuPath = SessionManager.isGateway() ? new String[] {"File", "Close"} : new String[] {"File", "Exit"};
-                Utils.logToConsole("Login has completed: exiting via " + Arrays.deepToString(closeMenuPath) + " menu");
-                Utils.invokeMenuItem(MainWindowManager.mainWindowManager().getMainWindow(), closeMenuPath);
+                String[] closeMenuPath = SessionManager.isGateway()
+                        ? new String[] {"File", "Close"}
+                        : new String[] {"File", "Exit"};
+                Utils.logToConsole("Login has completed: exiting via "
+                        + Arrays.deepToString(closeMenuPath) + " menu");
+                Utils.invokeMenuItem(
+                        MainWindowManager.mainWindowManager().getMainWindow(),
+                        closeMenuPath);
             }
-            
+
         } catch (Exception e) {
+            // Intentionally ignored: stop() failures are best-effort shutdown
+            // attempts.
         }
     }
 
@@ -119,20 +152,32 @@ class StopTask
      *
      * @param message the acknowledgment message
      */
-    private void writeAck(String message) {if (mChannel != null) mChannel.writeAck(message);}
+    private void writeAck(final String message) {
+        if (mChannel != null) {
+            mChannel.writeAck(message);
+        }
+    }
 
     /**
      * Sends an informational message to the connected client.
      *
      * @param message the informational message
      */
-    private void writeInfo(String message) {if (mChannel != null) mChannel.writeInfo(message);}
+    private void writeInfo(final String message) {
+        if (mChannel != null) {
+            mChannel.writeInfo(message);
+        }
+    }
 
     /**
      * Sends an error message to the connected client.
      *
      * @param message the error message
      */
-    private void writeNack(String message) {if (mChannel != null) mChannel.writeNack(message);}
+    private void writeNack(final String message) {
+        if (mChannel != null) {
+            mChannel.writeNack(message);
+        }
+    }
 
 }

@@ -24,8 +24,8 @@ final class TestUtils {
      */
     static void setSessionState(boolean isGateway, boolean isFix, boolean isSessionStarted) {
         SessionManager.initialise(isGateway);
-        setStaticField(SessionManager.class, "_isFIX", isFix);
-        setStaticField(SessionManager.class, "_isSessionStarted", isSessionStarted);
+        setStaticField(SessionManager.class, "fixSession", isFix);
+        setStaticField(SessionManager.class, "sessionStarted", isSessionStarted);
     }
 
     /**

@@ -19,20 +19,29 @@
 package ibcalpha.ibc;
 
 import static ibcalpha.ibc.SwingUtils.getWindowTitle;
+
 import java.awt.Window;
 import java.awt.event.WindowEvent;
+
 import javax.swing.JDialog;
 
-public class ReconnectDataOrAccountConfirmationDialogHandler implements WindowHandler {
+/**
+ * Handles the reconnect data or account confirmation dialog that appears
+ * when TWS or Gateway requests confirmation before reconnecting.
+ */
+public class ReconnectDataOrAccountConfirmationDialogHandler
+        implements WindowHandler {
 
     /**
-     * Determines whether to process window events for the reconnect data or account confirmation dialog.
+     * Determines whether to process window events for the reconnect data or
+     * account confirmation dialog.
+     *
      * @param window the window to check
      * @param eventId the AWT window event ID
      * @return true if this is a WINDOW_OPENED event, false otherwise
      */
     @Override
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -43,31 +52,43 @@ public class ReconnectDataOrAccountConfirmationDialogHandler implements WindowHa
 
     /**
      * Handles the reconnect data or account confirmation dialog by clicking OK.
+     *
      * @param window the dialog window
      * @param eventID the AWT window event ID
      */
     @Override
-    public void handleWindow(Window window, int eventID) {
-        if (! SwingUtils.clickButton(window, "OK")) {
-            Utils.logError("could not dismiss " + getWindowTitle(window) + " because we could not find the OK button");
+    public void handleWindow(final Window window, final int eventID) {
+        if (!SwingUtils.clickButton(window, "OK")) {
+            Utils.logError(
+                    "could not dismiss "
+                            + getWindowTitle(window)
+                            + " because we could not find the OK button");
         }
     }
 
     /**
-     * Identifies the reconnect data or account confirmation dialog by checking title and label content.
+     * Identifies the reconnect data or account confirmation dialog by checking
+     * title and label content.
+     *
      * @param window the window to identify
      * @return true if this is the reconnect confirmation dialog, false otherwise
      */
     @Override
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
 
-        return ((SwingUtils.titleContains(window, "IBKR Trader Workstation") 
-                ||
-                SwingUtils.titleContains(window, "IBKR Gateway"))
-                && 
-                (SwingUtils.findLabel(window, "Are you sure you want to execute \"simulate") != null)
-                );
+        final boolean isTwsOrGateway =
+                SwingUtils.titleContains(window, "IBKR Trader Workstation")
+                        || SwingUtils.titleContains(window, "IBKR Gateway");
+        final boolean hasSimulateLabel =
+                SwingUtils.findLabel(
+                        window,
+                        "Are you sure you want to execute \"simulate")
+                        != null;
+
+        return isTwsOrGateway && hasSimulateLabel;
     }
-    
+
 }

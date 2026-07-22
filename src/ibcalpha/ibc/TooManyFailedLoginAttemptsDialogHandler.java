@@ -23,20 +23,29 @@ import java.awt.event.WindowEvent;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JDialog;
-import java.util.regex.*;
 
 public class TooManyFailedLoginAttemptsDialogHandler implements WindowHandler {
+
+    /**
+     * Extra seconds added to the parsed lockout duration to ensure the re-login
+     * attempt occurs after the lockout has expired.
+     */
+    private static final int EXTRA_DELAY_SECONDS = 3;
+
     /**
      * Determines whether to process the given AWT event for this window.
-     * Only handles WINDOW_OPENED events.
+     *
+     * <p>Only handles WINDOW_OPENED events.</p>
      *
      * @param window the window that generated the event
      * @param eventId the AWT event ID
      * @return true if eventId is WINDOW_OPENED, false otherwise
      */
     @Override
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -46,66 +55,90 @@ public class TooManyFailedLoginAttemptsDialogHandler implements WindowHandler {
     }
 
     /**
-     * Handles the "Too many failed login attempts" dialog by parsing the wait time from the message
-     * and optionally scheduling an automatic re-login attempt if configured.
-     * Parses the message to extract minutes and seconds, then schedules a re-login task
-     * if ReloginAfterSecondFactorAuthenticationTimeout is enabled.
+     * Handles the "Too many failed login attempts" dialog by parsing the wait
+     * time from the message and optionally scheduling an automatic re-login
+     * attempt if configured.
+     *
+     * <p>Parses the message to extract minutes and seconds, then schedules a
+     * re-login task if ReloginAfterSecondFactorAuthenticationTimeout is
+     * enabled.</p>
      *
      * @param window the "Too many failed login attempts" dialog
      * @param eventID the AWT event ID
      */
     @Override
-    public void handleWindow(Window window, int eventID) {
+    public void handleWindow(final Window window, final int eventID) {
         // this dialog will contain a text area with a message like this:
-        //      "Too many failed login attempts. Please wait 53 seconds before attempting to re-login again."
+        //      "Too many failed login attempts. Please wait 53 seconds before
+        //          attempting to re-login again."
         // or like this:
-        //      "Too many failed login attempts. Please wait 4 minutes & 47 seconds before attempting to re-login again."
+        //      "Too many failed login attempts. Please wait 4 minutes & 47
+        //          seconds before attempting to re-login again."
         //
-            String message = SwingUtils.findTextArea(window, "Too many failed login attempts").getText();
-            Utils.logToConsole(message);
-            Pattern p = Pattern.compile("(?:Too many failed login attempts. Please wait (?:(\\d\\d?) minute(?:s)? )?(?:& )?(?:(\\d\\d?) second(?:s)?)?)?");
-            Matcher m = p.matcher(message);
-            String minutes = "";
-            String seconds = "";
-            if (m.find()) {
-                minutes = m.group(1);
-                if (minutes == null || minutes.isEmpty()) minutes = "0";
-                seconds = m.group(2);
-                if (seconds == null || seconds.isEmpty()) seconds = "0";
+        final String message = SwingUtils
+                .findTextArea(window, "Too many failed login attempts")
+                .getText();
+        Utils.logToConsole(message);
+        final Pattern pattern = Pattern.compile(
+                "(?:Too many failed login attempts. Please wait "
+                        + "(?:(\\d\\d?) minute(?:s)? )?"
+                        + "(?:& )?(?:(\\d\\d?) second(?:s)?)?)?");
+        final Matcher matcher = pattern.matcher(message);
+        String minutes = "";
+        String seconds = "";
+        if (matcher.find()) {
+            minutes = matcher.group(1);
+            if (minutes == null || minutes.isEmpty()) {
+                minutes = "0";
             }
-            Duration waitfor = Duration.parse("PT" + minutes + "M" + seconds + "S").plus(Duration.ofSeconds(3));
-
-            if (Settings.settings().getBoolean("ReloginAfterSecondFactorAuthenticationTimeout", false)) {
-                Utils.logToConsole("Will re-login at " + Utils.formatDate(LocalDateTime.now().plus(waitfor)) +
-                                    "; login number: " +
-                                    (LoginManager.loginManager().getLoginHandler().currentLoginAttemptNumber() + 1));
-
-                MyScheduledExecutorService.getInstance().schedule(() -> {
-                    GuiDeferredExecutor.instance().execute(
-                        () -> {
-                            LoginManager.loginManager().getLoginHandler().initiateLogin(LoginManager.loginManager().getLoginFrame());
-                        }
-                    );
-                }, waitfor.getSeconds(), TimeUnit.SECONDS);
-
-                if (!SwingUtils.clickButton(window, "OK")) {
-                    Utils.logError("could not dismiss \"Too many failed login attempts\" dialog because we could not find one of the controls.");
-                }
+            seconds = matcher.group(2);
+            if (seconds == null || seconds.isEmpty()) {
+                seconds = "0";
             }
+        }
+        final Duration waitFor = Duration.parse("PT" + minutes + "M" + seconds
+                + "S").plus(Duration.ofSeconds(EXTRA_DELAY_SECONDS));
+
+        if (Settings.settings().getBoolean(
+                "ReloginAfterSecondFactorAuthenticationTimeout", false)) {
+            final LocalDateTime reLoginTime = LocalDateTime.now().plus(waitFor);
+            final int nextLoginAttemptNumber = LoginManager.loginManager()
+                    .getLoginHandler().currentLoginAttemptNumber() + 1;
+            Utils.logToConsole("Will re-login at "
+                    + Utils.formatDate(reLoginTime)
+                    + "; login number: " + nextLoginAttemptNumber);
+
+            MyScheduledExecutorService.getInstance().schedule(() -> {
+                GuiDeferredExecutor.instance().execute(
+                        () -> LoginManager.loginManager().getLoginHandler()
+                                .initiateLogin(LoginManager.loginManager()
+                                        .getLoginFrame()));
+            }, waitFor.getSeconds(), TimeUnit.SECONDS);
+
+            if (!SwingUtils.clickButton(window, "OK")) {
+                Utils.logError("could not dismiss \"Too many failed login"
+                        + " attempts\" dialog because we could not find one of"
+                        + " the controls.");
+            }
+        }
     }
 
     /**
-     * Identifies the "Too many failed login attempts" dialog by checking the window type
-     * and presence of the lockout message text area.
+     * Identifies the "Too many failed login attempts" dialog by checking the
+     * window type and presence of the lockout message text area.
      *
      * @param window the window to check
-     * @return true if the window is a JDialog with the lockout message, false otherwise
+     * @return true if the window is a JDialog with the lockout message;
+     *     false otherwise
      */
     @Override
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
 
-        return (SwingUtils.findTextArea(window, "Too many failed login attempts") != null);
+        return SwingUtils.findTextArea(window, "Too many failed login attempts")
+                != null;
     }
 
 }

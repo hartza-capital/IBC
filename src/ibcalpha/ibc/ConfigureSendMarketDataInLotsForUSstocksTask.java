@@ -1,7 +1,7 @@
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * and open it in the editor.
  */
 // This file is part of IBC.
 // Copyright (C) 2004 Steven M. Kearns (skearns23@yahoo.com )
@@ -26,20 +26,42 @@ package ibcalpha.ibc;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 
-public class ConfigureSendMarketDataInLotsForUSstocksTask implements ConfigurationAction{
+public class ConfigureSendMarketDataInLotsForUSstocksTask
+        implements ConfigurationAction {
 
+    /** Whether market data should be sent in lots for US stocks. */
     private final boolean sendMarketDataInLots;
+
+    /** The TWS Global Configuration dialog. */
     private JDialog configDialog;
 
-    ConfigureSendMarketDataInLotsForUSstocksTask(boolean sendMarketDataInLots) {
-        this.sendMarketDataInLots = sendMarketDataInLots;
+    /**
+     * Creates a task that configures the Send Market Data In Lots setting.
+     *
+     * @param sendMarketDataInLotsEnabled {@code true} to send market data in
+     * lots for US stocks
+     */
+    ConfigureSendMarketDataInLotsForUSstocksTask(
+            final boolean sendMarketDataInLotsEnabled) {
+        this.sendMarketDataInLots = sendMarketDataInLotsEnabled;
+    }
+
+    /**
+     * Initializes this task with the global configuration dialog.
+     *
+     * @param newConfigDialog the TWS Global Configuration dialog
+     */
+    @Override
+    public void initialise(final JDialog newConfigDialog) {
+        this.configDialog = newConfigDialog;
     }
 
     /**
      * Configures the Send Market Data In Lots setting for US stocks.
      *
-     * Opens the API settings section and sets the checkbox to the specified value.
-     * On older TWS versions that lack this setting, logs an error but does not fail.
+     * Opens the API settings section and sets the checkbox to the specified
+     * value. On older TWS versions that lack this setting, logs an error but
+     * does not fail.
      */
     @Override
     public void run() {
@@ -48,31 +70,32 @@ public class ConfigureSendMarketDataInLotsForUSstocksTask implements Configurati
 
             Utils.selectApiSettings(configDialog);
 
-            JCheckBox sendMarketDataInLotsCheckbox = SwingUtils.findCheckBox(configDialog, "Send market data in lots for US stocks for dual-mode API clients");
+            JCheckBox sendMarketDataInLotsCheckbox = SwingUtils.findCheckBox(
+                    configDialog,
+                    "Send market data in lots for US stocks for dual-mode "
+                    + "API clients");
             if (sendMarketDataInLotsCheckbox == null) {
-                // NB: we don't throw here because older TWS versions did not have this setting
-                Utils.logError("could not find Send Market Data In Lots checkbox");
+                // NB: we don't throw here because older TWS versions did not
+                // have this setting
+                Utils.logError(
+                        "could not find Send Market Data In Lots checkbox");
                 return;
             }
 
-            if (sendMarketDataInLotsCheckbox.isSelected() == sendMarketDataInLots) {
-                Utils.logToConsole("Send Market Data In Lots checkbox is already set to: " + sendMarketDataInLots);
+            if (sendMarketDataInLotsCheckbox.isSelected()
+                    == sendMarketDataInLots) {
+                Utils.logToConsole(
+                        "Send Market Data In Lots checkbox is already set to: "
+                        + sendMarketDataInLots);
             } else {
-                sendMarketDataInLotsCheckbox.setSelected(sendMarketDataInLots);
-                Utils.logToConsole("Send Market Data In Lots checkbox is now set to: " + sendMarketDataInLots);
+                sendMarketDataInLotsCheckbox.setSelected(
+                        sendMarketDataInLots);
+                Utils.logToConsole(
+                        "Send Market Data In Lots checkbox is now set to: "
+                        + sendMarketDataInLots);
             }
         } catch (IbcException e) {
             Utils.logException(e);
         }
-    }
-
-    /**
-     * Initializes this task with the global configuration dialog.
-     *
-     * @param configDialog the TWS Global Configuration dialog
-     */
-    @Override
-    public void initialise(JDialog configDialog) {
-        this.configDialog = configDialog;
     }
 }

@@ -22,14 +22,21 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Handles the "Tip of the Day" dialog by closing it when it appears.
+ */
 class TipOfTheDayDialogHandler implements WindowHandler {
+
     /**
-     * Determines whether to process window events for the tip of the day dialog.
+     * Determines whether to process window events for the tip of the day
+     * dialog.
+     *
      * @param window the window to check
      * @param eventId the AWT window event ID
-     * @return true if this is a WINDOW_OPENED or WINDOW_ACTIVATED event, false otherwise
+     * @return true if this is a WINDOW_OPENED or WINDOW_ACTIVATED event,
+     *         false otherwise
      */
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
             case WindowEvent.WINDOW_ACTIVATED:
@@ -41,23 +48,30 @@ class TipOfTheDayDialogHandler implements WindowHandler {
 
     /**
      * Handles the tip of the day dialog by clicking the Close button.
+     *
      * @param window the dialog window
      * @param eventID the AWT window event ID
      */
-    public void handleWindow(Window window, int eventID) {
-        if (! SwingUtils.clickButton(window, "Close")) {
-            Utils.logError("could not dismiss Tip of the Day because we could not find one of the controls.");
+    public void handleWindow(final Window window, final int eventID) {
+        if (!SwingUtils.clickButton(window, "Close")) {
+            Utils.logError(
+                    "could not dismiss Tip of the Day because we could "
+                    + "not find one of the controls.");
         }
     }
 
     /**
      * Identifies the tip of the day dialog by checking the window title.
+     *
      * @param window the window to identify
      * @return true if this is the tip of the day dialog, false otherwise
      */
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
 
-        return (SwingUtils.titleContains(window, "Tip of the Day"));
+        return SwingUtils.titleContains(
+                window, "Tip of the Day");
     }
 }

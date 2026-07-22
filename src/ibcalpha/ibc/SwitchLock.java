@@ -19,17 +19,23 @@
 package ibcalpha.ibc;
 
 class SwitchLock {
+    /**
+     * Indicates whether the lock is currently set.
+     */
     private boolean mIsSet;
 
     /**
      * Clears the lock by setting the flag to false.
      */
-    synchronized void clear() {mIsSet = false;}
+    synchronized void clear() {
+        mIsSet = false;
+    }
 
     /**
      * Attempts to set the lock flag to true.
      *
-     * @return true if the lock was successfully set (was previously false), false if already set
+     * @return true if the lock was successfully set (was previously false),
+     *     false if already set
      */
     synchronized boolean set() {
         if (mIsSet) {

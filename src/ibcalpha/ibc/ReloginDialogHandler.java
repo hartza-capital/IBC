@@ -26,12 +26,13 @@ public class ReloginDialogHandler implements WindowHandler {
 
     /**
      * Determines whether to process window events for the re-login dialog.
+     *
      * @param window the window to check
      * @param eventId the AWT window event ID
      * @return true if this is a WINDOW_OPENED event, false otherwise
      */
     @Override
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -41,29 +42,36 @@ public class ReloginDialogHandler implements WindowHandler {
     }
 
     /**
-     * Handles the re-login dialog by clicking the Re-login button and updating login state.
+     * Handles the re-login dialog by clicking the Re-login button and updating
+     * login state.
+     *
      * @param window the dialog window
      * @param eventID the AWT window event ID
      */
     @Override
-    public void handleWindow(Window window, int eventID) {
+    public void handleWindow(final Window window, final int eventID) {
         Utils.logToConsole("Re-login to session");
-        if (SwingUtils.clickButton(window, "Re-login"))  {
-            LoginManager.loginManager().setLoginState(LoginManager.LoginState.LOGGING_IN);
+        if (SwingUtils.clickButton(window, "Re-login")) {
+            LoginManager.loginManager().setLoginState(
+                    LoginManager.LoginState.LOGGING_IN);
         } else {
-            Utils.logError("could not handle 'Re-login is required' dialog because the 'Re-login' button wasn't found.");
+            Utils.logError("could not handle 'Re-login is required' dialog "
+                    + "because the 'Re-login' button wasn't found.");
         }
-}
+    }
 
     /**
      * Identifies the re-login dialog by checking the window title.
+     *
      * @param window the window to identify
      * @return true if this is the re-login dialog, false otherwise
      */
     @Override
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
-        return (SwingUtils.titleContains(window, "Re-login is required"));
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
+        return SwingUtils.titleContains(window, "Re-login is required");
     }
 
 }

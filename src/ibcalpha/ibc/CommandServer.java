@@ -19,6 +19,7 @@
 package ibcalpha.ibc;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
@@ -31,51 +32,71 @@ import java.util.List;
 class CommandServer
         implements Runnable {
 
+    /** The server socket accepting client connections. */
     private ServerSocket mSocket = null;
+
+    /** Flag indicating the server loop should exit. */
     private volatile boolean mQuitting = false;
 
-    private static CommandServer _commandServer;
+    /** Singleton instance of the command server. */
+    private static CommandServer instance;
 
 
+    /**
+     * Creates the command server singleton.
+     *
+     * @throws IllegalArgumentException if a CommandServer already exists
+     */
     CommandServer() {
-        if (_commandServer != null) throw new IllegalArgumentException();
-        _commandServer = this;
+        if (instance != null) {
+            throw new IllegalArgumentException();
+        }
+        instance = this;
     }
-    
+
     /**
      * Returns the singleton instance of the CommandServer.
      *
-     * @return the CommandServer instance
+     * @return the CommandServer instance, or null if it has not been created
      */
     public static CommandServer commandServer() {
-        return _commandServer;
+        return instance;
     }
 
     /**
      * Main loop for the CommandServer.
-     * Starts listening on the configured port and accepts incoming client connections.
-     * Each connection is dispatched to a CommandDispatcher in a separate thread.
+     * Starts listening on the configured port and accepts incoming client
+     * connections. Each connection is dispatched to a CommandDispatcher in a
+     * separate thread.
      */
     @Override
     public void run() {
         Thread.currentThread().setName("CommandServer");
 
-        final int port = Settings.settings().getInt("CommandServerPort", 0);
+        final int port = Settings.settings().getInt(
+                "CommandServerPort", 0);
         if (port == 0) {
-            Utils.logToConsole("CommandServer is not started because the port is not configured");
+            Utils.logToConsole(
+                    "CommandServer is not started because the port "
+                    + "is not configured");
             return;
         }
 
-        Utils.logToConsole("CommandServer is starting with port " + port);
+        Utils.logToConsole(
+                "CommandServer is starting with port " + port);
 
         if (createSocket(port)) {
-            Utils.logToConsole("CommandServer started and is ready to accept commands");
+            Utils.logToConsole(
+                    "CommandServer started and is ready to accept "
+                    + "commands");
             for (; !mQuitting;) {
                 // this will return null if the shutDown method is called
-                Socket socket = getClient();
+                final Socket socket = getClient();
 
                 if (socket != null) {
-                    MyCachedThreadPool.getInstance().execute(new CommandDispatcher(new CommandChannel(socket)));
+                    MyCachedThreadPool.getInstance().execute(
+                            new CommandDispatcher(
+                                    new CommandChannel(socket)));
                 }
             }
         }
@@ -110,21 +131,25 @@ class CommandServer
     private boolean createSocket(final int port) {
         final int backlog = 5;
         try {
-            final String bindaddr = Settings.settings().getString("BindAddress", "");
+            final String bindaddr = Settings.settings().getString(
+                    "BindAddress", "");
             if (!bindaddr.isEmpty()) {
-                mSocket = new ServerSocket(port,
-                                            backlog,
-                                            InetAddress.getByName(bindaddr));
-                Utils.logToConsole("CommandServer listening on address: " +
-                                   bindaddr + " port: " +
-                                   java.lang.String.valueOf(port));
+                mSocket = new ServerSocket(
+                        port,
+                        backlog,
+                        InetAddress.getByName(bindaddr));
+                Utils.logToConsole(
+                        "CommandServer listening on address: "
+                        + bindaddr + " port: "
+                        + String.valueOf(port));
             } else {
                 mSocket = new ServerSocket(port, backlog);
-                Utils.logToConsole("CommandServer listening on addresses: " +
-                                   getAddresses() + "; port: " +
-                                   java.lang.String.valueOf(port));
+                Utils.logToConsole(
+                        "CommandServer listening on addresses: "
+                        + getAddresses() + "; port: "
+                        + String.valueOf(port));
             }
-        } catch (java.net.BindException e) {
+        } catch (BindException e) {
             Utils.logException(e);
             Utils.logToConsole("CommandServer failed to create socket");
             Utils.logToConsole("CommandServer cannot process commands");
@@ -144,28 +169,37 @@ class CommandServer
      * Accepts the next incoming client connection from the server socket.
      * Verifies that the client is permitted based on the ControlFrom setting.
      *
-     * @return a connected socket if a permitted client connects, null otherwise or if the server socket is closed
+     * @return a connected socket if a permitted client connects, null otherwise
+     *         or if the server socket is closed
      */
     private Socket getClient() {
         try {
-            if (mSocket.isClosed()) return null;
+            if (mSocket.isClosed()) {
+                return null;
+            }
 
             final Socket socket = mSocket.accept();
 
-            final String allowedAddresses = Settings.settings().getString("ControlFrom", "");
-            Utils.logToConsole("CommandServer: ControlFrom setting = " + allowedAddresses);
+            final String allowedAddresses = Settings.settings().getString(
+                    "ControlFrom", "");
+            Utils.logToConsole(
+                    "CommandServer: ControlFrom setting = "
+                    + allowedAddresses);
 
             if (!isPermittedClient(socket, allowedAddresses)) {
-                Utils.logToConsole("CommandServer denied access to: " +
-                                    socket.getInetAddress().toString());
+                Utils.logToConsole(
+                        "CommandServer denied access to: "
+                        + socket.getInetAddress().toString());
                 socket.close();
                 return null;
             }
 
-            Utils.logToConsole("CommandServer accepted connection from: " + socket.getInetAddress().toString());
+            Utils.logToConsole(
+                    "CommandServer accepted connection from: "
+                    + socket.getInetAddress().toString());
             return socket;
 
-        } catch (java.net.SocketException e) {
+        } catch (SocketException e) {
             // occurs if mSocket is closed during the call to mSocket.accept()
             return null;
         } catch (Exception e) {
@@ -175,9 +209,11 @@ class CommandServer
     }
 
     /**
-     * Returns a comma-separated string of all network addresses on which the server is listening.
+     * Returns a comma-separated string of all network addresses on which the
+     * server is listening.
      *
-     * @return a comma-separated list of IP addresses, or an empty string if none are available
+     * @return a comma-separated list of IP addresses, or an empty string
+     *         if none are available
      */
     private String getAddresses() {
         final List<String> addressList = getAddressList();
@@ -189,25 +225,30 @@ class CommandServer
     }
 
     /**
-     * Enumerates all network interfaces and returns a list of their associated IP addresses.
+     * Enumerates all network interfaces and returns a list of their associated
+     * IP addresses.
      *
      * @return a list of IP address strings from all network interfaces
      */
     private List<String> getAddressList() {
-        List<String> addressList = new ArrayList<>();
+        final List<String> addressList = new ArrayList<>();
         try {
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            final Enumeration<NetworkInterface> interfaces =
+                    NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
-                NetworkInterface iface = interfaces.nextElement();
+                final NetworkInterface iface = interfaces.nextElement();
 
-                Enumeration<InetAddress> addresses = iface.getInetAddresses();
-                while(addresses.hasMoreElements()) {
-                    InetAddress address = addresses.nextElement();
+                final Enumeration<InetAddress> addresses =
+                        iface.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    final InetAddress address = addresses.nextElement();
                     addressList.add(address.getHostAddress());
                 }
             }
         } catch (SocketException e) {
-            Utils.logToConsole("SocketException occurred while enumerating network interfaces");
+            Utils.logToConsole(
+                    "SocketException occurred while enumerating "
+                    + "network interfaces");
             Utils.logException(e);
         }
         return addressList;
@@ -215,24 +256,36 @@ class CommandServer
 
     /**
      * Checks whether a connecting client is permitted to issue commands.
-     * A client is permitted if it is from the local machine, loopback address, or listed in ControlFrom setting.
+     * A client is permitted if it is from the local machine, loopback address,
+     * or listed in ControlFrom setting.
      *
      * @param socket the client socket connection
-     * @param allowedAddresses a comma-separated list of allowed IP addresses or hostnames
+     * @param allowedAddresses a comma-separated list of allowed IP addresses
+     *                         or hostnames
      * @return true if the client is permitted, false otherwise
      */
-    private boolean isPermittedClient(final Socket socket, final String allowedAddresses) {
-        if (socket.getInetAddress().getHostAddress().equals(mSocket.getInetAddress().getHostAddress())) return true;
-        
-        if (socket.getInetAddress().getHostAddress().equals(InetAddress.getLoopbackAddress().getHostAddress())) return true;
+    private boolean isPermittedClient(
+            final Socket socket,
+            final String allowedAddresses) {
+        if (socket.getInetAddress().getHostAddress().equals(
+                mSocket.getInetAddress().getHostAddress())) {
+            return true;
+        }
 
-        for (String allowedClient : allowedAddresses.split(",")){
-            if (allowedClient.equals(socket.getInetAddress().getHostAddress()) ||
-                allowedClient.equalsIgnoreCase(socket.getInetAddress().getHostName())) {
+        if (socket.getInetAddress().getHostAddress().equals(
+                InetAddress.getLoopbackAddress().getHostAddress())) {
+            return true;
+        }
+
+        for (String allowedClient : allowedAddresses.split(",")) {
+            if (allowedClient.equals(
+                    socket.getInetAddress().getHostAddress())
+                    || allowedClient.equalsIgnoreCase(
+                            socket.getInetAddress().getHostName())) {
                 return true;
             }
         }
-        
+
         return false;
     }
 }

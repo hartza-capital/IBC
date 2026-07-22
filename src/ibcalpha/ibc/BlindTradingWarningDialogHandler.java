@@ -23,13 +23,16 @@ import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
 class BlindTradingWarningDialogHandler implements WindowHandler {
+
     /**
-     * Determines whether to process window events for the blind trading warning dialog.
+     * Determines whether to process window events for the blind trading warning
+     * dialog.
+     *
      * @param window the window to check
      * @param eventId the AWT window event ID
      * @return true if this is a WINDOW_OPENED event, false otherwise
      */
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -39,31 +42,39 @@ class BlindTradingWarningDialogHandler implements WindowHandler {
     }
 
     /**
-     * Handles the blind trading warning dialog by overriding and transmitting if AllowBlindTrading is enabled.
+     * Handles the blind trading warning dialog by overriding and transmitting
+     * if AllowBlindTrading is enabled.
+     *
      * @param window the dialog window
      * @param eventID the AWT window event ID
      */
-    public void handleWindow(Window window, int eventID) {
-        if (! Settings.settings().getBoolean("AllowBlindTrading", false)) return;
+    public void handleWindow(final Window window, final int eventID) {
+        if (!Settings.settings().getBoolean("AllowBlindTrading", false)) {
+            return;
+        }
 
-        if (! SwingUtils.clickButton(window, "Override and Transmit") &&
-            ! SwingUtils.clickButton(window, "Yes")) {
+        if (!SwingUtils.clickButton(window, "Override and Transmit")
+                && !SwingUtils.clickButton(window, "Yes")) {
             Utils.logError("could not dismiss blind trading warning dialog.");
         }
     }
 
     /**
-     * Identifies the blind trading warning dialog by checking for specific text patterns.
+     * Identifies the blind trading warning dialog by checking for specific text
+     * patterns.
+     *
      * @param window the window to identify
      * @return true if this is a blind trading warning dialog, false otherwise
      */
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
-        return ((SwingUtils.titleContains(window, "Order Preview")) &&
-                SwingUtils.findTextPane(window, "blind trading") != null)
-                || 
-                ((SwingUtils.findLabel(window, "blind trading") != null &&
-                SwingUtils.findLabel(window, "Are you sure you want to submit this order?") != null));
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
+        return (SwingUtils.titleContains(window, "Order Preview")
+                && SwingUtils.findTextPane(window, "blind trading") != null)
+                || (SwingUtils.findLabel(window, "blind trading") != null
+                && SwingUtils.findLabel(window,
+                        "Are you sure you want to submit this order?") != null);
     }
 
 }

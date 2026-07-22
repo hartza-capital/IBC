@@ -21,58 +21,67 @@ package ibcalpha.ibc;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 
-class EnableApiTask implements ConfigurationAction{
+class EnableApiTask implements ConfigurationAction {
 
-    private final CommandChannel mChannel;
+    /** Command channel used to send acknowledgments to the client. */
+    private final CommandChannel commandChannel;
 
+    /** The TWS Global Configuration dialog passed to this task. */
     private JDialog configDialog;
 
     EnableApiTask(final CommandChannel channel) {
-        mChannel = channel;
+        commandChannel = channel;
     }
 
     /**
      * Enables API connections in the Global Configuration dialog.
      *
-     * Navigates to the API settings, finds the "Enable ActiveX and Socket
-     * Clients" checkbox, and ensures it is selected. Closes the config
-     * dialog and sends appropriate acknowledgment to the client.
+     * <p>Navigates to the API settings, finds the "Enable ActiveX and Socket
+     * Clients" checkbox, and ensures it is selected. Closes the config dialog
+     * and sends appropriate acknowledgment to the client.</p>
      *
-     * @throws IbcException (caught internally) if required controls cannot
-     *     be found
+     * @throws IbcException (caught internally) if required controls cannot be
+     *     found
      */
-    @Override public void run() {
+    @Override
+    public void run() {
         try {
             Utils.logToConsole("Doing ENABLEAPI configuration");
 
             Utils.selectApiSettings(configDialog);
 
-            JCheckBox cb = SwingUtils.findCheckBox(configDialog, "Enable ActiveX and Socket Clients");
-            if (cb == null) throw new IbcException("could not find Enable ActiveX checkbox");
+            final JCheckBox enableApiCheckbox = SwingUtils.findCheckBox(
+                    configDialog, "Enable ActiveX and Socket Clients");
+            if (enableApiCheckbox == null) {
+                throw new IbcException(
+                        "could not find Enable ActiveX checkbox");
+            }
 
-            if (!cb.isSelected()) {
-                cb.doClick();
+            if (!enableApiCheckbox.isSelected()) {
+                enableApiCheckbox.doClick();
                 SwingUtils.clickButton(configDialog, "OK");
-                Utils.logToConsole("TWS has been configured to accept API connections");
-                mChannel.writeAck("configured");
+                Utils.logToConsole(
+                        "TWS has been configured to accept API connections");
+                commandChannel.writeAck("configured");
             } else {
-                Utils.logToConsole("TWS is already configured to accept API connections");
-                mChannel.writeAck("already configured");
+                Utils.logToConsole(
+                        "TWS is already configured to accept API connections");
+                commandChannel.writeAck("already configured");
             }
         } catch (IbcException e) {
             Utils.logError("CommandServer: " + e.getMessage());
-            mChannel.writeNack(e.getMessage());
+            commandChannel.writeNack(e.getMessage());
         }
     }
 
     /**
      * Initializes this task with the global configuration dialog.
      *
-     * @param configDialog the TWS Global Configuration dialog
+     * @param dialog the TWS Global Configuration dialog
      */
     @Override
-    public void initialise(JDialog configDialog) {
-        this.configDialog = configDialog;
+    public void initialise(final JDialog dialog) {
+        configDialog = dialog;
     }
 
 }

@@ -24,16 +24,26 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.JFrame;
 
-class GetMainWindowTask implements Callable<JFrame>{
+/**
+ * Retrieves the main TWS or Gateway window frame once it is available.
+ */
+class GetMainWindowTask implements Callable<JFrame> {
+
+    /** The main application window frame. */
     private volatile JFrame mMainWindow;
+
+    /** Lock protecting access to the main window reference. */
     private final Lock lock = new ReentrantLock();
+
+    /** Condition signalled when the main window reference is set. */
     private final Condition gotFrame = lock.newCondition();
 
     /**
      * Retrieves the main TWS or Gateway window frame.
      *
-     * Waits until the main window is available and returns it.
-     * This is a blocking operation that returns when the window is set via setMainWindow().
+     * Waits until the main window is available and returns it. This is a
+     * blocking operation that returns when the window is set via
+     * setMainWindow().
      *
      * @return the main application window frame
      * @throws InterruptedException if interrupted while waiting for the window
@@ -49,9 +59,14 @@ class GetMainWindowTask implements Callable<JFrame>{
             lock.unlock();
         }
         return mMainWindow;
-    }  
+    }
 
-    void setMainWindow(JFrame window) {
+    /**
+     * Sets the main application window frame and wakes waiters.
+     *
+     * @param window the main application window frame
+     */
+    void setMainWindow(final JFrame window) {
         lock.lock();
         try {
             mMainWindow = window;

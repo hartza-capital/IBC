@@ -24,24 +24,26 @@ import javax.swing.JFrame;
 
 public class SplashFrameHandler implements WindowHandler {
 
-    @Override
     /**
      * Determines whether this handler should act on the given window event.
-     * Only acts on WINDOW_CLOSED because that indicates Gateway is ready to handle menu commands.
      *
-     * @param window the AWT window associated with the event.
-     * @param eventId the AWT event ID.
-     * @return true if this handler should process the event; false otherwise.
+     * <p>Only acts on {@code WINDOW_CLOSED} because that indicates Gateway is
+     * ready to handle menu commands.</p>
+     *
+     * @param window the AWT window associated with the event
+     * @param eventId the AWT event ID
+     * @return true if this handler should process the event; false otherwise
      */
-    public boolean filterEvent(Window window, int eventId) {
+    @Override
+    public boolean filterEvent(final Window window, final int eventId) {
         /*
-         * Note that we are only interested in the closing of the gateway splash
-         * frame, because that indicates that the gateway is now in a position to
-         * start handling menu commands.
+         * Note that we are only interested in the closing of the gateway
+         * splash frame, because that indicates that the gateway is now in a
+         * position to start handling menu commands.
          *
-         * Note also that the splash frame's window title is repeatedly changed during
-         * gateway initialisation, and it's only the last title value that we use for
-         * recognising it
+         * Note also that the splash frame's window title is repeatedly
+         * changed during gateway initialisation, and it's only the last title
+         * value that we use for recognising it.
          */
         switch (eventId) {
             case WindowEvent.WINDOW_CLOSED:
@@ -51,33 +53,38 @@ public class SplashFrameHandler implements WindowHandler {
         }
     }
 
-    @Override
     /**
      * Marks the splash screen as closed and updates login state for Gateway.
-     * For Gateway, sets login state to LOGGED_IN when the splash closes.
      *
-     * @param window the splash frame window.
-     * @param eventID the AWT event ID.
+     * <p>For Gateway, sets login state to {@code LOGGED_IN} when the splash
+     * closes.</p>
+     *
+     * @param window the splash frame window
+     * @param eventID the AWT event ID
      */
-    public void handleWindow(Window window, int eventID) {
+    @Override
+    public void handleWindow(final Window window, final int eventID) {
         if (SessionManager.isGateway()) {
-            LoginManager.loginManager().setLoginState(LoginManager.LoginState.LOGGED_IN);
+            LoginManager.loginManager().setLoginState(
+                    LoginManager.LoginState.LOGGED_IN);
         }
 
         SessionManager.setSplashScreenClosed();
     }
 
-    @Override
     /**
      * Identifies the splash frame by its "Starting application..." title.
      *
-     * @param window the window to identify.
-     * @return true if this is the splash frame; false otherwise.
+     * @param window the window to identify
+     * @return true if this is the splash frame; false otherwise
      */
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JFrame))  return false;
+    @Override
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JFrame)) {
+            return false;
+        }
 
-        return (SwingUtils.titleContains(window, "Starting application..."));
+        return SwingUtils.titleContains(window, "Starting application...");
     }
 
 }

@@ -20,13 +20,24 @@ package ibcalpha.ibc;
 
 import javax.swing.JDialog;
 
+/**
+ * Resets the API order ID sequence in TWS Global Configuration.
+ */
 public class ConfigureResetOrderIdsTask implements ConfigurationAction {
 
+    /** Whether to reset the API order IDs. */
     private final boolean resetOrderIds;
-    private JDialog configDialog;
 
-    ConfigureResetOrderIdsTask(boolean resetOrderIds) {
-        this.resetOrderIds = resetOrderIds;
+    /** The TWS Global Configuration dialog used to perform the reset. */
+    private JDialog mConfigDialog;
+
+    /**
+     * Creates a new task that resets API order IDs when enabled.
+     *
+     * @param shouldResetOrderIds true to reset order IDs; false otherwise
+     */
+    ConfigureResetOrderIdsTask(final boolean shouldResetOrderIds) {
+        this.resetOrderIds = shouldResetOrderIds;
     }
 
     /**
@@ -35,8 +46,8 @@ public class ConfigureResetOrderIdsTask implements ConfigurationAction {
      * @param configDialog the TWS Global Configuration dialog
      */
     @Override
-    public void initialise(JDialog configDialog) {
-        this.configDialog = configDialog;
+    public void initialise(final JDialog configDialog) {
+        this.mConfigDialog = configDialog;
     }
 
     /**
@@ -49,18 +60,25 @@ public class ConfigureResetOrderIdsTask implements ConfigurationAction {
     @Override
     public void run() {
         try {
-            if (!resetOrderIds) return;
-            
+            if (!resetOrderIds) {
+                return;
+            }
+
             Utils.logToConsole("Resetting API order ids");
 
             if (!SessionManager.isGateway()) {
                 // NB: Gateway never displays the confirmation dialog
-                ResetOrderIdConfirmationDialogHandler.orderIdResetRequestedAtStart = true;
+                ResetOrderIdConfirmationDialogHandler
+                        .setOrderIdResetRequestedAtStart(true);
             }
 
-            Utils.selectApiSettings(configDialog);
+            Utils.selectApiSettings(mConfigDialog);
 
-            if (!SwingUtils.clickButton(configDialog, "Reset API order ID sequence")) throw new IbcException("could not find 'Reset API order ID sequence' button"); 
+            if (!SwingUtils.clickButton(
+                    mConfigDialog, "Reset API order ID sequence")) {
+                throw new IbcException(
+                        "could not find 'Reset API order ID sequence' button");
+            }
         } catch (IbcException e) {
             Utils.logException(e);
         }

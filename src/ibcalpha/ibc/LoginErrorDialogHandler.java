@@ -22,10 +22,14 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Handles the Login Error dialog by logging the error and restarting.
+ */
 public class LoginErrorDialogHandler implements WindowHandler {
 
     /**
      * Determines whether to process the given AWT event for this window.
+     *
      * Only handles WINDOW_OPENED events.
      *
      * @param window the window that generated the event
@@ -33,7 +37,7 @@ public class LoginErrorDialogHandler implements WindowHandler {
      * @return true if eventId is WINDOW_OPENED, false otherwise
      */
     @Override
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -43,21 +47,28 @@ public class LoginErrorDialogHandler implements WindowHandler {
     }
 
     /**
-     * Handles the Login Error dialog by logging the error message and initiating a cold restart.
-     * Clicks the OK button to dismiss the dialog before stopping.
+     * Handles the Login Error dialog by logging the error message and
+     * initiating a cold restart. Clicks the OK button to dismiss the dialog
+     * before stopping.
      *
      * @param window the Login Error dialog
      * @param eventID the AWT event ID
      */
     @Override
-    public void handleWindow(Window window, int eventID) {
-        Utils.logToConsole("Login error message:" + SwingUtils.NEWLINE + SwingUtils.getTexts(window));
+    public void handleWindow(final Window window, final int eventID) {
+        Utils.logToConsole(
+                "Login error message:" + SwingUtils.NEWLINE
+                + SwingUtils.getTexts(window));
         Utils.logToConsole("Cold restart in progress");
         // stop tidily and do a cold restart
-        MyCachedThreadPool.getInstance().execute(new StopTask(null, true, "Cold restart after Login Error dialog encountered"));
+        MyCachedThreadPool.getInstance().execute(
+                new StopTask(null, true,
+                        "Cold restart after Login Error dialog encountered"));
 
-        if (! SwingUtils.clickButton(window, "OK")) {
-            Utils.logError("could not dismiss Login Error dialog because we could not find the OK button");
+        if (!SwingUtils.clickButton(window, "OK")) {
+            Utils.logError(
+                    "could not dismiss Login Error dialog because we could not "
+                    + "find the OK button");
         }
     }
 
@@ -65,13 +76,16 @@ public class LoginErrorDialogHandler implements WindowHandler {
      * Identifies the Login Error dialog by checking the window type and title.
      *
      * @param window the window to check
-     * @return true if the window is a JDialog with "Login Error" in its title, false otherwise
+     * @return true if the window is a JDialog with "Login Error" in its
+     *         title, false otherwise
      */
     @Override
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
 
-        return (SwingUtils.titleContains(window, "Login Error"));
+        return SwingUtils.titleContains(window, "Login Error");
     }
-    
+
 }

@@ -22,10 +22,14 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Handles the Security Code Card Authentication dialog.
+ */
 public class SecurityCodeDialogHandler implements WindowHandler {
 
     /**
      * Determines whether to process the given AWT event for this window.
+     *
      * Only handles WINDOW_OPENED events.
      *
      * @param window the window that generated the event
@@ -33,7 +37,7 @@ public class SecurityCodeDialogHandler implements WindowHandler {
      * @return true if eventId is WINDOW_OPENED, false otherwise
      */
     @Override
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -43,15 +47,17 @@ public class SecurityCodeDialogHandler implements WindowHandler {
     }
 
     /**
-     * Handles the Security Code Card Authentication dialog by initiating a read-only login
-     * if the ReadOnlyLogin configuration setting is enabled.
+     * Handles the Security Code Card Authentication dialog by initiating a
+     * read-only login if the ReadOnlyLogin configuration setting is enabled.
      *
      * @param window the Security Code Card Authentication dialog
      * @param eventID the AWT event ID
      */
     @Override
-    public void handleWindow(Window window, int eventID) {
-        if (! Settings.settings().getBoolean("ReadOnlyLogin", false)) return;
+    public void handleWindow(final Window window, final int eventID) {
+        if (!Settings.settings().getBoolean("ReadOnlyLogin", false)) {
+            return;
+        }
 
         if (SwingUtils.clickButton(window, "Enter Read Only")) {
             Utils.logToConsole("initiating read-only login.");
@@ -61,15 +67,19 @@ public class SecurityCodeDialogHandler implements WindowHandler {
     }
 
     /**
-     * Identifies the Security Code Card Authentication dialog by checking for the "Enter Read Only" button.
+     * Identifies the Security Code Card Authentication dialog by checking for
+     * the "Enter Read Only" button.
      *
      * @param window the window to check
-     * @return true if the window is a JDialog with an "Enter Read Only" button, false otherwise
+     * @return true if the window is a JDialog with an "Enter Read Only" button,
+     *         false otherwise
      */
     @Override
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
-        return (SwingUtils.findButton(window, "Enter Read Only") != null);
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
+        return SwingUtils.findButton(window, "Enter Read Only") != null;
     }
 
 }

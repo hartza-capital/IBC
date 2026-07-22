@@ -27,44 +27,83 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-class TwsSettingsSaver {
+/**
+ * Schedules automatic saves of TWS/Gateway settings at configured times.
+ */
+final class TwsSettingsSaver {
     /**
      * Singleton instance responsible for scheduling automatic TWS/Gateway
      * settings saves.
      */
-    private static final TwsSettingsSaver instance = new TwsSettingsSaver();
+    private static final TwsSettingsSaver INSTANCE = new TwsSettingsSaver();
+
     /**
      * Formats and parses the hh:mm times configured for automatic settings
      * saving.
      */
-    private static final DateFormat dateFormat = new SimpleDateFormat("HH:mm");
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm");
 
+    /**
+     * Number of minutes in one hour.
+     */
+    private static final int MINUTES_PER_HOUR = 60;
+
+    /**
+     * Minimum permitted automatic-save interval in minutes.
+     */
+    private static final int MIN_INTERVAL_MINUTES = 1;
+
+    /**
+     * Maximum permitted automatic-save interval in minutes.
+     */
+    private static final int MAX_INTERVAL_MINUTES = 1439;
+
+    /**
+     * Number of milliseconds in one day.
+     */
+    private static final long MILLIS_PER_DAY = 86400000L;
 
     /**
      * Private constructor prevents external instantiation of this singleton
      * scheduler.
      */
-    private TwsSettingsSaver() {};
-
-    static TwsSettingsSaver getInstance() {return instance;}
+    private TwsSettingsSaver() {
+    }
 
     /**
-     * Initializes automatic TWS settings saving based on the SaveTwsSettingsAt configuration.
+     * Returns the singleton settings saver.
      *
-     * Configuration format: SaveTwsSettingsAt=hh:mm [hh:mm]... or SaveTwsSettingsAt=Every n [{mins | hours}] [hh:mm [hh:mm]]
+     * @return the shared {@link TwsSettingsSaver} instance
+     */
+    static TwsSettingsSaver getInstance() {
+        return INSTANCE;
+    }
+
+    /**
+     * Initializes automatic TWS settings saving based on the
+     * SaveTwsSettingsAt configuration.
+     *
+     * <p>Configuration format:
+     * {@code SaveTwsSettingsAt=hh:mm [hh:mm]...}
+     * or
+     * {@code SaveTwsSettingsAt=Every n [{mins | hours}] [hh:mm [hh:mm]]}
      */
     public void initialise() {
         // setting format: SaveTwsSettingsAt=hh:mm [hh:mm]...
-        //             or: SaveTwsSettingsAt=Every n [{mins | hours}] [hh:mm [hh:mm]]
-        String timesSetting = Settings.settings().getString("SaveTwsSettingsAt", "");
-        if (timesSetting.length() == 0) return;
+        //             or: SaveTwsSettingsAt=Every n [{mins | hours}]
+        //                                [hh:mm [hh:mm]]
+        String timesSetting =
+                Settings.settings().getString("SaveTwsSettingsAt", "");
+        if (timesSetting.length() == 0) {
+            return;
+        }
 
         String[] times = timesSetting.split("[ ]+");
 
         List<Date> saveTimes;
 
         try {
-            if (!times[0].equalsIgnoreCase("Every")){
+            if (!times[0].equalsIgnoreCase("Every")) {
                 saveTimes = convertSuppliedTimes(times);
             } else {
                 saveTimes = generateSaveTimes(times);
@@ -75,19 +114,23 @@ class TwsSettingsSaver {
             }
 
         } catch (IbcException e) {
-            Utils.logError("Invalid setting SaveTwsSettingsAt=" + timesSetting + ": " + e.getMessage() + "\nTWS Settings will not be saved automatically");
+            Utils.logError("Invalid setting SaveTwsSettingsAt=" + timesSetting
+                    + ": " + e.getMessage()
+                    + "\nTWS Settings will not be saved automatically");
         }
 
     }
 
     /**
-     * Adjusts a calendar to the next day if the current time has already passed.
+     * Adjusts a calendar to the next day if the current time has already
+     * passed.
      *
      * @param calendar the calendar to adjust
-     * @return an adjusted calendar set to tomorrow if the original time is in the past, otherwise the original calendar
+     * @return an adjusted calendar set to tomorrow if the original time is in
+     *         the past, otherwise the original calendar
      */
-    private static Calendar adjustCalendar(Calendar calendar) {
-        Calendar cal = (Calendar)calendar.clone();
+    private static Calendar adjustCalendar(final Calendar calendar) {
+        Calendar cal = (Calendar) calendar.clone();
         if (!cal.getTime().after(new Date())) {
             cal.add(Calendar.DAY_OF_MONTH, 1);
         }
@@ -95,13 +138,15 @@ class TwsSettingsSaver {
     }
 
     /**
-     * Converts an array of explicit time strings (hh:mm format) into a list of future save times.
+     * Converts an array of explicit time strings (hh:mm format) into a list of
+     * future save times.
      *
      * @param times the array of time strings in hh:mm format
      * @return a list of Date objects representing the save times
      * @throws IbcException if any time string is not in valid hh:mm format
      */
-    private static List<Date> convertSuppliedTimes(String[] times) throws IbcException {
+    private static List<Date> convertSuppliedTimes(final String[] times)
+            throws IbcException {
         List<Date> saveTimes = new ArrayList<>();
         for (String time : times) {
             saveTimes.add(adjustCalendar(getCalendarForTime(time)).getTime());
@@ -110,32 +155,40 @@ class TwsSettingsSaver {
     }
 
     /**
-     * Generates a list of save times at regular intervals, optionally within a time range.
+     * Generates a list of save times at regular intervals, optionally within
+     * a time range.
      *
-     * @param times an array starting with "Every", followed by interval count, optional unit (mins/hours), optional start and end times
+     * @param times an array starting with "Every", followed by interval count,
+     *              optional unit (mins/hours), optional start and end times
      * @return a list of Date objects representing the generated save times
-     * @throws IbcException if the interval is not a valid integer or falls outside the 1-1439 minute range
+     * @throws IbcException if the interval is not a valid integer or falls
+     *                      outside the 1-1439 minute range
      */
-    private static List<Date> generateSaveTimes(String[] times) throws IbcException {
+    private static List<Date> generateSaveTimes(final String[] times)
+            throws IbcException {
         int interval = 0;
         try {
             interval = Integer.parseInt(times[1]);
         } catch (NumberFormatException e) {
-            throw new IbcException("interval is '" + times[1] + "' but should be an integer");
+            throw new IbcException("interval is '" + times[1]
+                    + "' but should be an integer");
         }
 
         int nextIndex = 2;
 
         if (times.length > 2) {
             if (times[2].equalsIgnoreCase("mins")) {
-                nextIndex = 3;
+                nextIndex = nextIndex + 1;
             } else if (times[2].equalsIgnoreCase("hours")) {
-                nextIndex = 3;
-                interval = 60 * interval;
+                nextIndex = nextIndex + 1;
+                interval = MINUTES_PER_HOUR * interval;
             }
         }
-        if (interval < 1 || interval > 1439) {
-            throw new IbcException("the saving interval must be between 1 and 1439 minutes");
+        if (interval < MIN_INTERVAL_MINUTES
+                || interval > MAX_INTERVAL_MINUTES) {
+            throw new IbcException("the saving interval must be between "
+                    + MIN_INTERVAL_MINUTES + " and " + MAX_INTERVAL_MINUTES
+                    + " minutes");
         }
 
         String startTime = "00:00";
@@ -152,7 +205,7 @@ class TwsSettingsSaver {
         if (!startCal.before(endCal)) {
             endCal.add(Calendar.DAY_OF_MONTH, 1);
         }
-  
+
         List<Date> saveTimes = new ArrayList<Date>();
         while (startCal.before(endCal)) {
             saveTimes.add(adjustCalendar(startCal).getTime());
@@ -170,12 +223,14 @@ class TwsSettingsSaver {
      * @return a Calendar object set to the specified time
      * @throws IbcException if the time string is not in valid hh:mm format
      */
-    private static Calendar getCalendarForTime(String time) throws IbcException {
+    private static Calendar getCalendarForTime(final String time)
+            throws IbcException {
         Calendar cal = Calendar.getInstance();
         try {
-            cal.setTime(dateFormat.parse(time));
+            cal.setTime(DATE_FORMAT.parse(time));
         } catch (ParseException e) {
-            throw new IbcException("value '" + time + "' should be in hh:mm format");
+            throw new IbcException("value '" + time
+                    + "' should be in hh:mm format");
         }
         int saveHour = cal.get(Calendar.HOUR_OF_DAY);
         int saveMinute = cal.get(Calendar.MINUTE);
@@ -187,18 +242,22 @@ class TwsSettingsSaver {
     }
 
     /**
-     * Schedules a recurring task to save TWS settings at the specified time every day.
+     * Schedules a recurring task to save TWS settings at the specified time
+     * every day.
      *
      * @param saveTime the time at which to save TWS settings
      */
-    private static void scheduleSave(Date saveTime) {
-        Utils.logToConsole("Tws settings will be saved at " + dateFormat.format(saveTime));
+    private static void scheduleSave(final Date saveTime) {
+        Utils.logToConsole("Tws settings will be saved at "
+                + DATE_FORMAT.format(saveTime));
 
         MyScheduledExecutorService.getInstance().scheduleAtFixedRate(() -> {
             Utils.logToConsole("Saving Tws settings");
-            Utils.invokeMenuItem(MainWindowManager.mainWindowManager().getMainWindow(), new String[] {"File", "Save Settings"});
-        }, saveTime.getTime() - System.currentTimeMillis(), 86400000, TimeUnit.MILLISECONDS);
+            Utils.invokeMenuItem(
+                    MainWindowManager.mainWindowManager().getMainWindow(),
+                    new String[] {"File", "Save Settings"});
+        }, saveTime.getTime() - System.currentTimeMillis(),
+                MILLIS_PER_DAY, TimeUnit.MILLISECONDS);
     }
 
 }
-
