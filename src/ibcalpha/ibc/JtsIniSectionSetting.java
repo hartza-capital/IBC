@@ -26,26 +26,62 @@ class JtsIniSectionSetting {
     /**
      * The section header (e.g., "[Logon]" or "[IBGateway]").
      */
-    String section;
+    private final String section;
 
     /**
      * The setting line content (e.g., "Locale=en" or "ApiOnly=true").
      */
-    String setting;
+    private final String setting;
 
     /**
      * Flag indicating whether this setting has been written to the ini file.
      */
-    boolean isProcessed;
+    private boolean isProcessed;
 
     /**
      * Constructs a JtsIniSectionSetting with the specified section and setting.
      *
-     * @param section the section header for this setting
-     * @param setting the setting line content
+     * @param sectionHeader the section header for this setting
+     * @param settingLine the setting line content
      */
-    JtsIniSectionSetting(String section, String setting) {
-        this.section = section;
-        this.setting = setting;
+    JtsIniSectionSetting(final String sectionHeader, final String settingLine) {
+        this.section = sectionHeader;
+        this.setting = settingLine;
+    }
+
+    /**
+     * Returns the section header for this setting.
+     *
+     * @return the section header
+     */
+    String getSection() {
+        return section;
+    }
+
+    /**
+     * Returns the setting line content.
+     *
+     * @return the setting line
+     */
+    String getSetting() {
+        return setting;
+    }
+
+    /**
+     * Returns whether this setting has been written to the ini file.
+     *
+     * @return true if processed, false otherwise
+     */
+    boolean isProcessed() {
+        return isProcessed;
+    }
+
+    /**
+     * Marks this setting as processed or unprocessed.
+     *
+     * @param processed true to mark as processed, false otherwise
+     */
+    void setProcessed(final boolean processed) {
+        this.isProcessed = processed;
     }
 }
