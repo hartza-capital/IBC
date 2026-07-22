@@ -38,9 +38,6 @@ import javax.swing.JPanel;
 class RestartTask
         implements Runnable {
 
-    /** Number of seconds in a minute. */
-    private static final int SECONDS_IN_MINUTE = 60;
-
     /** Number of minutes in an hour. */
     private static final int MINUTES_IN_HOUR = 60;
 

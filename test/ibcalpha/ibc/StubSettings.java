@@ -22,10 +22,6 @@ final class StubSettings extends Settings {
         values.put(key, Boolean.toString(value));
     }
 
-    void set(String key, int value) {
-        values.put(key, Integer.toString(value));
-    }
-
     @Override
     public void logDiagnosticMessage() {
         // no-op for tests

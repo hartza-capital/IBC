@@ -18,7 +18,6 @@
 
 package ibcalpha.ibc;
 
-import java.awt.Frame;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;

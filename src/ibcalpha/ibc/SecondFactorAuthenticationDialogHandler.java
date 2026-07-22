@@ -21,8 +21,6 @@ package ibcalpha.ibc;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
-import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.ListModel;
