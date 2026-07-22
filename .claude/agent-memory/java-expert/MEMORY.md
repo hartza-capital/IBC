@@ -1,3 +1,4 @@
 - [IBC testability](ibc-testability.md) — most classes are unit-testable headlessly; blockers are static singletons and `System.exit`.
 - [IBC build requirements](ibc-build-requirements.md) — `IBC_BIN` needs a real TWS/Gateway jars dir; IBKR coupling is compile-time via fully-qualified calls.
 - [IBC fork ownership](ibc-fork-ownership.md) — fork of IbcAlpha/IBC: all src files look modified, only ~12 truly diverge; scope edits to those.
+- [IBC checkstyle setup](ibc-checkstyle-setup.md) — effective ruleset is the default sun_checks; clear the local cache or the report hides files; `test/` unscanned.

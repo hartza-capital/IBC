@@ -45,8 +45,9 @@ this fork does not contain.
   found in upstream-verbatim files and report it for a future upstream PR.
 - Unused-import removal is the safe exception — trivial and low-conflict even in
   upstream files.
-- The ~2600 checkstyle violations are almost entirely upstream style debt; do not
-  "fix" them repo-wide.
+- The checkstyle violations are almost entirely upstream style debt; do not
+  "fix" them repo-wide. (Count corrected 2026-07-22: 144 measured, not ~2600 —
+  see [[ibc-checkstyle-setup]] for the measurement basis.)
 - Static call-graph tools are near-useless here: IBC dispatches Swing window
   events polymorphically, so `WindowHandler.recogniseWindow`/`filterEvent`/
   `handleWindow`, `Runnable.run`, `Callable.call`, constructors, and Swing
