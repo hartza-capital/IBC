@@ -21,7 +21,7 @@ package ibcalpha.ibc;
 public class IbcException extends Exception {
     private static final long serialVersionUID = 20140324L;
 
-    IbcException(String message){
+    IbcException(final String message) {
         super(message);
     }
 

@@ -23,7 +23,6 @@ import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
 class GlobalConfigurationDialogHandler implements WindowHandler {
-    @Override
     /**
      * Determines whether this handler should act on the given window event.
      * Acts on both WINDOW_OPENED and WINDOW_CLOSED events.
@@ -32,7 +31,8 @@ class GlobalConfigurationDialogHandler implements WindowHandler {
      * @param eventId the AWT event ID.
      * @return true if this handler should process the event; false otherwise.
      */
-    public boolean filterEvent(Window window, int eventId) {
+    @Override
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -43,7 +43,6 @@ class GlobalConfigurationDialogHandler implements WindowHandler {
         }
     }
 
-    @Override
     /**
      * Handles the Global Configuration dialog lifecycle.
      * Registers the dialog when opened and clears it when closed.
@@ -51,25 +50,32 @@ class GlobalConfigurationDialogHandler implements WindowHandler {
      * @param window the Global Configuration dialog.
      * @param eventId the AWT event ID (WINDOW_OPENED or WINDOW_CLOSED).
      */
-    public void handleWindow(final Window window, int eventId) {
+    @Override
+    public void handleWindow(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
-                ConfigDialogManager.configDialogManager().setConfigDialog((JDialog) window);
+                ConfigDialogManager.configDialogManager()
+                    .setConfigDialog((JDialog) window);
                 break;
             case WindowEvent.WINDOW_CLOSED:
                 ConfigDialogManager.configDialogManager().clearConfigDialog();
+                break;
+            default:
+                break;
         }
     }
 
-    @Override
     /**
      * Identifies whether the window is the Global Configuration dialog.
      *
      * @param window the window to identify.
      * @return true if this is the Global Configuration dialog; false otherwise.
      */
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
+    @Override
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
 
         return (SwingUtils.titleContains(window, "Configuration"));
     }

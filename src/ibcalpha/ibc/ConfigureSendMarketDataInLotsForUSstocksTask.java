@@ -26,20 +26,24 @@ package ibcalpha.ibc;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 
-public class ConfigureSendMarketDataInLotsForUSstocksTask implements ConfigurationAction{
+public class ConfigureSendMarketDataInLotsForUSstocksTask
+    implements ConfigurationAction {
 
     private final boolean sendMarketDataInLots;
     private JDialog configDialog;
 
-    ConfigureSendMarketDataInLotsForUSstocksTask(boolean sendMarketDataInLots) {
-        this.sendMarketDataInLots = sendMarketDataInLots;
+    ConfigureSendMarketDataInLotsForUSstocksTask(
+        final boolean enabled) {
+        this.sendMarketDataInLots = enabled;
     }
 
     /**
      * Configures the Send Market Data In Lots setting for US stocks.
      *
-     * Opens the API settings section and sets the checkbox to the specified value.
-     * On older TWS versions that lack this setting, logs an error but does not fail.
+     * Opens the API settings section and sets the checkbox to the
+     * specified value.
+     * On older TWS versions that lack this setting,
+     * logs an error but does not fail.
      */
     @Override
     public void run() {
@@ -48,18 +52,29 @@ public class ConfigureSendMarketDataInLotsForUSstocksTask implements Configurati
 
             Utils.selectApiSettings(configDialog);
 
-            JCheckBox sendMarketDataInLotsCheckbox = SwingUtils.findCheckBox(configDialog, "Send market data in lots for US stocks for dual-mode API clients");
+            JCheckBox sendMarketDataInLotsCheckbox =
+                SwingUtils.findCheckBox(configDialog,
+                    "Send market data in lots for US stocks for"
+                    + " dual-mode API clients");
             if (sendMarketDataInLotsCheckbox == null) {
-                // NB: we don't throw here because older TWS versions did not have this setting
-                Utils.logError("could not find Send Market Data In Lots checkbox");
+                // NB: we don't throw here because older TWS
+                // versions did not have this setting
+                Utils.logError(
+                    "could not find Send Market Data In Lots checkbox");
                 return;
             }
 
-            if (sendMarketDataInLotsCheckbox.isSelected() == sendMarketDataInLots) {
-                Utils.logToConsole("Send Market Data In Lots checkbox is already set to: " + sendMarketDataInLots);
+            if (sendMarketDataInLotsCheckbox.isSelected()
+                == sendMarketDataInLots) {
+                Utils.logToConsole(
+                    "Send Market Data In Lots checkbox is already"
+                    + " set to: " + sendMarketDataInLots);
             } else {
-                sendMarketDataInLotsCheckbox.setSelected(sendMarketDataInLots);
-                Utils.logToConsole("Send Market Data In Lots checkbox is now set to: " + sendMarketDataInLots);
+                sendMarketDataInLotsCheckbox.setSelected(
+                    sendMarketDataInLots);
+                Utils.logToConsole(
+                    "Send Market Data In Lots checkbox is now"
+                    + " set to: " + sendMarketDataInLots);
             }
         } catch (IbcException e) {
             Utils.logException(e);
@@ -69,10 +84,10 @@ public class ConfigureSendMarketDataInLotsForUSstocksTask implements Configurati
     /**
      * Initializes this task with the global configuration dialog.
      *
-     * @param configDialog the TWS Global Configuration dialog
+     * @param dialog the TWS Global Configuration dialog
      */
     @Override
-    public void initialise(JDialog configDialog) {
-        this.configDialog = configDialog;
+    public void initialise(final JDialog dialog) {
+        this.configDialog = dialog;
     }
 }

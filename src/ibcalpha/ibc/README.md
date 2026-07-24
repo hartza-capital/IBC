@@ -136,7 +136,7 @@ Handlers for less critical dialogs (Tip of the Day, Blind Trading Warning, etc.)
 **DefaultLoginManager.java** (9 KB)
 
 - Concrete implementation; parses credentials from config file or command-line args
-- `FIXUserName()`, `FIXPassword()`, `IBAPIUserName()`, `IBAPIPassword()` — return credentials
+- `fixUserName()`, `fixPassword()`, `ibapiUserName()`, `ibapiPassword()` — return credentials
 - `getLoginHandler()` / `setLoginHandler()` — register the active login handler (TWS or Gateway)
 
 **AbstractLoginHandler.java** (11 KB)

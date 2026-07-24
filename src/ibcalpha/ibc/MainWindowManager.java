@@ -23,28 +23,33 @@ import javax.swing.JFrame;
 
 public abstract class MainWindowManager {
 
-    private static MainWindowManager _mainWindowManager;
+    private static MainWindowManager instance;
 
     static {
-        _mainWindowManager = new DefaultMainWindowManager();
+        instance = new DefaultMainWindowManager();
     }
 
     /**
-     * Sets the global MainWindowManager instance to the specified implementation.
+     * Sets the global MainWindowManager instance to the specified
+     * implementation.
      *
-     * @param mainWindowManager the MainWindowManager instance to use; must not be null
+     * @param mainWindowManager the MainWindowManager instance to use; must
+     *     not be null
      * @throws IllegalArgumentException if mainWindowManager is null
      */
-    public static void initialise(MainWindowManager mainWindowManager){
-        if (mainWindowManager == null) throw new IllegalArgumentException("mainWindowManager");
-        _mainWindowManager = mainWindowManager;
+    public static void initialise(final MainWindowManager mainWindowManager) {
+        if (mainWindowManager == null) {
+            throw new IllegalArgumentException("mainWindowManager");
+        }
+        instance = mainWindowManager;
     }
 
     /**
-     * Resets the global MainWindowManager instance to a new DefaultMainWindowManager.
+     * Resets the global MainWindowManager instance to a new
+     * DefaultMainWindowManager.
      */
     public static void setDefault() {
-        _mainWindowManager = new DefaultMainWindowManager();
+        instance = new DefaultMainWindowManager();
     }
 
     /**
@@ -53,7 +58,7 @@ public abstract class MainWindowManager {
      * @return the active MainWindowManager instance
      */
     public static MainWindowManager mainWindowManager() {
-        return _mainWindowManager;
+        return instance;
     }
 
     /**
@@ -61,27 +66,24 @@ public abstract class MainWindowManager {
      */
     public abstract void logDiagnosticMessage();
 
-
     /**
      * Returns the main window, if necessary blocking the calling thread until
      * either it is available or a specified timeout has elapsed.
      *
-     * If the main window is currently open, it is returned immediately without blocking
-     * the calling thread.
+     * If the main window is currently open, it is returned immediately
+     * without blocking the calling thread.
      *
-     * Calling this method from the Swing event dispatch thread results in an IllegalStateException
-     * being thrown.
+     * Calling this method from the Swing event dispatch thread results in an
+     * IllegalStateException being thrown.
      *
-     * @param timeout
-     * the length of time to wait for the main window to become available. If this is
-     * negative, the calling thread blocks until the window becomes available.
-     * @param unit
-     * the time units for the timeout parameter
-     * @return
-     * null if the timeout expires before the main window becomes available; otherwise
-     * the main window
-     * @throws IllegalStateException
-     * the method has been called from the Swing event dispatch thread
+     * @param timeout the length of time to wait for the main window to
+     *     become available. If this is negative, the calling thread blocks
+     *     until the window becomes available.
+     * @param unit the time units for the timeout parameter
+     * @return null if the timeout expires before the main window becomes
+     *     available; otherwise the main window
+     * @throws IllegalStateException the method has been called from the
+     *     Swing event dispatch thread
      */
     public abstract JFrame getMainWindow(long timeout, TimeUnit unit);
 
@@ -89,16 +91,15 @@ public abstract class MainWindowManager {
      * Returns the main window, if necessary blocking the calling thread until
      * it is available.
      *
-     * If the main window is currently open, it is returned immediately without blocking
-     * the calling thread.
+     * If the main window is currently open, it is returned immediately
+     * without blocking the calling thread.
      *
-     * Calling this method from the Swing event dispatch thread results in an IllegalStateException
-     * being thrown.
+     * Calling this method from the Swing event dispatch thread results in an
+     * IllegalStateException being thrown.
      *
-     * @return
-     * the main window
-     * @throws IllegalStateException
-     * the method has been called from the Swing event dispatch thread
+     * @return the main window
+     * @throws IllegalStateException the method has been called from the
+     *     Swing event dispatch thread
      */
     public abstract JFrame getMainWindow() throws IllegalStateException;
 

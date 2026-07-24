@@ -109,22 +109,22 @@ class LoginManagerTest {
         }
 
         @Override
-        public String FIXPassword() {
+        public String fixPassword() {
             return "fixpass";
         }
 
         @Override
-        public String FIXUserName() {
+        public String fixUserName() {
             return "fixuser";
         }
 
         @Override
-        public String IBAPIPassword() {
+        public String ibapiPassword() {
             return "apipass";
         }
 
         @Override
-        public String IBAPIUserName() {
+        public String ibapiUserName() {
             return "apiuser";
         }
 

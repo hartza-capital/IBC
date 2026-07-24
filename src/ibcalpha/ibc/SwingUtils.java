@@ -48,7 +48,13 @@ import javax.swing.ListModel;
 import javax.swing.MenuElement;
 import javax.swing.tree.TreeModel;
 
-class SwingUtils {
+final class SwingUtils {
+
+    /**
+     * Utility class constructor should not be public or default.
+     */
+    private SwingUtils() {
+    }
 
     static final String NEWLINE = System.lineSeparator();
 
@@ -63,20 +69,25 @@ class SwingUtils {
      */
     static boolean clickButton(final Window window, final String buttonText) {
         final JButton button = findButton(window, buttonText);
-        if (button == null) return false;
+        if (button == null) {
+            return false;
+        }
         clickButton(button);
         return true;
     }
 
     static void clickButton(final JButton button) {
-        if (! button.isEnabled()) {
+        if (!button.isEnabled()) {
             button.setEnabled(true);
-            Utils.logToConsole("Button was disabled, has been enabled: " + button.getText());
+            Utils.logToConsole("Button was disabled, has been enabled: "
+                    + button.getText());
         }
 
         Utils.logToConsole("Click button: " + button.getText());
         button.doClick();
-        if (! button.isEnabled()) Utils.logToConsole("Button now disabled: " + button.getText());
+        if (!button.isEnabled()) {
+            Utils.logToConsole("Button now disabled: " + button.getText());
+        }
     }
 
     /**
@@ -89,11 +100,14 @@ class SwingUtils {
      * @return
      *  the button, if was found;  otherwise null
      */
-    static JButton findButton(Container container, String text) {
+    static JButton findButton(final Container container, final String text) {
         ComponentIterator iter = new ComponentIterator(container);
         while (iter.hasNext()) {
             Component component = iter.next();
-            if (component instanceof JButton && text.equalsIgnoreCase(((JButton)component).getText())) return (JButton)component;
+            if (component instanceof JButton && text.equalsIgnoreCase(
+                    ((JButton) component).getText())) {
+                return (JButton) component;
+            }
         }
         return null;
     }
@@ -108,11 +122,15 @@ class SwingUtils {
      * @return
      *  the checkbox, if it was found;  otherwise null
      */
-    static JCheckBox findCheckBox(Container container, String text) {
+    static JCheckBox findCheckBox(final Container container,
+            final String text) {
         ComponentIterator iter = new ComponentIterator(container);
         while (iter.hasNext()) {
             Component component = iter.next();
-            if (component instanceof JCheckBox && text.equalsIgnoreCase(((JCheckBox)component).getText())) return (JCheckBox)component;
+            if (component instanceof JCheckBox && text.equalsIgnoreCase(
+                    ((JCheckBox) component).getText())) {
+                return (JCheckBox) component;
+            }
         }
         return null;
     }
@@ -129,12 +147,14 @@ class SwingUtils {
      * @return
      *  the required JComboBox if it is found, otherwise null
      */
-    static JComboBox<?> findComboBox(Container container, int ith) {
+    static JComboBox<?> findComboBox(final Container container, final int ith) {
         ComponentIterator iter = new ComponentIterator(container);
         int i = 0;
         while (iter.hasNext()) {
             Component component = iter.next();
-            if (component instanceof JComboBox<?> && i++ == ith) return (JComboBox<?>)component;
+            if (component instanceof JComboBox<?> && i++ == ith) {
+                return (JComboBox<?>) component;
+            }
         }
         return null;
     }
@@ -149,11 +169,14 @@ class SwingUtils {
      * @return
      *  the Component, if it was found;  otherwise null
      */
-    static Component findComponent(Container container, String text) {
+    static Component findComponent(final Container container,
+            final String text) {
         ComponentIterator iter = new ComponentIterator(container);
         while (iter.hasNext()) {
             Component component = iter.next();
-            if (text.equalsIgnoreCase(component.getName())) return component;
+            if (text.equalsIgnoreCase(component.getName())) {
+                return component;
+            }
         }
         return null;
     }
@@ -168,11 +191,15 @@ class SwingUtils {
      * @return
      *  the radio button, if it was found;  otherwise null
      */
-    static JRadioButton findRadioButton(Container container, String text) {
+    static JRadioButton findRadioButton(final Container container,
+            final String text) {
         ComponentIterator iter = new ComponentIterator(container);
         while (iter.hasNext()) {
             Component component = iter.next();
-            if (component instanceof JRadioButton && text.equalsIgnoreCase(((JRadioButton)component).getText())) return (JRadioButton)component;
+            if (component instanceof JRadioButton && text.equalsIgnoreCase(
+                    ((JRadioButton) component).getText())) {
+                return (JRadioButton) component;
+            }
         }
         return null;
     }
@@ -187,11 +214,15 @@ class SwingUtils {
      * @return
      *  the JLabel, if it was found;  otherwise null
      */
-    static JLabel findLabel(Container container, String text) {
+    static JLabel findLabel(final Container container, final String text) {
         ComponentIterator iter = new ComponentIterator(container);
         while (iter.hasNext()) {
             Component component = iter.next();
-            if (component instanceof JLabel && ((JLabel)component).getText() != null &&  ((JLabel)component).getText().toLowerCase().contains(text.toLowerCase())) return (JLabel)component;
+            if (component instanceof JLabel && ((JLabel) component).getText()
+                    != null && ((JLabel) component).getText().toLowerCase()
+                    .contains(text.toLowerCase())) {
+                return (JLabel) component;
+            }
         }
         return null;
     }
@@ -208,12 +239,14 @@ class SwingUtils {
      * @return
      *  the required JList if it is found, otherwise null
      */
-    static JList<?> findList(Container container, int ith) {
+    static JList<?> findList(final Container container, final int ith) {
         ComponentIterator iter = new ComponentIterator(container);
         int i = 0;
         while (iter.hasNext()) {
             Component component = iter.next();
-            if (component instanceof JList<?> && i++ == ith) return (JList<?>)component;
+            if (component instanceof JList<?> && i++ == ith) {
+                return (JList<?>) component;
+            }
         }
         return null;
     }
@@ -228,29 +261,33 @@ class SwingUtils {
      * @return
      *  the JTextArea, if it was found;  otherwise null
      */
-    static JTextArea findTextArea(Container container, String text) {
+    static JTextArea findTextArea(final Container container,
+            final String text) {
         ComponentIterator iter = new ComponentIterator(container);
         while (iter.hasNext()) {
             Component component = iter.next();
             if (component instanceof JTextArea) {
-                String content = ((JTextArea)component).getText();
-                if (content != null && content.toLowerCase().contains(text.toLowerCase())) {
-                    return (JTextArea)component;
+                String content = ((JTextArea) component).getText();
+                if (content != null && content.toLowerCase()
+                        .contains(text.toLowerCase())) {
+                    return (JTextArea) component;
                 }
             }
         }
         return null;
     }
 
-    static String getLabelTexts(Container container) {
+    static String getLabelTexts(final Container container) {
         ComponentIterator iter = new ComponentIterator(container);
         String s = "";
         while (iter.hasNext()) {
             Component component = iter.next();
             if (component instanceof JLabel) {
-                String content = ((JLabel)component).getText();
+                String content = ((JLabel) component).getText();
                 if (content != null) {
-                    if (s.length() != 0) s += NEWLINE;
+                    if (s.length() != 0) {
+                        s += NEWLINE;
+                    }
                     s += content;
                 }
             }
@@ -258,15 +295,17 @@ class SwingUtils {
         return s;
     }
 
-    static String getTexts(Container container) {
+    static String getTexts(final Container container) {
         ComponentIterator iter = new ComponentIterator(container);
         String s = "";
         while (iter.hasNext()) {
             Component component = iter.next();
             if (component instanceof JTextArea) {
-                String content = ((JTextArea)component).getText();
+                String content = ((JTextArea) component).getText();
                 if (content != null) {
-                    if (s.length() != 0) s += NEWLINE;
+                    if (s.length() != 0) {
+                        s += NEWLINE;
+                    }
                     s += content;
                 }
             }
@@ -286,12 +325,14 @@ class SwingUtils {
      * @return
      *  the required JTextField if it is found, otherwise null
      */
-    static JTextField findTextField(Container container, int ith) {
+    static JTextField findTextField(final Container container, final int ith) {
         ComponentIterator iter = new ComponentIterator(container);
         int i = 0;
         while (iter.hasNext()) {
             Component component = iter.next();
-            if (component instanceof JTextField && i++ == ith) return (JTextField)component;
+            if (component instanceof JTextField && i++ == ith) {
+                return (JTextField) component;
+            }
         }
         return null;
     }
@@ -306,14 +347,16 @@ class SwingUtils {
      * @return
      *  the JTextArea, if it was found;  otherwise null
      */
-    static JTextPane findTextPane(Container container, String text) {
+    static JTextPane findTextPane(final Container container,
+            final String text) {
         ComponentIterator iter = new ComponentIterator(container);
         while (iter.hasNext()) {
             Component component = iter.next();
             if (component instanceof JTextPane) {
-                String content = ((JTextPane)component).getText();
-                if (content != null && content.toLowerCase().contains(text.toLowerCase())) {
-                    return (JTextPane)component;
+                String content = ((JTextPane) component).getText();
+                if (content != null && content.toLowerCase()
+                        .contains(text.toLowerCase())) {
+                    return (JTextPane) component;
                 }
             }
         }
@@ -330,11 +373,15 @@ class SwingUtils {
      * @return
      *  the radio button, if it was found;  otherwise null
      */
-    static JToggleButton findToggleButton(Container container, String text) {
+    static JToggleButton findToggleButton(final Container container,
+            final String text) {
         ComponentIterator iter = new ComponentIterator(container);
         while (iter.hasNext()) {
             Component component = iter.next();
-            if (component instanceof JToggleButton && text.equalsIgnoreCase(((JToggleButton)component).getText())) return (JToggleButton)component;
+            if (component instanceof JToggleButton && text.equalsIgnoreCase(
+                    ((JToggleButton) component).getText())) {
+                return (JToggleButton) component;
+            }
         }
         return null;
     }
@@ -347,11 +394,13 @@ class SwingUtils {
      * @return
      * the first JMenuBar found, if any; otherwise null
      */
-    static JMenuBar findMenuBar(Container container) {
+    static JMenuBar findMenuBar(final Container container) {
         ComponentIterator iter = new ComponentIterator(container);
         while (iter.hasNext()) {
             Component component = iter.next();
-            if (component instanceof JMenuBar) return (JMenuBar)component;
+            if (component instanceof JMenuBar) {
+                return (JMenuBar) component;
+            }
         }
         return null;
     }
@@ -368,12 +417,14 @@ class SwingUtils {
      * @return
      *  the required JMenuBar if it is found, otherwise null
      */
-    static JMenuBar findMenuBar(Container container, int ith) {
+    static JMenuBar findMenuBar(final Container container, final int ith) {
         ComponentIterator iter = new ComponentIterator(container);
         int i = 0;
         while (iter.hasNext()) {
             Component component = iter.next();
-            if (component instanceof JMenuBar && i++ == ith) return (JMenuBar)component;
+            if (component instanceof JMenuBar && i++ == ith) {
+                return (JMenuBar) component;
+            }
         }
         return null;
     }
@@ -388,7 +439,8 @@ class SwingUtils {
      * @return
      *  the JMenuItem, if it was found;  otherwise null
      */
-    static JMenuItem findMenuItem(MenuElement container, String text) {
+    static JMenuItem findMenuItem(final MenuElement container,
+            final String text) {
         MenuElement[] elements = container.getSubElements();
 
         for (MenuElement element : elements) {
@@ -409,8 +461,8 @@ class SwingUtils {
 
     /**
      * Traverses a container hierarchy and returns the JMenuItem with
-     * the given path from the first JMenuBar encountered, or null if the 
-     * first JMenuBar doesn't contain an item with that path
+     * the given path from the first JMenuBar encountered, or null if the
+     * first JMenuBar doesn't contain an item with that path.
      *
      * @param container
      *  the Container to search in
@@ -419,18 +471,23 @@ class SwingUtils {
      * @return
      *  the JMenuItem at the specified path, if found; otherwise null
      */
-    static JMenuItem findMenuItem(Container container, String[] path) {
-        if (path.length == 0) return null;
+    static JMenuItem findMenuItem(final Container container,
+            final String[] path) {
+        if (path.length == 0) {
+            return null;
+        }
 
         JMenuBar menuBar = findMenuBar(container);
-        if (menuBar == null) return null;
+        if (menuBar == null) {
+            return null;
+        }
 
         return findMenuItem(menuBar, path);
     }
 
     /**
      * Traverses a container hierarchy and returns the JMenuItem with
-     * the given path from the first JMenuBar that contains it
+     * the given path from the first JMenuBar that contains it.
      *
      * @param container
      *  the Container to search in
@@ -439,26 +496,33 @@ class SwingUtils {
      * @return
      *  the JMenuItem at the specified path, if found; otherwise null
      */
-    static JMenuItem findMenuItemInAnyMenuBar(Container container, String[] path) {
-        if (path.length == 0) return null;
+    static JMenuItem findMenuItemInAnyMenuBar(final Container container,
+            final String[] path) {
+        if (path.length == 0) {
+            return null;
+        }
 
         int i = 0;
         while (true) {
             JMenuBar menuBar = findMenuBar(container, i);
             if (menuBar == null) {
                 String s = path[0];
-                for (int j = 1; j < path.length; j++) s = s + " > " + path[j];
+                for (int j = 1; j < path.length; j++) {
+                    s = s + " > " + path[j];
+                }
                 return null;
             }
             JMenuItem menuItem = findMenuItem(menuBar, path);
-            if (menuItem != null) return menuItem;
+            if (menuItem != null) {
+                return menuItem;
+            }
             i++;
         }
     }
 
     /**
      * Traverses a JMenubar's menu structure for a JMenuItem with
-     * the specified path
+     * the specified path.
      * @param menuBar
      * the JMenuBar to search
      * @param path
@@ -466,15 +530,20 @@ class SwingUtils {
      * @return
      *  the JMenuItem at the specified path, if found; otherwise null
      */
-    static JMenuItem findMenuItem(JMenuBar menuBar, String[] path) {
-        if (path.length == 0) return null;
+    static JMenuItem findMenuItem(final JMenuBar menuBar,
+            final String[] path) {
+        if (path.length == 0) {
+            return null;
+        }
 
         MenuElement currentItem = menuBar;
         for (String pathElement : path) {
             currentItem = findMenuItem(currentItem, pathElement);
-            if (currentItem == null) return null;
+            if (currentItem == null) {
+                return null;
+            }
         }
-        return (JMenuItem)currentItem;
+        return (JMenuItem) currentItem;
     }
 
     /**
@@ -485,11 +554,13 @@ class SwingUtils {
      * @return
      *  the first JOptionPane, if one was found;  otherwise null
      */
-    static JOptionPane findOptionPane(Container container) {
+    static JOptionPane findOptionPane(final Container container) {
         ComponentIterator iter = new ComponentIterator(container);
         while (iter.hasNext()) {
             Component component = iter.next();
-            if (component instanceof JOptionPane) return (JOptionPane)component;
+            if (component instanceof JOptionPane) {
+                return (JOptionPane) component;
+            }
         }
         return null;
     }
@@ -502,17 +573,20 @@ class SwingUtils {
      * @return
      *  the first JTree, if one was found;  otherwise null
      */
-    static JTree findTree(Container container) {
+    static JTree findTree(final Container container) {
         ComponentIterator iter = new ComponentIterator(container);
         while (iter.hasNext()) {
             Component component = iter.next();
-            if (component instanceof JTree) return (JTree)component;
+            if (component instanceof JTree) {
+                return (JTree) component;
+            }
         }
         return null;
     }
 
     /**
-     * Returns the node with the given text below the given node in the specified TreeModel
+     * Returns the node with the given text below the given node in the
+     * specified TreeModel.
      * @param model
      *  the TreeModel to search
      * @param node
@@ -522,10 +596,14 @@ class SwingUtils {
      * @return
      * the required node, if found; otherwise null
      */
-    static Object findChildNode(TreeModel model, Object node, String text) {
+    static Object findChildNode(final TreeModel model, final Object node,
+            final String text) {
         for (int i = 0; i < model.getChildCount(node); i++) {
             Object currNode = model.getChild(node, i);
-            if (currNode.toString() != null && currNode.toString().equalsIgnoreCase(text)) return currNode;
+            if (currNode.toString() != null && currNode.toString()
+                    .equalsIgnoreCase(text)) {
+                return currNode;
+            }
         }
         return null;
     }
@@ -537,12 +615,15 @@ class SwingUtils {
      * @param buttonText
      * the label of the required JButton
      * @return
-     * true if the JButton is enabled; false if there is no such JButton, or it
-     * is disabled
+     * true if the JButton is enabled; false if there is no such JButton, or
+     * it is disabled
      */
-    static boolean isButtonEnabled(final Window window, final String buttonText) {
+    static boolean isButtonEnabled(final Window window,
+            final String buttonText) {
         final JButton button = findButton(window, buttonText);
-        if (button == null) return false;
+        if (button == null) {
+            return false;
+        }
 
         return button.isEnabled();
     }
@@ -554,12 +635,15 @@ class SwingUtils {
      * @param buttonText
      * the label of the required JCheckBox
      * @return
-     * true if the JCheckBox is enabled; false if there is no such JCheckBox, or it
-     * is not selected
+     * true if the JCheckBox is enabled; false if there is no such JCheckBox,
+     * or it is not selected
      */
-    static boolean isCheckBoxSelected(Window window, String buttonText) {
+    static boolean isCheckBoxSelected(final Window window,
+            final String buttonText) {
         final JCheckBox cb = findCheckBox(window, buttonText);
-        if (cb == null) return false;
+        if (cb == null) {
+            return false;
+        }
 
         return cb.isSelected();
     }
@@ -571,15 +655,17 @@ class SwingUtils {
      * @param buttonText
      * the label of the required JRadioButton
      * @return
-     * true if the JRadioButton is enabled; false if there is no such JRadioButton, or it
-     * is not selected
+     * true if the JRadioButton is enabled; false if there is no such
+     * JRadioButton, or it is not selected
      */
-    static boolean isRadioButtonSelected(Window window, String buttonText) {
+    static boolean isRadioButtonSelected(final Window window,
+            final String buttonText) {
         final JRadioButton rb = findRadioButton(window, buttonText);
-        if (rb == null) return false;
+        if (rb == null) {
+            return false;
+        }
 
         return rb.isSelected();
-
     }
 
     /**
@@ -594,12 +680,15 @@ class SwingUtils {
      * @return a human-readable, indented description of the window's
      *     component hierarchy
      */
-    static String getWindowStructure(Window window) {
+    static String getWindowStructure(final Window window) {
         StringBuilder builder = new StringBuilder();
         try {
-            for (Component component : window.getComponents()) appendComponentStructure(component, builder);
+            for (Component component : window.getComponents()) {
+                appendComponentStructure(component, builder);
+            }
         } catch (Exception e) {
-            builder.append("Exception occurred while generating window structure: ");
+            builder.append(
+                    "Exception occurred while generating window structure: ");
             builder.append(e.toString());
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
@@ -621,9 +710,12 @@ class SwingUtils {
      * @return
      * true if the JCheckBox was found; otherwise false
      */
-    static boolean setCheckBoxSelected(Window window, String buttonText, final boolean value) {
+    static boolean setCheckBoxSelected(final Window window,
+            final String buttonText, final boolean value) {
         final JCheckBox cb = findCheckBox(window, buttonText);
-        if (cb == null) return false;
+        if (cb == null) {
+            return false;
+        }
         cb.setSelected(value);
         return true;
     }
@@ -638,11 +730,16 @@ class SwingUtils {
      * @param buttonText the label for the required JRadioButton
      * @return true if the JRadioButton was found; otherwise false
      */
-    static boolean setRadioButtonSelected(Window window, String buttonText) {
+    static boolean setRadioButtonSelected(final Window window,
+            final String buttonText) {
         final JRadioButton rb = findRadioButton(window, buttonText);
-        if (rb == null) return false;
+        if (rb == null) {
+            return false;
+        }
 
-        if (rb.isSelected()) return true;
+        if (rb.isSelected()) {
+            return true;
+        }
 
         rb.doClick();
         return true;
@@ -660,7 +757,8 @@ class SwingUtils {
      * @return
      * true if the required JTextField was found; otherwise false
      */
-    static boolean setTextField(Window window, int fieldNumber, final String value) {
+    static boolean setTextField(final Window window, final int fieldNumber,
+            final String value) {
         final JTextField tf = findTextField(window, fieldNumber);
         if (tf != null) {
             tf.setText(value);
@@ -671,7 +769,8 @@ class SwingUtils {
     }
 
     /**
-     * Indicates whether the specified window's title contains the given string.
+     * Indicates whether the specified window's title contains the given
+     * string.
      * @param window
      * the window to be checked
      * @param text
@@ -679,13 +778,15 @@ class SwingUtils {
      * @return
      * true if the window's title contains text, otherwise false
      */
-    static boolean titleContains(Window window, String text) {
+    static boolean titleContains(final Window window, final String text) {
         String title = getWindowTitle(window);
-        return (title != null && title.toLowerCase().contains(text.toLowerCase()));
+        return (title != null && title.toLowerCase()
+                .contains(text.toLowerCase()));
     }
 
     /**
-     * Indicates whether the specified window's title is the same as the given string.
+     * Indicates whether the specified window's title is the same as the given
+     * string.
      * @param window
      * the window to be checked
      * @param text
@@ -693,13 +794,13 @@ class SwingUtils {
      * @return
      * true if the window's title equals text, otherwise false
      */
-    static boolean titleEquals(Window window, String text) {
+    static boolean titleEquals(final Window window, final String text) {
         String title = getWindowTitle(window);
         return (title != null && title.equalsIgnoreCase(text));
     }
 
-    static String windowEventToString(int eventID) {
-        switch (eventID) { 
+    static String windowEventToString(final int eventID) {
+        switch (eventID) {
             case WindowEvent.WINDOW_ACTIVATED:
                 return "Activated";
             case WindowEvent.WINDOW_CLOSED:
@@ -725,44 +826,48 @@ class SwingUtils {
         }
     }
 
-    static final String NO_TITLE = "** no title **"; 
-      static String getWindowTitle(Window window) {
+    static final String NO_TITLE = "** no title **";
+
+    static String getWindowTitle(final Window window) {
         String title = NO_TITLE;
         if (window instanceof JDialog) {
-            title = ((JDialog)window).getTitle();
-        } else  if (window instanceof JFrame) {
-            title =((JFrame)window).getTitle();
+            title = ((JDialog) window).getTitle();
+        } else if (window instanceof JFrame) {
+            title = ((JFrame) window).getTitle();
         }
-        if (title == null) title = NO_TITLE;
+        if (title == null) {
+            title = NO_TITLE;
+        }
         return title;
     }
 
     /**
      * Returns a string describing the details of a Swing component.
      *
-     * Includes component type, text content, and enabled/disabled status. Used for diagnostic
-     * logging and debugging Swing component hierarchies.
+     * Includes component type, text content, and enabled/disabled status. Used
+     * for diagnostic logging and debugging Swing component hierarchies.
      *
      * @param component the component to describe
      * @return a formatted string with component details
      */
-    private static String getComponentDetails(Component component) {
+    private static String getComponentDetails(final Component component) {
         String s = component.isEnabled() ? "" : "[Disabled]";
         if (component instanceof JButton) {
-            s += "JButton: "; 
-            s += ((JButton)component).getText();
+            s += "JButton: ";
+            s += ((JButton) component).getText();
         } else if (component instanceof JCheckBox) {
             s += "JCheckBox: ";
             s += ((JCheckBox) component).getText();
-            s += "(" + (((JCheckBox) component).isSelected() ? "selected" : "unselected") + ")";
+            s += "(" + (((JCheckBox) component).isSelected() ? "selected"
+                    : "unselected") + ")";
         } else if (component instanceof JLabel) {
-            s += "JLabel: "; 
+            s += "JLabel: ";
             s += ((JLabel) component).getText();
         } else if (component instanceof JOptionPane) {
             s += "JOptionPane: ";
             s += ((JOptionPane) component).getMessage().toString();
-        }else if (component instanceof JRadioButton) {
-            s += "JRadioButton: "; 
+        } else if (component instanceof JRadioButton) {
+            s += "JRadioButton: ";
             s += ((JRadioButton) component).getText();
         } else if (component instanceof JPasswordField) {
             s += "JPasswordField: ";
@@ -777,14 +882,14 @@ class SwingUtils {
             s += "JTextPane: ";
             s += ((JTextPane) component).getText();
         } else if (component instanceof JMenuBar) {
-            s += "JMenuBar: "; 
+            s += "JMenuBar: ";
             s += ((JMenuBar) component).getName();
         } else if (component instanceof JMenuItem) {
             s += "JMenuItem: ";
             s += ((JMenuItem) component).getText();
         } else if (component instanceof JTree) {
             s += "JTree: ";
-        }else if (component instanceof JComboBox) {
+        } else if (component instanceof JComboBox) {
             s += "JComboBox: ";
             s += ((JComboBox) component).getSelectedItem().toString();
         } else if (component instanceof JList) {
@@ -793,7 +898,7 @@ class SwingUtils {
             s += "JToggleButton: ";
             s += ((JToggleButton) component).getText();
         } else {
-            s+= getClassDerivation(component);
+            s += getClassDerivation(component);
         }
         return s;
     }
@@ -801,12 +906,13 @@ class SwingUtils {
     /**
      * Returns a string showing the class inheritance hierarchy of an object.
      *
-     * Shows the full derivation path from the root class to the actual class, separated by dots.
+     * Shows the full derivation path from the root class to the actual class,
+     * separated by dots.
      *
      * @param object the object to analyze
      * @return a string representing the class hierarchy
      */
-    private static String getClassDerivation(Object object) {
+    private static String getClassDerivation(final Object object) {
         String s = object.getClass().getSimpleName();
         Class<?> c = object.getClass().getSuperclass();
         while (c != null) {
@@ -817,26 +923,30 @@ class SwingUtils {
     }
 
     /**
-     * Appends a hierarchical representation of a component and its children to a StringBuilder.
+     * Appends a hierarchical representation of a component and its children to
+     * a StringBuilder.
      *
      * @param component the component to describe
      * @param builder the StringBuilder to append to
      */
-    private static void appendComponentStructure(Component component, StringBuilder builder) {
+    private static void appendComponentStructure(final Component component,
+            final StringBuilder builder) {
         appendComponentStructure(component, builder, "");
     }
 
     /**
-     * Appends a hierarchical representation of a component and its children to a StringBuilder with indentation.
+     * Appends a hierarchical representation of a component and its children to
+     * a StringBuilder with indentation.
      *
-     * Recursively processes containers, trees, lists, combo boxes, and menu bars. Each nested level
-     * is indented to show the hierarchy.
+     * Recursively processes containers, trees, lists, combo boxes, and menu
+     * bars. Each nested level is indented to show the hierarchy.
      *
      * @param component the component to describe
      * @param builder the StringBuilder to append to
      * @param indent the indentation string for this level of nesting
      */
-    private static void appendComponentStructure(Component component, StringBuilder builder, String indent) {
+    private static void appendComponentStructure(final Component component,
+            final StringBuilder builder, final String indent) {
         builder.append(NEWLINE);
         builder.append(indent);
         builder.append(component.getName());
@@ -846,13 +956,27 @@ class SwingUtils {
         builder.append("{");
         builder.append(getComponentDetails(component));
         builder.append("}");
-        if (component instanceof JTree) appendTreeNodes(((JTree) component).getModel(), ((JTree) component).getModel().getRoot(), builder, "|   " + indent);
-        if (component instanceof JList<?>) appendListItems(((JList<?>) component).getModel(), builder, "|   " + indent);
-        if (component instanceof JComboBox<?>) appendComboItems(((JComboBox<?>) component).getModel(), builder, "|   " + indent);
+        if (component instanceof JTree) {
+            appendTreeNodes(((JTree) component).getModel(),
+                    ((JTree) component).getModel().getRoot(), builder,
+                    "|   " + indent);
+        }
+        if (component instanceof JList<?>) {
+            appendListItems(((JList<?>) component).getModel(), builder,
+                    "|   " + indent);
+        }
+        if (component instanceof JComboBox<?>) {
+            appendComboItems(((JComboBox<?>) component).getModel(), builder,
+                    "|   " + indent);
+        }
         if (component instanceof JMenuBar) {
             appendMenuItem(component, builder, "|   " + indent);
         } else if (component instanceof Container) {
-            for (Component subComponent : ((Container)component).getComponents()) appendComponentStructure(subComponent, builder, "|   " + indent);
+            for (Component subComponent : ((Container) component)
+                    .getComponents()) {
+                appendComponentStructure(subComponent, builder,
+                        "|   " + indent);
+            }
         }
     }
 
@@ -863,14 +987,15 @@ class SwingUtils {
      * @param builder the StringBuilder to append to
      * @param indent the indentation string for this level
      */
-    private static void appendComboItems(ComboBoxModel<?> model, StringBuilder builder, String indent) {
+    private static void appendComboItems(final ComboBoxModel<?> model,
+            final StringBuilder builder, final String indent) {
         for (int i = 0; i < model.getSize(); i++) {
             builder.append(NEWLINE);
             builder.append(indent);
             builder.append(model.getElementAt(i).toString());
         }
     }
-    
+
     /**
      * Appends all items in a list model to a StringBuilder.
      *
@@ -878,14 +1003,15 @@ class SwingUtils {
      * @param builder the StringBuilder to append to
      * @param indent the indentation string for this level
      */
-    private static void appendListItems(ListModel<?> model, StringBuilder builder, String indent) {
+    private static void appendListItems(final ListModel<?> model,
+            final StringBuilder builder, final String indent) {
         for (int i = 0; i < model.getSize(); i++) {
             builder.append(NEWLINE);
             builder.append(indent);
             builder.append(model.getElementAt(i).toString());
         }
     }
-    
+
     /**
      * Appends a tree node and its children to a StringBuilder recursively.
      *
@@ -894,12 +1020,15 @@ class SwingUtils {
      * @param builder the StringBuilder to append to
      * @param indent the indentation string for this level
      */
-    private static void appendTreeNodes(TreeModel model, Object node, StringBuilder builder, String indent) {
+    private static void appendTreeNodes(final TreeModel model,
+            final Object node, final StringBuilder builder,
+            final String indent) {
         builder.append(NEWLINE);
         builder.append(indent);
         if (node instanceof Component) {
             builder.append(node.toString());
-            appendComponentStructure((Component)node, builder, "|   " + indent);
+            appendComponentStructure((Component) node, builder,
+                    "|   " + indent);
             builder.append(getClassDerivation(node));
         } else {
             builder.append(node.toString());
@@ -907,30 +1036,36 @@ class SwingUtils {
             builder.append(getClassDerivation(node));
             builder.append(")");
         }
-        for (int i = 0; i < model.getChildCount(node); i++) appendTreeNodes(model, model.getChild(node, i), builder, "|   " + indent);
+        for (int i = 0; i < model.getChildCount(node); i++) {
+            appendTreeNodes(model, model.getChild(node, i), builder,
+                    "|   " + indent);
+        }
     }
 
     /**
      * Appends a menu item and its sub-elements to a StringBuilder.
      *
-     * Handles JMenuBar, JPopupMenu, JMenuItem, and JSeparator components. Recursively
-     * processes sub-menus and items.
+     * Handles JMenuBar, JPopupMenu, JMenuItem, and JSeparator components.
+     * Recursively processes sub-menus and items.
      *
      * @param menuItem the menu component to process
      * @param builder the StringBuilder to append to
      * @param indent the indentation string for this level
      */
-    private static void appendMenuItem(Component menuItem, StringBuilder builder, String indent) {
+    private static void appendMenuItem(final Component menuItem,
+            final StringBuilder builder, final String indent) {
         if (menuItem instanceof JMenuBar) {
-            appendMenuSubElements((MenuElement)menuItem, builder, indent);
+            appendMenuSubElements((MenuElement) menuItem, builder, indent);
         } else if (menuItem instanceof JPopupMenu) {
-            appendMenuSubElements((MenuElement)menuItem, builder, indent);
+            appendMenuSubElements((MenuElement) menuItem, builder, indent);
         } else if (menuItem instanceof JMenuItem) {
             builder.append(NEWLINE);
             builder.append(indent);
-            builder.append(((JMenuItem)menuItem).getText());
-            builder.append(((JMenuItem)menuItem).isEnabled() ? "" : "[Disabled]");
-            appendMenuSubElements((JMenuItem)menuItem, builder, "|   " + indent);
+            builder.append(((JMenuItem) menuItem).getText());
+            builder.append(((JMenuItem) menuItem).isEnabled() ? ""
+                    : "[Disabled]");
+            appendMenuSubElements((JMenuItem) menuItem, builder,
+                    "|   " + indent);
         } else if (menuItem instanceof JSeparator) {
             builder.append(NEWLINE);
             builder.append(indent);
@@ -945,9 +1080,10 @@ class SwingUtils {
      * @param builder the StringBuilder to append to
      * @param indent the indentation string for this level
      */
-    private static void appendMenuSubElements(MenuElement element, StringBuilder builder, String indent) {
+    private static void appendMenuSubElements(final MenuElement element,
+            final StringBuilder builder, final String indent) {
         for (MenuElement subItem : element.getSubElements()) {
-            appendMenuItem((Component)subItem, builder, indent);
+            appendMenuItem((Component) subItem, builder, indent);
         }
     }
 

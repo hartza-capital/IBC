@@ -21,22 +21,27 @@ package ibcalpha.ibc;
 import java.util.concurrent.Executor;
 import javax.swing.SwingUtilities;
 
-class GuiExecutor implements Executor {
-    private static final GuiExecutor instance = new GuiExecutor();
+final class GuiExecutor implements Executor {
+    private static final GuiExecutor INSTANCE = new GuiExecutor();
 
     /**
      * Private constructor for singleton pattern.
      */
-    private GuiExecutor() {}
+    private GuiExecutor() {
+    }
 
-    static GuiExecutor instance() {return instance;}
+    static GuiExecutor instance() {
+        return INSTANCE;
+    }
 
     /**
-     * Executes the task on the Swing event dispatch thread, running immediately if already on the EDT or scheduling for later otherwise.
+     * Executes the task on the Swing event dispatch thread, running
+     * immediately if already on the EDT or scheduling for later
+     * otherwise.
      *
      * @param task the runnable task to execute
      */
-    public void execute(Runnable task) {
+    public void execute(final Runnable task) {
         if (SwingUtilities.isEventDispatchThread()) {
             task.run();
         } else {

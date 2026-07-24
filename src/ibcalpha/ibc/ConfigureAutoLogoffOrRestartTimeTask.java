@@ -32,72 +32,113 @@ class ConfigureAutoLogoffOrRestartTimeTask implements ConfigurationAction {
     private final String autoActionName;
     private JDialog configDialog;
 
-    ConfigureAutoLogoffOrRestartTimeTask(String autoActionName, String autoActionTime) {
-        this.autoActionName=autoActionName;
-        this.autoActionTime = autoActionTime;
+    ConfigureAutoLogoffOrRestartTimeTask(final String actionName,
+                                        final String actionTime) {
+        this.autoActionName = actionName;
+        this.autoActionTime = actionTime;
     }
 
-    ConfigureAutoLogoffOrRestartTimeTask(String autoActionName, LocalTime autoActionTime) {
-        this.autoActionName=autoActionName;
-        this.autoActionTime = autoActionTime.format(DateTimeFormatter.ofPattern("hh:mm a"));
+    ConfigureAutoLogoffOrRestartTimeTask(final String actionName,
+                                        final LocalTime actionTime) {
+        this.autoActionName = actionName;
+        this.autoActionTime = actionTime.format(
+                DateTimeFormatter.ofPattern("hh:mm a"));
     }
 
     /**
      * Initializes this task with the global configuration dialog.
      *
-     * @param configDialog the TWS Global Configuration dialog
+     * @param dialog the TWS Global Configuration dialog
      */
     @Override
-    public void initialise(JDialog configDialog) {
-        this.configDialog = configDialog;
+    public void initialise(final JDialog dialog) {
+        this.configDialog = dialog;
     }
 
     /**
-     * Sets the auto logoff or restart time in the TWS configuration dialog.
+     * Sets the auto logoff or restart time in the TWS configuration
+     * dialog.
      *
-     * Navigates to the Lock and Exit section, parses the configured time as HH:MM AM/PM,
-     * and updates the time controls if different from the current setting. Logs all changes.
+     * Navigates to the Lock and Exit section, parses the configured
+     * time as HH:MM AM/PM, and updates the time controls if different
+     * from the current setting. Logs all changes.
      */
     @Override
     public void run() {
         try {
-            Utils.logToConsole("Setting " + autoActionName  + " time");
-            
-            DateTimeFormatter timeFormatter12HourAmPm = DateTimeFormatter.ofPattern("hh:mm a");
+            Utils.logToConsole("Setting " + autoActionName + " time");
+
+            DateTimeFormatter timeFormatter12HourAmPm =
+                    DateTimeFormatter.ofPattern("hh:mm a");
 
             LocalTime newAutoActionTime;
             try {
-                newAutoActionTime = LocalTime.parse(autoActionTime, timeFormatter12HourAmPm);
+                newAutoActionTime = LocalTime.parse(autoActionTime,
+                        timeFormatter12HourAmPm);
             } catch (DateTimeParseException e) {
-                throw new IbcException(autoActionName + " time setting must be hh:mm AM or hh:mm PM, for example \"09:30 AM\" or \"04:00 PM\"");
+                throw new IbcException(
+                        autoActionName
+                        + " time setting must be hh:mm AM or "
+                        + "hh:mm PM, for example "
+                        + "\"09:30 AM\" or \"04:00 PM\"");
             }
 
-            Utils.selectConfigSection(configDialog, new String[] {"Lock and Exit"});
-            JLabel l = SwingUtils.findLabel(configDialog, "Set Auto Log Off Time (HH:MM)");
-            if (l == null) l = SwingUtils.findLabel(configDialog, "Set Auto Restart Time (HH:MM)");
-            if (l == null) throw new IbcException("could not find auto logoff/restart time settings");
+            Utils.selectConfigSection(configDialog,
+                    new String[]{"Lock and Exit"});
+            JLabel l = SwingUtils.findLabel(configDialog,
+                    "Set Auto Log Off Time (HH:MM)");
+            if (l == null) {
+                l = SwingUtils.findLabel(configDialog,
+                        "Set Auto Restart Time (HH:MM)");
+            }
+            if (l == null) {
+                throw new IbcException(
+                        "could not find auto logoff/restart time settings");
+            }
 
-            Container c = javax.swing.SwingUtilities.getAncestorOfClass(Container.class, l);
-            if (c == null) throw new IbcException("could not find Auto Log Off or Auto Restart section in config dialog");
-            c = javax.swing.SwingUtilities.getAncestorOfClass(Container.class, c);
-            if (c == null) throw new IbcException("could not find Auto Log Off or Auto Restart section in config dialog");
+            Container c = javax.swing.SwingUtilities.getAncestorOfClass(
+                    Container.class, l);
+            if (c == null) {
+                throw new IbcException(
+                        "could not find Auto Log Off or "
+                        + "Auto Restart section in config dialog");
+            }
+            c = javax.swing.SwingUtilities.getAncestorOfClass(
+                    Container.class, c);
+            if (c == null) {
+                throw new IbcException(
+                        "could not find Auto Log Off or "
+                        + "Auto Restart section in config dialog");
+            }
 
             JTextField tf = SwingUtils.findTextField(c, 0);
-            JRadioButton autoAction = SwingUtils.findRadioButton(c, autoActionName);
+            JRadioButton autoAction = SwingUtils.findRadioButton(c,
+                    autoActionName);
             JRadioButton am = SwingUtils.findRadioButton(c, "AM");
             JRadioButton pm = SwingUtils.findRadioButton(c, "PM");
-            if (tf == null || autoAction == null || am == null || pm == null) throw new IbcException("could not find auto logoff/restart time controls");
+            if (tf == null || autoAction == null || am == null
+                    || pm == null) {
+                throw new IbcException(
+                        "could not find auto logoff/restart time controls");
+            }
 
-            DateTimeFormatter timeFormatter12Hour = DateTimeFormatter.ofPattern("hh:mm");
+            DateTimeFormatter timeFormatter12Hour =
+                    DateTimeFormatter.ofPattern("hh:mm");
             String time = newAutoActionTime.format(timeFormatter12Hour);
 
-            DateTimeFormatter ampmFormatter = DateTimeFormatter.ofPattern("a");
+            DateTimeFormatter ampmFormatter =
+                    DateTimeFormatter.ofPattern("a");
             String ampm = newAutoActionTime.format(ampmFormatter);
-            
-            LocalTime currentAutoActionTime = LocalTime.parse(tf.getText() + (am.isSelected() ? " AM" : " PM"), timeFormatter12HourAmPm);
 
-            if (newAutoActionTime.equals(currentAutoActionTime) && autoAction.isSelected()) {
-                Utils.logToConsole(autoActionName + " time already set to " + currentAutoActionTime.format(timeFormatter12HourAmPm));
+            LocalTime currentAutoActionTime = LocalTime.parse(
+                    tf.getText() + (am.isSelected() ? " AM" : " PM"),
+                    timeFormatter12HourAmPm);
+
+            if (newAutoActionTime.equals(currentAutoActionTime)
+                    && autoAction.isSelected()) {
+                Utils.logToConsole(autoActionName + " time already set to "
+                        + currentAutoActionTime.format(
+                        timeFormatter12HourAmPm));
             } else {
                 tf.setText(time);
                 if ("AM".equals(ampm)) {
@@ -107,20 +148,24 @@ class ConfigureAutoLogoffOrRestartTimeTask implements ConfigurationAction {
                 }
 
                 if (autoAction.isSelected()) {
-                    Utils.logToConsole(autoActionName + " time changed from " + 
-                                        currentAutoActionTime.format(timeFormatter12HourAmPm) + 
-                                        " to " + 
-                                        newAutoActionTime.format(timeFormatter12HourAmPm));
+                    Utils.logToConsole(autoActionName
+                            + " time changed from "
+                            + currentAutoActionTime.format(
+                            timeFormatter12HourAmPm)
+                            + " to "
+                            + newAutoActionTime.format(
+                            timeFormatter12HourAmPm));
                 } else {
                     autoAction.setSelected(true);
-                    Utils.logToConsole(autoActionName + " time set to " + 
-                                        newAutoActionTime.format(timeFormatter12HourAmPm));
+                    Utils.logToConsole(autoActionName + " time set to "
+                            + newAutoActionTime.format(
+                            timeFormatter12HourAmPm));
                 }
             }
-            
+
         } catch (IbcException e) {
             Utils.logError(e.getMessage());
         }
     }
-    
+
 }

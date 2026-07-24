@@ -21,7 +21,7 @@ package ibcalpha.ibc;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 
-class EnableApiTask implements ConfigurationAction{
+class EnableApiTask implements ConfigurationAction {
 
     private final CommandChannel mChannel;
 
@@ -47,16 +47,22 @@ class EnableApiTask implements ConfigurationAction{
 
             Utils.selectApiSettings(configDialog);
 
-            JCheckBox cb = SwingUtils.findCheckBox(configDialog, "Enable ActiveX and Socket Clients");
-            if (cb == null) throw new IbcException("could not find Enable ActiveX checkbox");
+            JCheckBox cb = SwingUtils.findCheckBox(configDialog,
+                "Enable ActiveX and Socket Clients");
+            if (cb == null) {
+                throw new IbcException(
+                    "could not find Enable ActiveX checkbox");
+            }
 
             if (!cb.isSelected()) {
                 cb.doClick();
                 SwingUtils.clickButton(configDialog, "OK");
-                Utils.logToConsole("TWS has been configured to accept API connections");
+                Utils.logToConsole(
+                    "TWS has been configured to accept API connections");
                 mChannel.writeAck("configured");
             } else {
-                Utils.logToConsole("TWS is already configured to accept API connections");
+                Utils.logToConsole(
+                    "TWS is already configured to accept API connections");
                 mChannel.writeAck("already configured");
             }
         } catch (IbcException e) {
@@ -68,11 +74,11 @@ class EnableApiTask implements ConfigurationAction{
     /**
      * Initializes this task with the global configuration dialog.
      *
-     * @param configDialog the TWS Global Configuration dialog
+     * @param dialog the TWS Global Configuration dialog
      */
     @Override
-    public void initialise(JDialog configDialog) {
-        this.configDialog = configDialog;
+    public void initialise(final JDialog dialog) {
+        this.configDialog = dialog;
     }
 
 }

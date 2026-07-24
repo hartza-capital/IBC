@@ -20,6 +20,13 @@ package ibcalpha.ibc;
 
 public class DefaultTradingModeManager extends TradingModeManager {
 
+    private static final int ARGS_LENGTH_TWO = 2;
+    private static final int ARGS_LENGTH_FOUR = 4;
+    private static final int ARGS_LENGTH_SIX = 6;
+    private static final int ARGS_INDEX_TWO = 1;
+    private static final int ARGS_INDEX_FOUR = 3;
+    private static final int ARGS_INDEX_SIX = 5;
+
     private String tradingMode;
 
     /**
@@ -34,12 +41,12 @@ public class DefaultTradingModeManager extends TradingModeManager {
     /**
      * Creates a new DefaultTradingModeManager with the specified trading mode.
      *
-     * @param tradingMode the trading mode (either "live" or "paper")
+     * @param tradingModeValue the trading mode (either "live" or "paper")
      */
-    public DefaultTradingModeManager(String tradingMode) {
+    public DefaultTradingModeManager(final String tradingModeValue) {
         fromSettings = false;
-        setTradingMode(tradingMode);
-        message = "constructor parameter tradingMode=" + tradingMode;
+        setTradingMode(tradingModeValue);
+        message = "constructor parameter tradingMode=" + tradingModeValue;
     }
 
     /**
@@ -53,15 +60,15 @@ public class DefaultTradingModeManager extends TradingModeManager {
      * @param args the command-line arguments containing trading mode at a
      *     specific position
      */
-    public DefaultTradingModeManager(String[] args) {
+    public DefaultTradingModeManager(final String[] args) {
         if (args.length == 0) {
             setTradingMode(TRADING_MODE_LIVE);
-        } else if (args.length == 2) {
-            setTradingMode(args[1]);
-        } else if (args.length == 4) {
-            setTradingMode(args[3]);
-        } else if (args.length == 6) {
-            setTradingMode(args[5]);
+        } else if (args.length == ARGS_LENGTH_TWO) {
+            setTradingMode(args[ARGS_INDEX_TWO]);
+        } else if (args.length == ARGS_LENGTH_FOUR) {
+            setTradingMode(args[ARGS_INDEX_FOUR]);
+        } else if (args.length == ARGS_LENGTH_SIX) {
+            setTradingMode(args[ARGS_INDEX_SIX]);
         }
 
         if (tradingMode != null) {
@@ -69,7 +76,8 @@ public class DefaultTradingModeManager extends TradingModeManager {
             message = "constructor parameter args: tradingMode=" + tradingMode;
         } else {
             fromSettings = true;
-            message = "constructor parameter args but trading mode not present - will be taken from settings";
+            message = "constructor parameter args but trading mode not "
+                + "present - will be taken from settings";
         }
     }
 
@@ -79,9 +87,12 @@ public class DefaultTradingModeManager extends TradingModeManager {
      * @param value the trading mode to set (must be "live" or "paper")
      * @throws SystemException if the value is not a valid trading mode
      */
-    private void setTradingMode(String value) {
-        if (!(value.equalsIgnoreCase(TRADING_MODE_LIVE) || value.equalsIgnoreCase(TRADING_MODE_PAPER))) {
-                Utils.exitWithError(ErrorCodes.INVALID_TRADING_MODE, "Invalid Trading Mode argument or .ini file setting: " + tradingMode);
+    private void setTradingMode(final String value) {
+        if (!(value.equalsIgnoreCase(TRADING_MODE_LIVE)
+                || value.equalsIgnoreCase(TRADING_MODE_PAPER))) {
+            Utils.exitWithError(ErrorCodes.INVALID_TRADING_MODE,
+                "Invalid Trading Mode argument or .ini file "
+                + "setting: " + tradingMode);
         }
         tradingMode = value;
     }
@@ -90,10 +101,11 @@ public class DefaultTradingModeManager extends TradingModeManager {
     private final boolean fromSettings;
 
     /**
-     * Logs a diagnostic message describing the source of the trading mode setting.
+     * Logs a diagnostic message describing the source of the
+     * trading mode setting.
      */
     @Override
-    public void logDiagnosticMessage(){
+    public void logDiagnosticMessage() {
         Utils.logToConsole("using default trading mode manager: " + message);
     }
 
@@ -105,8 +117,10 @@ public class DefaultTradingModeManager extends TradingModeManager {
     @Override
     public String getTradingMode() {
         if (fromSettings) {
-            setTradingMode( Settings.settings().getString("TradingMode", TRADING_MODE_LIVE));
-            Utils.logToConsole("trading mode from settings: tradingMode=" + tradingMode);
+            setTradingMode(Settings.settings()
+                .getString("TradingMode", TRADING_MODE_LIVE));
+            Utils.logToConsole("trading mode from settings: tradingMode="
+                + tradingMode);
         }
         return tradingMode;
     }

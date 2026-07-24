@@ -22,14 +22,16 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 
-public class PasswordExpiryWarningFrameHandler  implements WindowHandler {
+public class PasswordExpiryWarningFrameHandler implements WindowHandler {
     /**
-     * Determines whether to process window events for the password expiry warning frame.
+     * Determines whether to process window events for the password expiry
+     * warning frame.
      * @param window the window to check
      * @param eventId the AWT window event ID
-     * @return true if this is a WINDOW_OPENED or WINDOW_ACTIVATED event, false otherwise
+     * @return true if this is a WINDOW_OPENED or WINDOW_ACTIVATED event,
+     *         false otherwise
      */
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
             case WindowEvent.WINDOW_ACTIVATED:
@@ -40,24 +42,34 @@ public class PasswordExpiryWarningFrameHandler  implements WindowHandler {
     }
 
     /**
-     * Handles the password expiry warning frame by dismissing it if DismissPasswordExpiryWarning is enabled.
+     * Handles the password expiry warning frame by dismissing it if
+     * DismissPasswordExpiryWarning is enabled.
      * @param window the frame window
      * @param eventID the AWT window event ID
      */
-    public void handleWindow(Window window, int eventID) {
-        if (! Settings.settings().getBoolean("DismissPasswordExpiryWarning", false)) return;
-        if (! SwingUtils.clickButton(window, "OK")) {
-            Utils.logError("could not dismiss Password Expiry Warning because we could not find one of the controls.");
+    public void handleWindow(final Window window, final int eventID) {
+        if (!Settings.settings().getBoolean("DismissPasswordExpiryWarning",
+                false)) {
+            return;
+        }
+        if (!SwingUtils.clickButton(window, "OK")) {
+            Utils.logError(
+                    "could not dismiss Password Expiry Warning because we "
+                    + "could not find one of the controls.");
         }
     }
 
     /**
-     * Identifies the password expiry warning frame by checking the window title.
+     * Identifies the password expiry warning frame by checking the window
+     * title.
      * @param window the window to identify
-     * @return true if this is the password expiry warning frame, false otherwise
+     * @return true if this is the password expiry warning frame, false
+     *         otherwise
      */
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JFrame)) return false;
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JFrame)) {
+            return false;
+        }
 
         return (SwingUtils.titleContains(window, "Password Notice"));
     }

@@ -41,11 +41,11 @@ class JtsIniSectionSetting {
     /**
      * Constructs a JtsIniSectionSetting with the specified section and setting.
      *
-     * @param section the section header for this setting
-     * @param setting the setting line content
+     * @param sectionValue the section header for this setting
+     * @param settingValue the setting line content
      */
-    JtsIniSectionSetting(String section, String setting) {
-        this.section = section;
-        this.setting = setting;
+    JtsIniSectionSetting(final String sectionValue, final String settingValue) {
+        this.section = sectionValue;
+        this.setting = settingValue;
     }
 }

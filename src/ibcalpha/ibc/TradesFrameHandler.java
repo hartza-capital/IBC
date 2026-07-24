@@ -32,7 +32,6 @@ public class TradesFrameHandler implements WindowHandler {
 
     boolean showAllTrades;
 
-    @Override
     /**
      * Determines whether this handler should act on the given window event.
      * Acts on WINDOW_OPENED, WINDOW_CLOSING, and WINDOW_CLOSED events.
@@ -41,7 +40,8 @@ public class TradesFrameHandler implements WindowHandler {
      * @param eventId the AWT event ID.
      * @return true if this handler should process the event; false otherwise.
      */
-    public boolean filterEvent(Window window, int eventId) {
+    @Override
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
             case WindowEvent.WINDOW_CLOSING:
@@ -52,18 +52,20 @@ public class TradesFrameHandler implements WindowHandler {
         }
     }
 
-    @Override
     /**
      * Manages the Trades window lifecycle based on the ShowAllTrades setting.
      * Opens and configures the Trades window to display all trades if enabled;
      * re-opens it if the user closes it while ShowAllTrades is active.
      *
      * @param window the Trades frame.
-     * @param eventID the AWT event ID (WINDOW_OPENED, WINDOW_CLOSING, or WINDOW_CLOSED).
+     * @param eventID the AWT event ID (WINDOW_OPENED, WINDOW_CLOSING, or
+     *        WINDOW_CLOSED).
      */
-    public void handleWindow(final Window window, int eventID) {
+    @Override
+    public void handleWindow(final Window window, final int eventID) {
         if (!firstTradesWindowOpened) {
-            showAllTrades = Settings.settings().getBoolean("ShowAllTrades", false);
+            showAllTrades = Settings.settings().getBoolean(
+                "ShowAllTrades", false);
         }
         if (!showAllTrades) {
             firstTradesWindowOpened = true;
@@ -84,13 +86,17 @@ public class TradesFrameHandler implements WindowHandler {
 
                 monitorAllTradesCheckbox(window, "All");
 
-                if (! firstTradesWindowOpened) {
-                    if (Settings.settings().getBoolean("MinimizeMainWindow", false)) {
-                        ((JFrame) window).setExtendedState(java.awt.Frame.ICONIFIED);
+                if (!firstTradesWindowOpened) {
+                    if (Settings.settings().getBoolean(
+                            "MinimizeMainWindow", false)) {
+                        ((JFrame) window).setExtendedState(
+                            java.awt.Frame.ICONIFIED);
                     }
                 }
             } else {
-                Utils.logToConsole("IBC can't set Trade History window to show all trades with this TWS version: user must do this");
+                Utils.logToConsole(
+                    "IBC can't set Trade History window to show all "
+                    + "trades with this TWS version: user must do this");
                 /*
                  * For TWS 955 onwards, IB have replaced the row of daily
                  * checkboxes with what appears visually to be a combo box:
@@ -122,44 +128,55 @@ public class TradesFrameHandler implements WindowHandler {
 
     }
 
-    @Override
     /**
      * Identifies the Trades window by looking for "Trades" in the window title.
      *
      * @param window the window to identify.
      * @return true if this is the Trades window; false otherwise.
      */
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JFrame))  return false;
+    @Override
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JFrame)) {
+            return false;
+        }
 
         return (SwingUtils.titleContains(window, "Trades"));
     }
 
     /**
      * Monitors the "All" trades checkbox to keep it selected.
-     * Re-selects it if the user attempts to deselect while ShowAllTrades is active.
+     * Re-selects it if the user attempts to deselect while ShowAllTrades is
+     * active.
      *
      * @param window the Trades frame.
      * @param text the label text of the checkbox to monitor.
      */
-    private void monitorAllTradesCheckbox(Window window, String text) {
+    private void monitorAllTradesCheckbox(final Window window,
+            final String text) {
         final JCheckBox check = SwingUtils.findCheckBox(window, text);
-        if (check != null) check.addChangeListener(new ChangeListener() {
-            @Override
-            /**
-             * Handles state changes to the monitored checkbox by re-selecting it if deselected.
-             *
-             * @param ce the change event.
-             */
-            public void stateChanged(ChangeEvent ce) {
-                Utils.logToConsole("Checkbox: " + check.getText() + "; selected=" + check.isSelected());
-                if (!check.isSelected()) {
-                    GuiDeferredExecutor.instance().execute(() -> {
-                        Utils.logToConsole("Checkbox: " + check.getText() + "; setting selected");
-                        if (!check.isSelected()) check.doClick();
-                    });
+        if (check != null) {
+            check.addChangeListener(new ChangeListener() {
+                /**
+                 * Handles state changes to the monitored checkbox by
+                 * re-selecting it if deselected.
+                 *
+                 * @param ce the change event.
+                 */
+                @Override
+                public void stateChanged(final ChangeEvent ce) {
+                    Utils.logToConsole("Checkbox: " + check.getText()
+                        + "; selected=" + check.isSelected());
+                    if (!check.isSelected()) {
+                        GuiDeferredExecutor.instance().execute(() -> {
+                            Utils.logToConsole("Checkbox: "
+                                + check.getText() + "; setting selected");
+                            if (!check.isSelected()) {
+                                check.doClick();
+                            }
+                        });
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 }

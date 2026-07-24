@@ -31,8 +31,11 @@ class ComponentIterator implements Iterator<Component> {
 
     Component mCurrent;
 
-    ComponentIterator(Container container) {
-        if (container == null) Utils.exitWithException(ErrorCodes.UNHANDLED_EXCEPTION,new NullPointerException());
+    ComponentIterator(final Container container) {
+        if (container == null) {
+            Utils.exitWithException(ErrorCodes.UNHANDLED_EXCEPTION,
+                    new NullPointerException());
+        }
         mStack.push(new NodeState(container));
     }
 
@@ -43,7 +46,9 @@ class ComponentIterator implements Iterator<Component> {
      */
     @Override
     public boolean hasNext() {
-        if (mCurrent == null)  return moveNext();
+        if (mCurrent == null) {
+            return moveNext();
+        }
         return true;
     }
 
@@ -55,7 +60,9 @@ class ComponentIterator implements Iterator<Component> {
      */
     @Override
     public Component next() {
-        if (!hasNext()) throw new NoSuchElementException();
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
         Component result = mCurrent;
         mCurrent = null;
         return result;
@@ -74,15 +81,20 @@ class ComponentIterator implements Iterator<Component> {
     /**
      * Advances the iterator to the next component in depth-first order.
      *
-     * @return true if a next component was found, false if iteration is exhausted
+     * @return true if a next component was found, false if iteration is
+     *         exhausted
      */
     private boolean moveNext() {
-        if (mStack.isEmpty()) return false;
+        if (mStack.isEmpty()) {
+            return false;
+        }
         while (true) {
             NodeState currentState = mStack.peek();
             if (currentState.subComponents == null) {
                 mStack.pop();
-                if (mStack.isEmpty()) return false;
+                if (mStack.isEmpty()) {
+                    return false;
+                }
             } else {
                 if (currentState.index < currentState.subComponents.length) {
                     mCurrent = currentState.subComponents[currentState.index++];
@@ -90,7 +102,9 @@ class ComponentIterator implements Iterator<Component> {
                     return true;
                 } else {
                     mStack.pop();
-                    if (mStack.isEmpty()) return false;
+                    if (mStack.isEmpty()) {
+                        return false;
+                    }
                 }
             }
         }
@@ -100,10 +114,12 @@ class ComponentIterator implements Iterator<Component> {
         int index;
         Component[] subComponents;
 
-        NodeState(Component component) {
-            synchronized (component.getTreeLock()){
+        NodeState(final Component component) {
+            synchronized (component.getTreeLock()) {
                 this.index = 0;
-                if (component instanceof Container) subComponents = ((Container)component).getComponents();
+                if (component instanceof Container) {
+                    subComponents = ((Container) component).getComponents();
+                }
             }
         }
     }

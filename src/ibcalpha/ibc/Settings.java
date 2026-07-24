@@ -20,7 +20,7 @@ package ibcalpha.ibc;
 
 public abstract class Settings {
 
-    private static Settings _settings;
+    private static Settings instance;
 
     /**
      * Sets the global Settings instance to the specified implementation.
@@ -28,16 +28,18 @@ public abstract class Settings {
      * @param settings the Settings instance to use; must not be null
      * @throws IllegalArgumentException if settings is null
      */
-    public static void initialise(Settings settings){
-        if (settings == null) throw new IllegalArgumentException("settings");
-        _settings = settings;
+    public static void initialise(final Settings settings) {
+        if (settings == null) {
+            throw new IllegalArgumentException("settings");
+        }
+        instance = settings;
     }
 
     /**
      * Resets the global Settings instance to a new DefaultSettings.
      */
     public static void setDefault() {
-        _settings = new DefaultSettings();
+        instance = new DefaultSettings();
     }
 
     /**
@@ -46,7 +48,7 @@ public abstract class Settings {
      * @return the active Settings instance
      */
     public static Settings settings() {
-        return _settings;
+        return instance;
     }
 
     /**
@@ -57,12 +59,14 @@ public abstract class Settings {
 
 
     /**
-    returns the boolean value associated with property named key.
-    Returns defaultValue if there is no such property,
-    or if the property value cannot be converted to a boolean.
-     * @param key
-     * @param defaultValue
-     * @return
+     * Returns the boolean value associated with property named key.
+     * Returns defaultValue if there is no such property,
+     * or if the property value cannot be converted to a boolean.
+     *
+     * @param key the property key
+     * @param defaultValue the default value to return if the property is
+     *     not found or invalid
+     * @return the boolean value of the property, or defaultValue
      */
     public abstract boolean getBoolean(String key, boolean defaultValue);
 
@@ -80,31 +84,36 @@ public abstract class Settings {
     public abstract char getChar(String key, String defaultValue);
 
     /**
-    returns the double value associated with property named key.
-    Returns defaultVAlue if there is no such property,
-    or if the property value cannot be converted to a double.
-     * @param key
-     * @param defaultValue
-     * @return
+     * Returns the double value associated with property named key.
+     * Returns defaultValue if there is no such property,
+     * or if the property value cannot be converted to a double.
+     *
+     * @param key the property key
+     * @param defaultValue the default value to return if the property is
+     *     not found or invalid
+     * @return the double value of the property, or defaultValue
      */
     public abstract double getDouble(String key, double defaultValue);
 
     /**
-    returns the int value associated with property named key.
-    Returns defaultValue if there is no such property,
-    or if the property value cannot be converted to an int.
-     * @param key
-     * @param defaultValue
-     * @return
+     * Returns the int value associated with property named key.
+     * Returns defaultValue if there is no such property,
+     * or if the property value cannot be converted to an int.
+     *
+     * @param key the property key
+     * @param defaultValue the default value to return if the property is
+     *     not found or invalid
+     * @return the int value of the property, or defaultValue
      */
     public abstract int getInt(String key, int defaultValue);
 
     /**
-    returns the value associated with property named key.
-    Returns defaultValue if no such property.
-     * @param key
-     * @param defaultValue
-     * @return
+     * Returns the value associated with property named key.
+     * Returns defaultValue if no such property.
+     *
+     * @param key the property key
+     * @param defaultValue the default value to return if property not found
+     * @return the value of the property, or defaultValue
      */
     public abstract String getString(String key, String defaultValue);
 

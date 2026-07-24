@@ -26,13 +26,14 @@ import javax.swing.JDialog;
 public class BidAskLastSizeDisplayUpdateDialogHandler implements WindowHandler {
 
     /**
-     * Determines whether to process window events for the bid/ask/last size display update dialog.
+     * Determines whether to process window events for the bid/ask/last size
+     * display update dialog.
      * @param window the window to check
      * @param eventId the AWT window event ID
      * @return true if this is a WINDOW_OPENED event, false otherwise
      */
     @Override
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -42,22 +43,29 @@ public class BidAskLastSizeDisplayUpdateDialogHandler implements WindowHandler {
     }
 
     /**
-     * Handles the bid/ask/last size display update dialog based on the AcceptBidAskLastSizeDisplayUpdateNotification setting.
-     * Can accept, defer, or ignore the notification. Optionally configures market data lot settings.
+     * Handles the bid/ask/last size display update dialog based on the
+     * AcceptBidAskLastSizeDisplayUpdateNotification setting. Can accept,
+     * defer, or ignore the notification. Optionally configures market data
+     * lot settings.
      * @param window the dialog window
      * @param eventID the AWT window event ID
      */
     @Override
-    public void handleWindow(Window window, int eventID) {
-        String accept = Settings.settings().getString("AcceptBidAskLastSizeDisplayUpdateNotification", "ignore");
-        
-        switch(accept) {
+    public void handleWindow(final Window window, final int eventID) {
+        String accept = Settings.settings()
+            .getString(
+                "AcceptBidAskLastSizeDisplayUpdateNotification", "ignore");
+
+        switch (accept) {
             case "ignore":
                 return;
             case "accept":
-                JCheckBox cb = (SwingUtils.findCheckBox(window, "Don't display this message again."));
+                JCheckBox cb = (SwingUtils.findCheckBox(window,
+                    "Don't display this message again."));
                 if (cb == null) {
-                    Utils.logError("could not set 'Don't display this message again': checkbox not found");
+                    Utils.logError(
+                        "could not set 'Don't display this message again': "
+                        + "checkbox not found");
                 } else {
                     cb.setSelected(true);
                 }
@@ -65,29 +73,45 @@ public class BidAskLastSizeDisplayUpdateDialogHandler implements WindowHandler {
             case "defer":
                 break;
             default:
-                Utils.logError("AcceptBidAskLastSizeDisplayUpdateNotification setting is invalid: " + accept);
+                Utils.logError(
+                    "AcceptBidAskLastSizeDisplayUpdateNotification "
+                    + "setting is invalid: " + accept);
                 return;
         }
 
-        if (! SwingUtils.clickButton(window, "I understand - display market data")) {
-            Utils.logError("could not dismiss AcceptBidAskLastSizeDisplayUpdateNotification - button not found");
+        if (!SwingUtils.clickButton(window,
+            "I understand - display market data")) {
+            Utils.logError(
+                "could not dismiss "
+                + "AcceptBidAskLastSizeDisplayUpdateNotification - "
+                + "button not found");
         }
 
-        String sendMarketDataInLots = Settings.settings().getString("SendMarketDataInLotsForUSstocks", "");
+        String sendMarketDataInLots = Settings.settings()
+            .getString("SendMarketDataInLotsForUSstocks", "");
         if (!sendMarketDataInLots.equals("")) {
-            (new ConfigurationTask(new ConfigureSendMarketDataInLotsForUSstocksTask(Settings.settings().getBoolean("SendMarketDataInLotsForUSstocks", true)))).executeAsync();
+            (new ConfigurationTask(
+                new ConfigureSendMarketDataInLotsForUSstocksTask(
+                    Settings.settings().getBoolean(
+                        "SendMarketDataInLotsForUSstocks", true))))
+                .executeAsync();
         }
     }
 
     /**
-     * Identifies the bid/ask/last size display update dialog by checking for a specific text pane.
+     * Identifies the bid/ask/last size display update dialog by checking for
+     * a specific text pane.
      * @param window the window to identify
-     * @return true if this is the bid/ask/last size display update dialog, false otherwise
+     * @return true if this is the bid/ask/last size display update dialog,
+     * false otherwise
      */
     @Override
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
-        return (SwingUtils.findTextPane(window, "Bid, Ask and Last Size Display Update") != null );
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
+        return SwingUtils.findTextPane(window,
+            "Bid, Ask and Last Size Display Update") != null;
     }
-    
+
 }

@@ -24,28 +24,34 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.JFrame;
 
-public class SessionManager {
-    
+public final class SessionManager {
     /**
-     * Initializes the SessionManager with information about whether the session is for Gateway or TWS.
+     * Private constructor to hide default constructor for utility class.
+     */
+    private SessionManager() {
+    }
+
+    /**
+     * Initializes the SessionManager with information about whether the
+     * session is for Gateway or TWS.
      *
      * @param isGateway true if the session is for IB Gateway; false if for TWS
      */
-    public static void initialise(boolean isGateway) {
-        _isGateway = isGateway;
+    public static void initialise(final boolean isGateway) {
+        isGatewayFlag = isGateway;
     }
-    
-    private static boolean _isGateway = false;
+
+    private static boolean isGatewayFlag = false;
     /**
      * Indicates whether the current session is for IB Gateway.
      *
      * @return true if the session is for IB Gateway; false if for TWS
      */
     public static boolean isGateway() {
-        return _isGateway;
-    };
-    
-    private static boolean _isFIX = false;
+        return isGatewayFlag;
+    }
+
+    private static boolean isFIXFlag = false;
     /**
      * Indicates whether the current session is a FIX protocol session.
      *
@@ -53,119 +59,171 @@ public class SessionManager {
      * @throws SystemException if called before the session has started
      */
     public static boolean isFIX() {
-        if (!_isSessionStarted) Utils.exitWithError(ErrorCodes.INVALID_STATE, "isFix() called before session has started");
-        return _isFIX;
+        if (!isSessionStartedFlag) {
+            Utils.exitWithError(ErrorCodes.INVALID_STATE,
+                    "isFix() called before session has started");
+        }
+        return isFIXFlag;
     }
 
-    private static boolean _isRestart;
+    private static boolean isRestartFlag;
+
+    /**
+     * Indicates whether the current session is a restart.
+     *
+     * @return true if the session is restarting; false otherwise
+     */
     static boolean isRestart() {
-        if (!_isSessionStarted) Utils.exitWithError(ErrorCodes.INVALID_STATE, "isRestart() called before session has started");
-        return _isRestart;
+        if (!isSessionStartedFlag) {
+            Utils.exitWithError(ErrorCodes.INVALID_STATE,
+                    "isRestart() called before session has started");
+        }
+        return isRestartFlag;
     }
-    
-    private static boolean _isSessionStarted = false;
+
+    private static boolean isSessionStartedFlag = false;
+    private static final int DEFAULT_LOGIN_DIALOG_TIMEOUT_SECONDS = 60;
+
+    /**
+     * Starts the session and sets up initial state and monitoring.
+     */
     static void startSession() {
-        _isSessionStarted = true;
-        
-        _isFIX = Settings.settings().getBoolean("FIX", false);
-        
+        isSessionStartedFlag = true;
+
+        isFIXFlag = Settings.settings().getBoolean("FIX", false);
+
         // test to see if the -Drestart VM option has been supplied
-        _isRestart = ! (System.getProperties().getProperty("restart", "").isEmpty());
-        int loginDialogDisplayTimeout = Settings.settings().getInt("LoginDialogDisplayTimeout", 60);
-        if (_isRestart){
+        isRestartFlag = !(System.getProperties()
+                .getProperty("restart", "").isEmpty());
+        int loginDialogDisplayTimeout = Settings.settings()
+                .getInt("LoginDialogDisplayTimeout",
+                        DEFAULT_LOGIN_DIALOG_TIMEOUT_SECONDS);
+        if (isRestartFlag) {
             Utils.logToConsole("Re-starting session");
-            // TWS/Gateway will re-establish the session with no intervention from IBC needed
+            // TWS/Gateway will re-establish the session with no intervention
+            // from IBC needed
         } else {
-            Utils.logToConsole("Starting session: will exit if login dialog is not displayed within " + loginDialogDisplayTimeout + " seconds");
-            MyScheduledExecutorService.getInstance().schedule(()->{
-                GuiExecutor.instance().execute(()->{
-                    if (LoginManager.loginManager().getLoginState() != LoginManager.LoginState.LOGGED_OUT) {
-                        // Login diaog has been shown - no need for IBC to exit
+            Utils.logToConsole(
+                    "Starting session: will exit if login dialog is not "
+                    + "displayed within " + loginDialogDisplayTimeout
+                    + " seconds");
+            MyScheduledExecutorService.getInstance().schedule(() -> {
+                GuiExecutor.instance().execute(() -> {
+                    if (LoginManager.loginManager().getLoginState()
+                            != LoginManager.LoginState.LOGGED_OUT) {
+                        // Login dialog has been shown - no need for IBC
+                        // to exit
                         return;
                     }
-                    Utils.exitWithError(ErrorCodes.LOGIN_DIALOG_DISPLAY_TIMED_OUT, "IBC closing after TWS/Gateway failed to display login dialog");
+                    Utils.exitWithError(
+                            ErrorCodes.LOGIN_DIALOG_DISPLAY_TIMED_OUT,
+                            "IBC closing after TWS/Gateway failed to "
+                            + "display login dialog");
                 });
             }, loginDialogDisplayTimeout, TimeUnit.SECONDS);
         }
     }
-    
-    private static volatile boolean _InitialisationCompleted;
+
+    private static volatile boolean initialisationCompleted;
     /**
      * Synchronization lock protecting access to initialization state and
      * condition variable.
      */
-    private static final Lock lock = new ReentrantLock();
+    private static final Lock LOCK = new ReentrantLock();
     /**
      * Condition variable for signaling completion of Gateway initialization.
      * Signals when both the splash screen closes and non-brokerage account
      * dialog closes.
      */
-    private static final Condition initialised = lock.newCondition();
+    private static final Condition INITIALISED = LOCK.newCondition();
+    /**
+     * Awaits the completion of the initialization sequence.
+     */
     static void awaitReady() {
         /*
-         * For the gateway, the main form is loaded right at the start, and long before
-         * the menu items become responsive: any attempt to access the Configure > Settings
-         * menu item (even after it has been enabled) results in an exception being logged
-         * by Gateway. 
-         * 
-         * It's not obvious how long we need to wait before the menu becomes responsive. However the splash
-         * frame that appears in front of the gateway main window during initialisation disappears when everything
-         * is ready, and its close can be detected as a frame entitled 'Starting application...' and a Closed event.
-         * 
-         * So we wait for the handler for that frame to call setSplashScreenClosed().
-         * 
+         * For the gateway, the main form is loaded right at the start, and
+         * long before the menu items become responsive: any attempt to access
+         * the Configure > Settings menu item (even after it has been enabled)
+         * results in an exception being logged by Gateway.
+         *
+         * It's not obvious how long we need to wait before the menu becomes
+         * responsive. However the splash frame that appears in front of the
+         * gateway main window during initialisation disappears when
+         * everything is ready, and its close can be detected as a frame
+         * entitled 'Starting application...' and a Closed event.
+         *
+         * So we wait for the handler for that frame to call
+         * setSplashScreenClosed().
          */
 
-        lock.lock();
+        LOCK.lock();
         try {
-            while (!_InitialisationCompleted) {
+            while (!initialisationCompleted) {
                 try {
-                    initialised.await();
+                    INITIALISED.await();
                 } catch (InterruptedException e) {
+                    // Continue waiting if interrupted
                 }
             }
         } finally {
-            lock.unlock();
+            LOCK.unlock();
         }
     }
 
     private static volatile boolean splashScreenClosed;
+
+    /**
+     * Marks the splash screen as closed.
+     */
     static void setSplashScreenClosed() {
-        if (!SessionManager.isGateway()) return;
-        lock.lock();
+        if (!SessionManager.isGateway()) {
+            return;
+        }
+        LOCK.lock();
         try {
             splashScreenClosed = true;
             if (nonBrokerageAccountDialogClosed) {
-                _InitialisationCompleted = true;
-                initialised.signal();
+                initialisationCompleted = true;
+                INITIALISED.signal();
             }
         } finally {
-            lock.unlock();
+            LOCK.unlock();
         }
     }
-    
+
     private static volatile boolean nonBrokerageAccountDialogClosed;
+
+    /**
+     * Marks the non-brokerage account dialog as closed.
+     */
     static void setNonBrokerageAccountDialogClosed() {
-        if (!SessionManager.isGateway()) return;
-        lock.lock();
+        if (!SessionManager.isGateway()) {
+            return;
+        }
+        LOCK.lock();
         try {
             nonBrokerageAccountDialogClosed = true;
             if (splashScreenClosed) {
-                _InitialisationCompleted = true;
-                initialised.signal();
+                initialisationCompleted = true;
+                INITIALISED.signal();
             }
         } finally {
-            lock.unlock();
+            LOCK.unlock();
         }
     }
-    
-    static void setMainWindow(JFrame window) {
-        lock.lock();
+
+    /**
+     * Sets the main window and marks initialization as complete.
+     *
+     * @param window the main window frame
+     */
+    static void setMainWindow(final JFrame window) {
+        LOCK.lock();
         try {
-            _InitialisationCompleted = true;
-            initialised.signal();
+            initialisationCompleted = true;
+            INITIALISED.signal();
         } finally {
-            lock.unlock();
+            LOCK.unlock();
             MainWindowManager.mainWindowManager().setMainWindow(window);
         }
     }

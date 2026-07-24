@@ -24,12 +24,13 @@ import javax.swing.JDialog;
 
 public class ExitConfirmationDialogHandler implements WindowHandler {
     /**
-     * Determines whether to process window events for the exit confirmation dialog.
+     * Determines whether to process window events for the exit
+     * confirmation dialog.
      * @param window the window to check
      * @param eventId the AWT window event ID
      * @return true if this is a WINDOW_OPENED event, false otherwise
      */
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -39,17 +40,21 @@ public class ExitConfirmationDialogHandler implements WindowHandler {
     }
 
     /**
-     * Handles the exit confirmation dialog by confirming the exit if a shutdown is in progress.
+     * Handles the exit confirmation dialog by confirming the exit if
+     * a shutdown is in progress.
      * @param window the dialog window
      * @param eventID the AWT window event ID
      */
-    public void handleWindow(Window window, int eventID) {
-        // we don't handle this dialog if it's not the result of 
+    public void handleWindow(final Window window, final int eventID) {
+        // we don't handle this dialog if it's not the result of
         // a StopTask running
-        if (!StopTask.shutdownInProgress()) return;
-        
+        if (!StopTask.shutdownInProgress()) {
+            return;
+        }
+
         if (!SwingUtils.clickButton(window, "Yes")) {
-            Utils.logError("could not ignore shutdown confirmation dialog because we could not find one of the controls.");
+            Utils.logError("could not ignore shutdown confirmation dialog "
+                + "because we could not find one of the controls.");
         }
     }
 
@@ -58,10 +63,13 @@ public class ExitConfirmationDialogHandler implements WindowHandler {
      * @param window the window to identify
      * @return true if this is the exit confirmation dialog, false otherwise
      */
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
 
-        return (SwingUtils.findLabel(window, "Are you sure you want to exit?") != null);
+        return (SwingUtils.findLabel(window, "Are you sure you want to exit?")
+            != null);
     }
 
 }

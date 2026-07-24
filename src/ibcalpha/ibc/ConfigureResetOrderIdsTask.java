@@ -25,18 +25,18 @@ public class ConfigureResetOrderIdsTask implements ConfigurationAction {
     private final boolean resetOrderIds;
     private JDialog configDialog;
 
-    ConfigureResetOrderIdsTask(boolean resetOrderIds) {
-        this.resetOrderIds = resetOrderIds;
+    ConfigureResetOrderIdsTask(final boolean shouldResetOrderIds) {
+        this.resetOrderIds = shouldResetOrderIds;
     }
 
     /**
      * Initializes this task with the global configuration dialog.
      *
-     * @param configDialog the TWS Global Configuration dialog
+     * @param globalConfigDialog the TWS Global Configuration dialog
      */
     @Override
-    public void initialise(JDialog configDialog) {
-        this.configDialog = configDialog;
+    public void initialise(final JDialog globalConfigDialog) {
+        this.configDialog = globalConfigDialog;
     }
 
     /**
@@ -49,18 +49,25 @@ public class ConfigureResetOrderIdsTask implements ConfigurationAction {
     @Override
     public void run() {
         try {
-            if (!resetOrderIds) return;
-            
+            if (!resetOrderIds) {
+                return;
+            }
+
             Utils.logToConsole("Resetting API order ids");
 
             if (!SessionManager.isGateway()) {
                 // NB: Gateway never displays the confirmation dialog
-                ResetOrderIdConfirmationDialogHandler.orderIdResetRequestedAtStart = true;
+                ResetOrderIdConfirmationDialogHandler
+                    .orderIdResetRequestedAtStart = true;
             }
 
             Utils.selectApiSettings(configDialog);
 
-            if (!SwingUtils.clickButton(configDialog, "Reset API order ID sequence")) throw new IbcException("could not find 'Reset API order ID sequence' button"); 
+            if (!SwingUtils.clickButton(configDialog,
+                    "Reset API order ID sequence")) {
+                throw new IbcException(
+                    "could not find 'Reset API order ID sequence' button");
+            }
         } catch (IbcException e) {
             Utils.logException(e);
         }

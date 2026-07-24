@@ -23,7 +23,6 @@ import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 
 class GatewayMainWindowFrameHandler  implements WindowHandler {
-    @Override
     /**
      * Determines whether this handler should act on the given window event.
      *
@@ -31,7 +30,8 @@ class GatewayMainWindowFrameHandler  implements WindowHandler {
      * @param eventId the AWT event ID (e.g., WINDOW_OPENED).
      * @return true if this handler should process the event; false otherwise.
      */
-    public boolean filterEvent(Window window, int eventId) {
+    @Override
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -40,29 +40,34 @@ class GatewayMainWindowFrameHandler  implements WindowHandler {
         }
     }
 
-    @Override
     /**
      * Records the Gateway main window when it opens.
      *
      * @param window the Gateway main window.
      * @param eventID the AWT event ID.
      */
-    public void handleWindow(Window window, int eventID) {
+    @Override
+    public void handleWindow(final Window window, final int eventID) {
         SessionManager.setMainWindow((JFrame) window);
     }
 
-    @Override
     /**
-     * Identifies the Gateway main window by looking for the Help > About Gateway or Help > About IB Gateway menu item.
+     * Identifies the Gateway main window by looking for the Help > About
+     * Gateway or Help > About IB Gateway menu item.
      *
      * @param window the window to identify.
      * @return true if this is the Gateway main window; false otherwise.
      */
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JFrame)) return false;
+    @Override
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JFrame)) {
+            return false;
+        }
 
-        return (SwingUtils.findMenuItemInAnyMenuBar(window, new String [] {"Help", "About Gateway"}) != null) ||
-                (SwingUtils.findMenuItemInAnyMenuBar(window, new String [] {"Help", "About IB Gateway"}) != null);
+        return (SwingUtils.findMenuItemInAnyMenuBar(window,
+                    new String[]{"Help", "About Gateway"}) != null)
+                || (SwingUtils.findMenuItemInAnyMenuBar(window,
+                    new String[]{"Help", "About IB Gateway"}) != null);
     }
 
 }

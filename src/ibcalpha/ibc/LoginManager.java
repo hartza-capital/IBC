@@ -26,28 +26,31 @@ import javax.swing.JFrame;
 
 public abstract class LoginManager {
 
-    private static LoginManager _LoginManager;
+    private static LoginManager loginManager;
 
     static {
-        _LoginManager = new DefaultLoginManager();
+        loginManager = new DefaultLoginManager();
     }
 
     /**
      * Sets the global LoginManager instance to the specified implementation.
      *
-     * @param loginManager the LoginManager instance to use; must not be null
-     * @throws IllegalArgumentException if loginManager is null
+     * @param loginManagerImpl the LoginManager instance to use; must not
+     *                        be null
+     * @throws IllegalArgumentException if loginManagerImpl is null
      */
-    public static void initialise(LoginManager loginManager){
-        if (loginManager == null) throw new IllegalArgumentException("loginManager");
-        _LoginManager = loginManager;
+    public static void initialise(final LoginManager loginManagerImpl) {
+        if (loginManagerImpl == null) {
+            throw new IllegalArgumentException("loginManager");
+        }
+        loginManager = loginManagerImpl;
     }
 
     /**
      * Resets the global LoginManager instance to a new DefaultLoginManager.
      */
     public static void setDefault() {
-        _LoginManager = new DefaultLoginManager();
+        loginManager = new DefaultLoginManager();
     }
 
     /**
@@ -56,10 +59,10 @@ public abstract class LoginManager {
      * @return the active LoginManager instance
      */
     public static LoginManager loginManager() {
-        return _LoginManager;
+        return loginManager;
     }
 
-    public enum LoginState{
+    public enum LoginState {
         LOGGED_OUT,
         LOGGED_IN,
         LOGGING_IN,
@@ -68,25 +71,43 @@ public abstract class LoginManager {
         AWAITING_CREDENTIALS
     }
 
+    /**
+     * Determines whether a read-only login is required.
+     *
+     * @return true if read-only login is required; false otherwise
+     */
     boolean readonlyLoginRequired() {
-        boolean readOnly = Settings.settings().getBoolean("ReadOnlyLogin", false);
+        boolean readOnly = Settings.settings()
+            .getBoolean("ReadOnlyLogin", false);
         if (readOnly && SessionManager.isGateway()) {
             Utils.logError("Read-only login not supported by Gateway");
             return false;
         }
         return readOnly;
     }
-    
+
     private volatile JFrame loginFrame = null;
+
+    /**
+     * Returns the current login frame window.
+     *
+     * @return the login frame
+     */
     JFrame getLoginFrame() {
         return loginFrame;
     }
 
-    void setLoginFrame(JFrame window) {
+    /**
+     * Sets the login frame window.
+     *
+     * @param window the login frame to set
+     */
+    void setLoginFrame(final JFrame window) {
         loginFrame = window;
     }
-    
+
     private volatile LoginState loginState = LoginState.LOGGED_OUT;
+
     /**
      * Returns the current login state.
      *
@@ -97,116 +118,169 @@ public abstract class LoginManager {
     }
 
     /**
-     * Sets the login state and handles associated state transitions and logging.
+     * Sets the login state and handles associated state transitions and
+     * logging.
      *
      * @param state the new login state
      */
-    public void setLoginState(LoginState state) {
-        if (state == loginState) return;
+    public void setLoginState(final LoginState state) {
+        if (state == loginState) {
+            return;
+        }
         loginState = state;
-        if (null != loginState) switch (loginState) {
-            case TWO_FA_IN_PROGRESS:
-                Utils.logToConsole("Second Factor Authentication initiated");
-                if (LoginStartTime == null) LoginStartTime = Instant.now();
-                break;
-            case LOGGING_IN:
-                if (LoginStartTime == null) LoginStartTime = Instant.now();
-                break;
-            case LOGGED_IN:
-                Utils.logToConsole("Login has completed");
-                if (shutdownAfterTimeTask != null) {
-                    shutdownAfterTimeTask.cancel(false);
-                    shutdownAfterTimeTask = null;
-                }   break;
-            default:
-                break;
+        if (null != loginState) {
+            switch (loginState) {
+                case TWO_FA_IN_PROGRESS:
+                    Utils.logToConsole(
+                        "Second Factor Authentication initiated");
+                    if (loginStartTime == null) {
+                        loginStartTime = Instant.now();
+                    }
+                    break;
+                case LOGGING_IN:
+                    if (loginStartTime == null) {
+                        loginStartTime = Instant.now();
+                    }
+                    break;
+                case LOGGED_IN:
+                    Utils.logToConsole("Login has completed");
+                    if (shutdownAfterTimeTask != null) {
+                        shutdownAfterTimeTask.cancel(false);
+                        shutdownAfterTimeTask = null;
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
-    private Instant LoginStartTime;
+    private static final int LOGIN_RESTART_DELAY_SECONDS = 5;
+    private static final int DEFAULT_SECOND_FACTOR_AUTH_EXIT_CODE = 99999;
+
+    private Instant loginStartTime;
     private ScheduledFuture<?> shutdownAfterTimeTask;
 
+    /**
+     * Handles the closure of the second factor authentication dialog.
+     */
     void secondFactorAuthenticationDialogClosed() {
-        if (LoginStartTime == null) {
-            // login did not proceed from the SecondFactorAuthentication dialog - for
-            // example because no second factor device could be selected
+        if (loginStartTime == null) {
+            // login did not proceed from the SecondFactorAuthentication dialog
+            // - for example because no second factor device could be selected
             return;
         }
-        
+
         // Second factor authentication dialog timeout period
-        final int SecondFactorAuthenticationTimeout = Settings.settings().getInt("SecondFactorAuthenticationTimeout", 180);
+        final int secondFactorAuthenticationTimeout =
+            Settings.settings()
+                .getInt("SecondFactorAuthenticationTimeout", 180);
 
         // time (seconds) to allow for login to complete before exiting
-        final int exitInterval = Settings.settings().getInt("SecondFactorAuthenticationExitInterval", 60);
+        final int exitInterval = Settings.settings()
+            .getInt("SecondFactorAuthenticationExitInterval", 60);
 
-        final Duration d = Duration.between(LoginStartTime, Instant.now());
-        LoginStartTime = null;
-        
-        Utils.logToConsole("Duration since login: " + d.getSeconds() + " seconds");
+        final Duration d = Duration.between(loginStartTime, Instant.now());
+        loginStartTime = null;
 
-        if (d.getSeconds() < SecondFactorAuthenticationTimeout) {
-            // The 2FA prompt must have been handled by the user, so authentication
-            // should be under way
-            
+        Utils.logToConsole("Duration since login: " + d.getSeconds()
+            + " seconds");
+
+        if (d.getSeconds() < secondFactorAuthenticationTimeout) {
+            // The 2FA prompt must have been handled by the user, so
+            // authentication should be under way
+
             if (SessionManager.isFIX()) {
-                // no Splash screen is dislayed for FIX Gateway - just let things run
-                LoginManager.loginManager().setLoginState(LoginManager.LoginState.LOGGED_IN);
+                // no Splash screen is displayed for FIX Gateway - just
+                // let things run
+                LoginManager.loginManager()
+                    .setLoginState(LoginManager.LoginState.LOGGED_IN);
                 return;
             }
-            
+
             if (!reloginPermitted()) {
                 // just let loading continue
                 return;
             }
 
-            Utils.logToConsole("If login has not completed, IBC will exit in " + exitInterval + " seconds");
-            restartAfterTime(exitInterval, "IBC closing because login has not completed after Second Factor Authentication");
+            Utils.logToConsole("If login has not completed, IBC will exit"
+                + " in " + exitInterval + " seconds");
+            restartAfterTime(exitInterval,
+                "IBC closing because login has not completed after "
+                + "Second Factor Authentication");
             return;
         }
-        
+
         if (!reloginPermitted()) {
-            Utils.logToConsole("Re-login after second factor authentication timeout not required");
+            Utils.logToConsole(
+                "Re-login after second factor authentication timeout "
+                + "not required");
             return;
         }
-        
-        // The 2FA prompt hasn't been handled by the user, so we re-initiate the login
-        // sequence after a short delay
-        Utils.logToConsole("Re-login after second factor authentication timeout in 5 second");
+
+        // The 2FA prompt hasn't been handled by the user, so we re-initiate
+        // the login sequence after a short delay
+        Utils.logToConsole(
+            "Re-login after second factor authentication timeout in "
+            + LOGIN_RESTART_DELAY_SECONDS + " second");
         MyScheduledExecutorService.getInstance().schedule(() -> {
-            GuiDeferredExecutor.instance().execute(
-                () -> {getLoginHandler().initiateLogin(getLoginFrame());}
-            );
-        }, 5, TimeUnit.SECONDS);
+            GuiDeferredExecutor.instance().execute(() -> {
+                getLoginHandler().initiateLogin(getLoginFrame());
+            });
+        }, LOGIN_RESTART_DELAY_SECONDS, TimeUnit.SECONDS);
     }
-    
+
     /**
-     * Determines whether re-login is permitted after a second factor authentication timeout.
+     * Determines whether re-login is permitted after a second factor
+     * authentication timeout.
      *
      * @return true if re-login is permitted; false otherwise
      */
     private boolean reloginPermitted() {
-        if (Settings.settings().getString("ReloginAfterSecondFactorAuthenticationTimeout", "").isEmpty()) {
-            if (!Settings.settings().getString("ExitAfterSecondFactorAuthenticationTimeout", "").isEmpty()) {
-                return Settings.settings().getBoolean("ExitAfterSecondFactorAuthenticationTimeout", false);
+        if (Settings.settings()
+            .getString("ReloginAfterSecondFactorAuthenticationTimeout", "")
+            .isEmpty()) {
+            if (!Settings.settings()
+                .getString("ExitAfterSecondFactorAuthenticationTimeout", "")
+                .isEmpty()) {
+                return Settings.settings()
+                    .getBoolean(
+                        "ExitAfterSecondFactorAuthenticationTimeout", false);
             }
             return false;
         }
-        return Settings.settings().getBoolean("ReloginAfterSecondFactorAuthenticationTimeout", false);
+        return Settings.settings()
+            .getBoolean("ReloginAfterSecondFactorAuthenticationTimeout",
+                false);
     }
-    
-    void restartAfterTime(final int secondsTillShutdown, final String message) {
+
+    /**
+     * Schedules a restart after a specified time interval.
+     *
+     * @param secondsTillShutdown seconds until shutdown
+     * @param message the message to log when shutdown occurs
+     */
+    void restartAfterTime(final int secondsTillShutdown,
+                          final String message) {
         try {
-            shutdownAfterTimeTask = MyScheduledExecutorService.getInstance().schedule(()->{
-                GuiExecutor.instance().execute(()->{
-                    if (getLoginState() == LoginManager.LoginState.LOGGED_IN) {
-                        Utils.logToConsole("Login has already completed - no need for IBC to exit");
-                        return;
-                    }
-                    Utils.exitWithError(ErrorCodes.SECOND_FACTOR_AUTH_LOGIN_TIMED_OUT, message);
-                });
-            }, secondsTillShutdown, TimeUnit.SECONDS);
+            shutdownAfterTimeTask = MyScheduledExecutorService
+                .getInstance().schedule(() -> {
+                    GuiExecutor.instance().execute(() -> {
+                        if (getLoginState()
+                            == LoginManager.LoginState.LOGGED_IN) {
+                            Utils.logToConsole(
+                                "Login has already completed - no need"
+                                + " for IBC to exit");
+                            return;
+                        }
+                        Utils.exitWithError(
+                            ErrorCodes.SECOND_FACTOR_AUTH_LOGIN_TIMED_OUT,
+                            message);
+                    });
+                }, secondsTillShutdown, TimeUnit.SECONDS);
         } catch (Throwable e) {
-            Utils.exitWithException(99999, e);
+            Utils.exitWithException(DEFAULT_SECOND_FACTOR_AUTH_EXIT_CODE,
+                e);
         }
     }
 
@@ -221,28 +295,28 @@ public abstract class LoginManager {
      *
      * @return the FIX password
      */
-    public abstract String FIXPassword();
+    public abstract String fixPassword();
 
     /**
      * Returns the FIX login username from either arguments or settings.
      *
      * @return the FIX username
      */
-    public abstract String FIXUserName();
+    public abstract String fixUserName();
 
     /**
      * Returns the TWS login password from either arguments or settings.
      *
      * @return the TWS password
      */
-    public abstract String IBAPIPassword();
+    public abstract String ibapiPassword();
 
     /**
      * Returns the TWS login username from either arguments or settings.
      *
      * @return the TWS username
      */
-    public abstract String IBAPIUserName();
+    public abstract String ibapiUserName();
 
     /**
      * Returns the current login handler.

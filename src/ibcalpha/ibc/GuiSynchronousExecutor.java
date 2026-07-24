@@ -21,30 +21,35 @@ package ibcalpha.ibc;
 import java.util.concurrent.Executor;
 import javax.swing.SwingUtilities;
 
-class GuiSynchronousExecutor implements Executor{
-    private static final GuiSynchronousExecutor instance = new GuiSynchronousExecutor();
+final class GuiSynchronousExecutor implements Executor {
+    private static final GuiSynchronousExecutor INSTANCE =
+        new GuiSynchronousExecutor();
 
     /**
      * Private constructor for singleton pattern.
      */
-    private GuiSynchronousExecutor() {}
+    private GuiSynchronousExecutor() {
+    }
 
-    static GuiSynchronousExecutor instance() {return instance;}
+    static GuiSynchronousExecutor instance() {
+        return INSTANCE;
+    }
 
     /**
-     * Executes the task on the Swing event dispatch thread, blocking the caller until completion.
+     * Executes the task on the Swing event dispatch thread, blocking the
+     * caller until completion.
      *
      * @param task the runnable task to execute
      */
     @Override
-    public void execute(Runnable task) {
+    public void execute(final Runnable task) {
         if (SwingUtilities.isEventDispatchThread()) {
             task.run();
         } else {
             try {
                 SwingUtilities.invokeAndWait(task);
-            } catch (Exception ex){
-
+            } catch (Exception ex) {
+                // Ignore
             }
         }
     }

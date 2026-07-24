@@ -28,25 +28,31 @@ import java.net.SocketException;
 
 final class CommandChannel {
 
-    private static final String _Prompt = Settings.settings().getString("CommandPrompt", "");
-    private static final boolean _SuppressInfo = Settings.settings().getBoolean("SuppressInfoMessages", true);
+    private static final String PROMPT =
+        Settings.settings().getString("CommandPrompt", "");
+    private static final boolean SUPPRESS_INFO =
+        Settings.settings().getBoolean("SuppressInfoMessages", true);
 
     private Socket mSocket;
     private BufferedReader mInstream = null;
     private BufferedWriter mOutstream = null;
 
-    CommandChannel(Socket socket) {
+    CommandChannel(final Socket socket) {
 
         mSocket = socket;
-        if (! setupStreams()) return;
+        if (!setupStreams()) {
+            return;
+        }
 
         writeInfo("IBC Command Server");
     }
 
     void close() {
         try {
-            if (mSocket == null || mSocket.isClosed()) return;
-            
+            if (mSocket == null || mSocket.isClosed()) {
+                return;
+            }
+
             Utils.logToConsole("Closing command channel");
             mSocket.shutdownInput();
             mSocket.shutdownOutput();
@@ -71,7 +77,9 @@ final class CommandChannel {
     String getCommand() {
         String cmd = null;
 
-        if (mInstream == null) return null;
+        if (mInstream == null) {
+            return null;
+        }
 
         try {
             cmd = mInstream.readLine();
@@ -80,7 +88,9 @@ final class CommandChannel {
                 cmd = mInstream.readLine();
             }
 
-            if (cmd != null) Utils.logToConsole("CommandServer received command: " + cmd);
+            if (cmd != null) {
+                Utils.logToConsole("CommandServer received command: " + cmd);
+            }
         } catch (SocketException e) {
             // the socket was reset by the client
             Utils.logException(e);
@@ -92,20 +102,24 @@ final class CommandChannel {
         return cmd;
     }
 
-    void writeAck(String info) {
+    void writeAck(final String info) {
         replyLine("OK " + info);
     }
 
-    final void writeInfo(String info) {
-        if (! _SuppressInfo) replyLine("INFO " + info);
+    void writeInfo(final String info) {
+        if (!SUPPRESS_INFO) {
+            replyLine("INFO " + info);
+        }
     }
 
-    void writeNack(String info) {
+    void writeNack(final String info) {
         replyLine("ERROR " + info);
     }
 
     void writePrompt() {
-        if (! _Prompt.isEmpty()) reply(_Prompt);
+        if (!PROMPT.isEmpty()) {
+            reply(PROMPT);
+        }
     }
 
     /**
@@ -113,7 +127,7 @@ final class CommandChannel {
      *
      * @param message the message text to send
      */
-    private void reply(String message) {
+    private void reply(final String message) {
         reply(message, false);
     }
 
@@ -123,11 +137,15 @@ final class CommandChannel {
      * @param message the message text to send
      * @param addNewline if true, appends a newline after the message
      */
-    private void reply(String message, boolean addNewline) {
-        if (mOutstream == null) return;
+    private void reply(final String message, final boolean addNewline) {
+        if (mOutstream == null) {
+            return;
+        }
         try {
             mOutstream.write(message);
-            if (addNewline) mOutstream.newLine();
+            if (addNewline) {
+                mOutstream.newLine();
+            }
             mOutstream.flush();
         } catch (SocketException e) {
             // the socket was reset by the client
@@ -142,8 +160,8 @@ final class CommandChannel {
      *
      * @param message the message text to send
      */
-    private void replyLine(String message) {
-        reply(message,true);
+    private void replyLine(final String message) {
+        reply(message, true);
     }
 
     /**
@@ -153,11 +171,14 @@ final class CommandChannel {
      */
     private boolean setupStreams() {
         try {
-            mInstream = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
-            mOutstream = new BufferedWriter(new OutputStreamWriter(mSocket.getOutputStream()));
+            mInstream = new BufferedReader(
+                new InputStreamReader(mSocket.getInputStream()));
+            mOutstream = new BufferedWriter(
+                new OutputStreamWriter(mSocket.getOutputStream()));
             return true;
         } catch (IOException e) {
-            // this is most likely a result of the user closing the command connection
+            // this is most likely a result of the user closing the
+            // command connection
             Utils.logException(e);
             return false;
         }

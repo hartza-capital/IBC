@@ -25,13 +25,14 @@ import javax.swing.JDialog;
 public class CryptoOrderConfirmationDialogHandler implements WindowHandler {
 
     /**
-     * Determines whether to process window events for the cryptocurrency order confirmation dialog.
+     * Determines whether to process window events for the cryptocurrency order
+     * confirmation dialog.
      * @param window the window to check
      * @param eventId the AWT window event ID
      * @return true if this is a WINDOW_OPENED event, false otherwise
      */
     @Override
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -41,45 +42,53 @@ public class CryptoOrderConfirmationDialogHandler implements WindowHandler {
     }
 
     /**
-     * Handles the cryptocurrency order confirmation dialog based on the ConfirmCryptoCurrencyOrders setting.
-     * Can transmit, cancel, or leave the dialog for manual handling.
+     * Handles the cryptocurrency order confirmation dialog based on the
+     * ConfirmCryptoCurrencyOrders setting. Can transmit, cancel, or leave the
+     * dialog for manual handling.
      * @param window the dialog window
      * @param eventID the AWT window event ID
      */
     @Override
-    public void handleWindow(Window window, int eventID) {
-        String setting = Settings.settings().getString("ConfirmCryptoCurrencyOrders", "manual");
-        
+    public void handleWindow(final Window window, final int eventID) {
+        String setting = Settings.settings().getString(
+            "ConfirmCryptoCurrencyOrders", "manual");
         switch (setting) {
             case "manual":
                 break;
             case "transmit":
-                if (SwingUtils.clickButton(window, "Transmit")) {
-                } else {
-                    Utils.logError("could not confirm cryptocurrency order because we could not find the Transmit button");
+                if (!SwingUtils.clickButton(window, "Transmit")) {
+                    Utils.logError(
+                        "could not confirm cryptocurrency order because we "
+                            + "could not find the Transmit button");
                 }
                 break;
             case "cancel":
-                if (SwingUtils.clickButton(window, "Cancel")) {
-                } else {
-                    Utils.logError("could not cancel cryptocurrency order because we could not find the Cancel button");
+                if (!SwingUtils.clickButton(window, "Cancel")) {
+                    Utils.logError(
+                        "could not cancel cryptocurrency order because we "
+                            + "could not find the Cancel button");
                 }
                 break;
             default:
-                Utils.logError("ConfirmCryptoCurrencyOrders setting is invalid");
+                Utils.logError("ConfirmCryptoCurrencyOrders setting is "
+                    + "invalid");
         }
     }
 
     /**
-     * Identifies the cryptocurrency order confirmation dialog by checking the window title.
+     * Identifies the cryptocurrency order confirmation dialog by checking the
+     * window title.
      * @param window the window to identify
-     * @return true if this is the cryptocurrency order confirmation dialog, false otherwise
+     * @return true if this is the cryptocurrency order confirmation dialog,
+     * false otherwise
      */
     @Override
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
 
-        return (SwingUtils.titleContains(window, "Cryptocurrency order confirmation"));
+        return (SwingUtils.titleContains(window,
+            "Cryptocurrency order confirmation"));
     }
-    
 }

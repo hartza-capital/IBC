@@ -35,50 +35,69 @@ public class DefaultLoginManager extends LoginManager {
     }
 
     /**
-     * Creates a new DefaultLoginManager that extracts credentials from command-line arguments.
+     * Creates a new DefaultLoginManager that extracts credentials from
+     * command-line arguments.
      *
-     * @param args the command-line arguments containing optional TWS and FIX credentials
+     * @param args the command-line arguments containing optional TWS and FIX
+     *            credentials
      */
-    public DefaultLoginManager(String[] args) {
+    public DefaultLoginManager(final String[] args) {
         ibapiCredentialsFromArgs = getTWSUserNameAndPasswordFromArguments(args);
         fixCredentialsFromArgs = getFIXUserNameAndPasswordFromArguments(args);
-        message = "will get username and password from " +
-                (ibapiCredentialsFromArgs ? "args" : "settings") +
-                "; FIX username and password (if required) from " +
-                (fixCredentialsFromArgs ? "args" : "settings");
+        message = "will get username and password from "
+                + (ibapiCredentialsFromArgs ? "args" : "settings")
+                + "; FIX username and password (if required) from "
+                + (fixCredentialsFromArgs ? "args" : "settings");
     }
 
     /**
-     * Creates a new DefaultLoginManager with TWS credentials provided to the constructor.
+     * Creates a new DefaultLoginManager with TWS credentials provided to the
+     * constructor.
      *
      * @param username the TWS login username
      * @param password the TWS login password
      */
-    public DefaultLoginManager(String username, String password) {
-        IBAPIUserName = username;
-        IBAPIPassword = password;
+    public DefaultLoginManager(final String username, final String password) {
+        ibapiUserName = username;
+        ibapiPassword = password;
         ibapiCredentialsFromArgs = true;
         fixCredentialsFromArgs = false;
         message = "getting username and password from constructor";
     }
 
     /**
-     * Creates a new DefaultLoginManager with both FIX and TWS credentials provided to the constructor.
+     * Creates a new DefaultLoginManager with both FIX and TWS credentials
+     * provided to the constructor.
      *
-     * @param FIXUsername the FIX login username
-     * @param FIXPassword the FIX login password
-     * @param IBAPIUsername the TWS login username
-     * @param IBAPIPassword the TWS login password
+     * @param fixUsername the FIX login username
+     * @param fixPasswordArg the FIX login password
+     * @param ibapiUsername the TWS login username
+     * @param ibapiPasswordArg the TWS login password
      */
-    public DefaultLoginManager(String FIXUsername, String FIXPassword, String IBAPIUsername, String IBAPIPassword) {
-        this.FIXUserName = FIXUsername;
-        this.FIXPassword = FIXPassword;
-        this.IBAPIUserName = IBAPIUsername;
-        this.IBAPIPassword = IBAPIPassword;
+    public DefaultLoginManager(final String fixUsername,
+            final String fixPasswordArg, final String ibapiUsername,
+            final String ibapiPasswordArg) {
+        this.fixUserName = fixUsername;
+        this.fixPassword = fixPasswordArg;
+        this.ibapiUserName = ibapiUsername;
+        this.ibapiPassword = ibapiPasswordArg;
         ibapiCredentialsFromArgs = true;
         fixCredentialsFromArgs = true;
-        message = "getting username and password from constructor (including FIX)";
+        message = "getting username and password from constructor "
+                + "(including FIX)";
     }
+
+    private static final int MIN_ARGS_WITH_FIX = 3;
+    private static final int MAX_ARGS_WITH_FIX = 6;
+    private static final int MIN_ARGS_IBAPI_ONLY_LONG = 5;
+    private static final int MAX_ARGS_IBAPI_ONLY_LONG = 6;
+    private static final int MIN_ARGS_IBAPI_ONLY_SHORT = 3;
+    private static final int MAX_ARGS_IBAPI_ONLY_SHORT = 4;
+    private static final int MAX_ARGS_NO_CREDS = 2;
+    private static final int FIX_USERNAME_INDEX = 1;
+    private static final int FIX_PASSWORD_INDEX = 2;
+    private static final int IBAPI_USERNAME_LONG_INDEX = 3;
+    private static final int IBAPI_PASSWORD_LONG_INDEX = 4;
 
     private final String message;
 
@@ -90,80 +109,92 @@ public class DefaultLoginManager extends LoginManager {
     /**
      * IBAPI username - can either be supplied from the .ini file or as args[1]
      * NB: if IBAPI username is supplied in args[1], then the password must
-     * be in args[2]. If IBAPI username is supplied in .ini, then the password must
-     * also be in .ini.
+     * be in args[2]. If IBAPI username is supplied in .ini, then the password
+     * must also be in .ini.
      */
-    private volatile String IBAPIUserName;
+    private volatile String ibapiUserName;
 
     /**
-     * IBAPI password - can either be supplied from the .ini file or as args[2]
+     * IBAPI password - can either be supplied from the .ini file or as args[2].
      */
-    private volatile String IBAPIPassword;
+    private volatile String ibapiPassword;
 
     /**
      * FIX username - can either be supplied from the .ini file or as args[1]
      * NB: if username is supplied in args[1], then the password must
-     * be in args[2], and the IBAPI username and password may be in 
-     * args[3] and args[4]. If username is supplied in .ini, then the password must
-     * also be in .ini.
+     * be in args[2], and the IBAPI username and password may be in
+     * args[3] and args[4]. If username is supplied in .ini, then the password
+     * must also be in .ini.
      */
-    private volatile String FIXUserName;
+    private volatile String fixUserName;
 
     /**
-     * FIX password - can either be supplied from the .ini file or as args[2]
+     * FIX password - can either be supplied from the .ini file or as args[2].
      */
-    private volatile String FIXPassword;
+    private volatile String fixPassword;
 
 
     /**
      * Logs a diagnostic message describing the source of login credentials.
      */
     @Override
-    public void logDiagnosticMessage(){
+    public void logDiagnosticMessage() {
         Utils.logToConsole("using default login manager: " + message);
     }
 
     /**
-     * Returns the FIX login password from either constructor arguments or settings.
+     * Returns the FIX login password from either constructor arguments or
+     * settings.
      *
      * @return the FIX password
      */
     @Override
-    public String FIXPassword() {
-        if (fixCredentialsFromArgs) return FIXPassword;
+    public String fixPassword() {
+        if (fixCredentialsFromArgs) {
+            return fixPassword;
+        }
         return getFIXPasswordFromSettings();
     }
 
     /**
-     * Returns the FIX login username from either constructor arguments or settings.
+     * Returns the FIX login username from either constructor arguments or
+     * settings.
      *
      * @return the FIX username
      */
     @Override
-    public String FIXUserName() {
-        if (fixCredentialsFromArgs) return FIXUserName;
+    public String fixUserName() {
+        if (fixCredentialsFromArgs) {
+            return fixUserName;
+        }
         return getFIXUserNameFromSettings();
     }
 
     /**
-     * Returns the TWS login password from either constructor arguments or settings.
+     * Returns the TWS login password from either constructor arguments or
+     * settings.
      *
      * @return the TWS password
      */
     @Override
-    public String IBAPIPassword() {
-        if (ibapiCredentialsFromArgs) return IBAPIPassword;
+    public String ibapiPassword() {
+        if (ibapiCredentialsFromArgs) {
+            return ibapiPassword;
+        }
         return getTWSPasswordFromSettings();
     }
 
     /**
-     * Returns the TWS login username from either constructor arguments or settings.
+     * Returns the TWS login username from either constructor arguments or
+     * settings.
      *
      * @return the TWS username
      */
     @Override
-    public String IBAPIUserName() {
-        if (ibapiCredentialsFromArgs) return IBAPIUserName;
+    public String ibapiUserName() {
+        if (ibapiCredentialsFromArgs) {
+            return ibapiUserName;
+        }
         return getTWSUserNameFromSettings();
     }
 
@@ -183,7 +214,7 @@ public class DefaultLoginManager extends LoginManager {
      * @param window the login frame
      */
     @Override
-    public void setLoginFrame(JFrame window) {
+    public void setLoginFrame(final JFrame window) {
         super.setLoginFrame(window);
     }
 
@@ -203,7 +234,7 @@ public class DefaultLoginManager extends LoginManager {
      * @param handler the login handler instance
      */
     @Override
-    public void setLoginHandler(AbstractLoginHandler handler) {
+    public void setLoginHandler(final AbstractLoginHandler handler) {
         loginHandler = handler;
     }
 
@@ -227,15 +258,19 @@ public class DefaultLoginManager extends LoginManager {
     }
 
     /**
-     * Attempts to extract FIX username and password from command-line arguments.
+     * Attempts to extract FIX username and password from command-line
+     * arguments.
      *
      * @param args the command-line arguments
-     * @return true if FIX credentials were found and extracted; false otherwise
+     * @return true if FIX credentials were found and extracted; false
+     *         otherwise
      */
-    private boolean getFIXUserNameAndPasswordFromArguments(String[] args) {
-        if (args.length >= 3 && args.length <= 6) {
-            FIXUserName = args[1];
-            FIXPassword = args[2];
+    private boolean getFIXUserNameAndPasswordFromArguments(
+            final String[] args) {
+        if (args.length >= MIN_ARGS_WITH_FIX
+                && args.length <= MAX_ARGS_WITH_FIX) {
+            fixUserName = args[FIX_USERNAME_INDEX];
+            fixPassword = args[FIX_PASSWORD_INDEX];
             return true;
         } else {
             return false;
@@ -262,28 +297,33 @@ public class DefaultLoginManager extends LoginManager {
     }
 
     /**
-     * Attempts to extract TWS username and password from command-line arguments.
+     * Attempts to extract TWS username and password from command-line
+     * arguments.
      *
      * @param args the command-line arguments
-     * @return true if TWS credentials were found and extracted; false otherwise
+     * @return true if TWS credentials were found and extracted; false
+     *         otherwise
      */
-    private boolean getTWSUserNameAndPasswordFromArguments(String[] args) {
-        if (args.length == 5 || args.length == 6) {
-            IBAPIUserName = args[3];
-            IBAPIPassword = args[4];
+    private boolean getTWSUserNameAndPasswordFromArguments(
+            final String[] args) {
+        if (args.length == MIN_ARGS_IBAPI_ONLY_LONG
+                || args.length == MAX_ARGS_IBAPI_ONLY_LONG) {
+            ibapiUserName = args[IBAPI_USERNAME_LONG_INDEX];
+            ibapiPassword = args[IBAPI_PASSWORD_LONG_INDEX];
             return true;
 
         }
-        if (args.length == 3 || args.length == 4) {
-            IBAPIUserName = args[1];
-            IBAPIPassword = args[2];
+        if (args.length == MIN_ARGS_IBAPI_ONLY_SHORT
+                || args.length == MAX_ARGS_IBAPI_ONLY_SHORT) {
+            ibapiUserName = args[FIX_USERNAME_INDEX];
+            ibapiPassword = args[FIX_PASSWORD_INDEX];
             return true;
         }
-        if (args.length <= 2) {
+        if (args.length <= MAX_ARGS_NO_CREDS) {
             return false;
         }
         Utils.logError("Incorrect number of arguments passed. quitting...");
-        Utils.logRawToConsole("Number of arguments = " +args.length);
+        Utils.logRawToConsole("Number of arguments = " + args.length);
         for (int i = 0; i < args.length; i++) {
             Utils.logRawToConsole("arg[" + i + "]=" + args[i]);
         }

@@ -24,13 +24,15 @@ import javax.swing.JDialog;
 
 public class NonBrokerageAccountDialogHandler  implements WindowHandler {
     /**
-     * Determines whether to process window events for the non-brokerage account dialog.
+     * Determines whether to process window events for the non-brokerage
+     * account dialog.
      * @param window the window to check
      * @param eventId the AWT window event ID
-     * @return true if this is a WINDOW_OPENED or WINDOW_CLOSED event, false otherwise
+     * @return true if this is a WINDOW_OPENED or WINDOW_CLOSED event,
+     * false otherwise
      */
     @Override
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -42,36 +44,49 @@ public class NonBrokerageAccountDialogHandler  implements WindowHandler {
     }
 
     /**
-     * Handles the non-brokerage account dialog by acknowledging the warning if AcceptNonBrokerageAccountWarning is enabled.
-     * Also notifies when the dialog is closed.
+     * Handles the non-brokerage account dialog by acknowledging the warning
+     * if AcceptNonBrokerageAccountWarning is enabled. Also notifies when the
+     * dialog is closed.
      * @param window the dialog window
      * @param eventID the AWT window event ID
      */
     @Override
-    public void handleWindow(Window window, int eventID) {
+    public void handleWindow(final Window window, final int eventID) {
         if (eventID == WindowEvent.WINDOW_CLOSED) {
             SessionManager.setNonBrokerageAccountDialogClosed();
             return;
         }
 
-        if (! Settings.settings().getBoolean("AcceptNonBrokerageAccountWarning", true)) return;
+        if (!Settings.settings()
+                .getBoolean("AcceptNonBrokerageAccountWarning", true)) {
+            return;
+        }
 
-        GuiDeferredExecutor.instance().execute(() -> MainWindowManager.mainWindowManager().iconizeIfRequired());
+        GuiDeferredExecutor.instance().execute(
+                () -> MainWindowManager.mainWindowManager()
+                        .iconizeIfRequired());
 
-        if (! SwingUtils.clickButton(window, "I understand and accept")) {
-            Utils.logError("could not dismiss non-brokerage account warning dialog.");
+        if (!SwingUtils.clickButton(window, "I understand and accept")) {
+            Utils.logError(
+                    "could not dismiss non-brokerage account warning "
+                            + "dialog.");
         }
     }
 
     /**
-     * Identifies the non-brokerage account dialog by checking for a specific label.
+     * Identifies the non-brokerage account dialog by checking for a
+     * specific label.
      * @param window the window to identify
-     * @return true if this is the non-brokerage account dialog, false otherwise
+     * @return true if this is the non-brokerage account dialog, false
+     * otherwise
      */
     @Override
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
-        return (SwingUtils.findLabel(window, "This is not a brokerage account") != null );
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
+        return (SwingUtils.findLabel(window,
+                "This is not a brokerage account") != null);
     }
 
 }

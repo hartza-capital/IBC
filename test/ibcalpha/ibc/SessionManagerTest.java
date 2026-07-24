@@ -26,9 +26,9 @@ class SessionManagerTest {
     @AfterEach
     void restoreDefaults() {
         SessionManager.initialise(false);
-        TestUtils.setStaticField(SessionManager.class, "_isFIX", false);
-        TestUtils.setStaticField(SessionManager.class, "_isSessionStarted", false);
-        TestUtils.setStaticField(SessionManager.class, "_InitialisationCompleted", false);
+        TestUtils.setStaticField(SessionManager.class, "isFIXFlag", false);
+        TestUtils.setStaticField(SessionManager.class, "isSessionStartedFlag", false);
+        TestUtils.setStaticField(SessionManager.class, "initialisationCompleted", false);
         MainWindowManager.setDefault();
         Settings.setDefault();
     }
@@ -44,22 +44,22 @@ class SessionManagerTest {
     @Test
     void isFixReturnsFalseWhenSessionStartedForTws() {
         SessionManager.initialise(false);
-        TestUtils.setStaticField(SessionManager.class, "_isFIX", false);
-        TestUtils.setStaticField(SessionManager.class, "_isSessionStarted", true);
+        TestUtils.setStaticField(SessionManager.class, "isFIXFlag", false);
+        TestUtils.setStaticField(SessionManager.class, "isSessionStartedFlag", true);
         assertFalse(SessionManager.isFIX());
     }
 
     @Test
     void isFixReturnsTrueWhenSessionStartedForFix() {
         SessionManager.initialise(false);
-        TestUtils.setStaticField(SessionManager.class, "_isFIX", true);
-        TestUtils.setStaticField(SessionManager.class, "_isSessionStarted", true);
+        TestUtils.setStaticField(SessionManager.class, "isFIXFlag", true);
+        TestUtils.setStaticField(SessionManager.class, "isSessionStartedFlag", true);
         assertTrue(SessionManager.isFIX());
     }
 
     @Test
     void isFixExitsWhenSessionNotStarted() {
-        TestUtils.setStaticField(SessionManager.class, "_isSessionStarted", false);
+        TestUtils.setStaticField(SessionManager.class, "isSessionStartedFlag", false);
         try (MockedStatic<Utils> utils = mockStatic(Utils.class)) {
             SessionManager.isFIX();
             utils.verify(() -> Utils.exitWithError(anyInt(), anyString()));
@@ -68,7 +68,7 @@ class SessionManagerTest {
 
     @Test
     void isRestartExitsWhenSessionNotStarted() {
-        TestUtils.setStaticField(SessionManager.class, "_isSessionStarted", false);
+        TestUtils.setStaticField(SessionManager.class, "isSessionStartedFlag", false);
         try (MockedStatic<Utils> utils = mockStatic(Utils.class)) {
             SessionManager.isRestart();
             utils.verify(() -> Utils.exitWithError(anyInt(), anyString()));
@@ -78,17 +78,17 @@ class SessionManagerTest {
     @Test
     void setSplashScreenClosedCompletesForGateway() {
         SessionManager.initialise(true);
-        TestUtils.setStaticField(SessionManager.class, "_InitialisationCompleted", false);
+        TestUtils.setStaticField(SessionManager.class, "initialisationCompleted", false);
         SessionManager.setNonBrokerageAccountDialogClosed();
         SessionManager.setSplashScreenClosed();
-        assertTrue((boolean) TestUtils.getStaticField(SessionManager.class, "_InitialisationCompleted"));
+        assertTrue((boolean) TestUtils.getStaticField(SessionManager.class, "initialisationCompleted"));
     }
 
     @Test
     void setMainWindowCompletesInitialisation() {
         SessionManager.initialise(false);
-        TestUtils.setStaticField(SessionManager.class, "_InitialisationCompleted", false);
+        TestUtils.setStaticField(SessionManager.class, "initialisationCompleted", false);
         SessionManager.setMainWindow(null);
-        assertTrue((boolean) TestUtils.getStaticField(SessionManager.class, "_InitialisationCompleted"));
+        assertTrue((boolean) TestUtils.getStaticField(SessionManager.class, "initialisationCompleted"));
     }
 }

@@ -23,8 +23,7 @@ import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
 public class GatewayDialogHandler implements WindowHandler {
-    
-    @Override
+
     /**
      * Determines whether this handler should act on the given window event.
      *
@@ -32,7 +31,8 @@ public class GatewayDialogHandler implements WindowHandler {
      * @param eventId the AWT event ID (e.g., WINDOW_OPENED).
      * @return true if this handler should process the event; false otherwise.
      */
-    public boolean filterEvent(Window window, int eventId) {
+    @Override
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
                 return true;
@@ -41,34 +41,37 @@ public class GatewayDialogHandler implements WindowHandler {
         }
     }
 
-    @Override
     /**
      * Performs the automation action for a recognized Gateway dialog.
-     * Handles "Connection to server failed" dialogs by initiating a cold restart;
-     * other dialogs are logged but left for user interaction.
+     * Handles "Connection to server failed" dialogs by initiating a
+     * cold restart; other dialogs are logged but left for user
+     * interaction.
      *
      * @param window the Gateway dialog window.
      * @param eventID the AWT event ID.
      */
-    public void handleWindow(Window window, int eventID) {
+    @Override
+    public void handleWindow(final Window window, final int eventID) {
         String text = SwingUtils.getLabelTexts(window);
         // since this is a generic dialog, we always log the text
         Utils.logToConsole(text);
+        // For other instances of this dialog, leave it on display
+        // for the user to handle (e.g., setting Trusted IP addresses).
         if (text.startsWith("Connection to server failed")) {
             Utils.logToConsole("Cold restart in progress");
             // stop tidily and do a cold restart
-            MyCachedThreadPool.getInstance().execute(new StopTask(null, true, "Cold restart after Connection to server failed"));
+            MyCachedThreadPool.getInstance()
+                .execute(new StopTask(null, true,
+                    "Cold restart after Connection to server failed"));
 
-            if (! SwingUtils.clickButton(window, "OK")) {
-                Utils.logError("could not dismiss Login Error dialog because we could not find the OK button");
+            if (!SwingUtils.clickButton(window, "OK")) {
+                Utils.logError(
+                    "could not dismiss Login Error dialog because we "
+                        + "could not find the OK button");
             }
-        } else {
-            // for other instances of this dialog, just leave it on display for the user to handle. For example,
-            // it is used when setting Trusted IP addresses in the Gateway
         }
     }
 
-    @Override
     /**
      * Identifies whether the window is a Gateway dialog.
      * Checks if the window is a JDialog with "Gateway" in its title.
@@ -76,10 +79,12 @@ public class GatewayDialogHandler implements WindowHandler {
      * @param window the window to identify.
      * @return true if this is a recognized Gateway dialog; false otherwise.
      */
-    public boolean recogniseWindow(Window window) {
-        if (! (window instanceof JDialog)) return false;
+    @Override
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
 
-        return (SwingUtils.titleContains(window, "Gateway"));
+        return SwingUtils.titleContains(window, "Gateway");
     }
-    
 }

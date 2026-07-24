@@ -28,9 +28,10 @@ class NewerVersionDialogHandler implements WindowHandler {
      * Determines whether to process window events for the newer version dialog.
      * @param window the window to check
      * @param eventId the AWT window event ID
-     * @return true if this is a WINDOW_OPENED or WINDOW_ACTIVATED event, false otherwise
+     * @return true if this is a WINDOW_OPENED or WINDOW_ACTIVATED event,
+     *         false otherwise
      */
-    public boolean filterEvent(Window window, int eventId) {
+    public boolean filterEvent(final Window window, final int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
             case WindowEvent.WINDOW_ACTIVATED:
@@ -45,25 +46,37 @@ class NewerVersionDialogHandler implements WindowHandler {
      * @param window the dialog window
      * @param eventID the AWT window event ID
      */
-    public void handleWindow(Window window, int eventID) {
-        if (SwingUtils.clickButton(window, "OK")) {
-        } else if (SwingUtils.clickButton(window, "No")) { // ie no we don't want the opportunity to upgrade now - Linux version only
-        } else {
-            Utils.logError("could not dismiss Newer Version because we could not find one of the controls.");
+    public void handleWindow(final Window window, final int eventID) {
+        boolean dismissed = SwingUtils.clickButton(window, "OK");
+        if (!dismissed) {
+            // Try "No" button (Linux version only, when user doesn't want to
+            // upgrade now)
+            dismissed = SwingUtils.clickButton(window, "No");
+        }
+        if (!dismissed) {
+            Utils.logError(
+                "could not dismiss Newer Version because we could not find "
+                    + "one of the controls.");
         }
     }
 
     /**
-     * Identifies the newer version dialog by checking for a specific label or option pane message.
+     * Identifies the newer version dialog by checking for a specific label
+     * or option pane message.
      * @param window the window to identify
      * @return true if this is the newer version dialog, false otherwise
      */
-    public boolean recogniseWindow(Window window) {
-        if (!(window instanceof JDialog)) return false;
+    public boolean recogniseWindow(final Window window) {
+        if (!(window instanceof JDialog)) {
+            return false;
+        }
 
-        if (SwingUtils.findLabel(window, "Newer Version") != null) return true;
+        if (SwingUtils.findLabel(window, "Newer Version") != null) {
+            return true;
+        }
         JOptionPane op = SwingUtils.findOptionPane(window);
-        return (op != null && op.getMessage() != null && op.getMessage().toString().contains("Newer Version"));
+        return (op != null && op.getMessage() != null
+            && op.getMessage().toString().contains("Newer Version"));
     }
 
 }

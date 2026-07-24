@@ -21,22 +21,31 @@ package ibcalpha.ibc;
 import java.util.concurrent.Executor;
 import javax.swing.SwingUtilities;
 
-class GuiDeferredExecutor implements Executor {
-    private static final GuiDeferredExecutor instance = new GuiDeferredExecutor();
+final class GuiDeferredExecutor implements Executor {
+    private static final GuiDeferredExecutor INSTANCE =
+            new GuiDeferredExecutor();
 
     /**
      * Private constructor for singleton pattern.
      */
-    private GuiDeferredExecutor() {}
-
-    static GuiDeferredExecutor instance() {return instance;}
+    private GuiDeferredExecutor() { }
 
     /**
-     * Schedules the task for execution on the Swing event dispatch thread (non-blocking).
+     * Returns the singleton instance of GuiDeferredExecutor.
+     *
+     * @return the singleton instance
+     */
+    static GuiDeferredExecutor instance() {
+        return INSTANCE;
+    }
+
+    /**
+     * Schedules the task for execution on the Swing event dispatch thread
+     * (non-blocking).
      *
      * @param task the runnable task to execute
      */
-    public void execute(Runnable task) {
+    public void execute(final Runnable task) {
         SwingUtilities.invokeLater(task);
     }
 }

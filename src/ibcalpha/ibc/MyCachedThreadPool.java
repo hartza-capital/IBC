@@ -21,25 +21,28 @@ package ibcalpha.ibc;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MyCachedThreadPool {
+public final class MyCachedThreadPool {
     /**
      * Creates a new cached thread pool for concurrent task execution.
      * This static initializer provides a shared thread pool instance for use
      * throughout the application.
      */
-    private static final ExecutorService instance = Executors.newCachedThreadPool();
+    private static final ExecutorService INSTANCE =
+            Executors.newCachedThreadPool();
 
     /**
      * Private constructor prevents instantiation of this singleton utility
      * class.
      */
-    private MyCachedThreadPool() {}
+    private MyCachedThreadPool() { }
 
     /**
      * Returns the singleton cached thread pool instance.
      *
      * @return the shared ExecutorService instance
      */
-    static ExecutorService getInstance() {return instance;}
+    static ExecutorService getInstance() {
+        return INSTANCE;
+    }
 
 }

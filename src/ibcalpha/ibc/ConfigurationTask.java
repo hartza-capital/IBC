@@ -28,17 +28,18 @@ public class ConfigurationTask {
     /**
      * Constructs a ConfigurationTask that wraps a ConfigurationAction.
      *
-     * @param configAction the configuration action to execute
+     * @param action the configuration action to execute
      */
-    public ConfigurationTask(ConfigurationAction configAction) {
-        this.configAction = configAction;
+    public ConfigurationTask(final ConfigurationAction action) {
+        this.configAction = action;
     }
 
     /**
      * Executes the configuration action asynchronously on a background thread.
      *
-     * This method obtains the global configuration dialog, initializes the action with it,
-     * executes the action on the Swing EDT, and releases the dialog when complete.
+     * This method obtains the global configuration dialog, initializes the
+     * action with it, executes the action on the Swing EDT, and releases the
+     * dialog when complete.
      */
     public void executeAsync() {
         MyCachedThreadPool.getInstance().execute(new ConfigTaskRunner());
@@ -47,7 +48,8 @@ public class ConfigurationTask {
     /**
      * Executes the configuration action synchronously on the calling thread.
      *
-     * This method runs the same workflow as executeAsync but blocks until completion.
+     * This method runs the same workflow as executeAsync but blocks until
+     * completion.
      */
     public void execute() {
         (new ConfigTaskRunner()).run();
@@ -64,15 +66,18 @@ public class ConfigurationTask {
         @Override
         public void run() {
             try {
-                final JDialog configDialog = ConfigDialogManager.configDialogManager().getConfigDialog();    // blocks the thread until the config dialog is available
+                // blocks the thread until the config dialog is available
+                final JDialog configDialog = ConfigDialogManager
+                        .configDialogManager().getConfigDialog();
                 configAction.initialise(configDialog);
-   
-                FutureTask<?> t = new FutureTask<>((Runnable)configAction, null);
+
+                FutureTask<?> t = new FutureTask<>(
+                        (Runnable) configAction, null);
                 GuiExecutor.instance().execute(t);
                 t.get();
 
                 ConfigDialogManager.configDialogManager().releaseConfigDialog();
-            } catch (Exception e){
+            } catch (Exception e) {
                 Utils.logException(e);
             }
         }
