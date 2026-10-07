@@ -18,9 +18,17 @@
 
 package ibcalpha.ibc;
 
+/**
+ * Exception signalled when an IBC operation cannot be completed, carrying a human-readable message.
+ */
 public class IbcException extends Exception {
     private static final long serialVersionUID = 20140324L;
 
+    /**
+     * Creates an exception with the supplied detail message.
+     *
+     * @param message the description of the failure
+     */
     IbcException(String message){
         super(message);
     }

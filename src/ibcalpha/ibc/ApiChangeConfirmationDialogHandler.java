@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Handles the dialog that confirms an API configuration change.
+ */
 class ApiChangeConfirmationDialogHandler implements WindowHandler {
 
     /**

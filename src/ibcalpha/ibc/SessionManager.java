@@ -24,6 +24,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.JFrame;
 
+/**
+ * Tracks the state of the current TWS/Gateway session and signals when Gateway
+ * initialisation has completed.
+ */
 public class SessionManager {
     
     /**
@@ -47,10 +51,10 @@ public class SessionManager {
     
     private static boolean _isFIX = false;
     /**
-     * Indicates whether the current session is a FIX protocol session.
+     * Indicates whether the current session uses the FIX protocol.
+     * Terminates IBC if called before the session has started.
      *
      * @return true if the session is a FIX protocol session; false otherwise
-     * @throws SystemException if called before the session has started
      */
     public static boolean isFIX() {
         if (!_isSessionStarted) Utils.exitWithError(ErrorCodes.INVALID_STATE, "isFix() called before session has started");
@@ -58,12 +62,22 @@ public class SessionManager {
     }
 
     private static boolean _isRestart;
+    /**
+     * Indicates whether the current session was started by an automatic restart rather
+     * than a normal login. Terminates IBC if called before the session has started.
+     *
+     * @return true if the session is a restart; false otherwise
+     */
     static boolean isRestart() {
         if (!_isSessionStarted) Utils.exitWithError(ErrorCodes.INVALID_STATE, "isRestart() called before session has started");
         return _isRestart;
     }
     
     private static boolean _isSessionStarted = false;
+    /**
+     * Marks the session as started, records the FIX and restart flags, and schedules IBC
+     * to exit if the login dialog is not displayed within the LoginDialogDisplayTimeout setting.
+     */
     static void startSession() {
         _isSessionStarted = true;
         
@@ -101,6 +115,10 @@ public class SessionManager {
      * dialog closes.
      */
     private static final Condition initialised = lock.newCondition();
+    /**
+     * Blocks the calling thread until the session is ready: Gateway initialisation has
+     * finished, or the main window has been recorded for TWS.
+     */
     static void awaitReady() {
         /*
          * For the gateway, the main form is loaded right at the start, and long before
@@ -130,6 +148,10 @@ public class SessionManager {
     }
 
     private static volatile boolean splashScreenClosed;
+    /**
+     * Records that the Gateway splash screen has closed. Completion is signalled once
+     * the non-brokerage account dialog has also closed; has no effect for TWS sessions.
+     */
     static void setSplashScreenClosed() {
         if (!SessionManager.isGateway()) return;
         lock.lock();
@@ -145,6 +167,10 @@ public class SessionManager {
     }
     
     private static volatile boolean nonBrokerageAccountDialogClosed;
+    /**
+     * Records that the non-brokerage account dialog has closed. Completion is signalled
+     * once the Gateway splash screen has also closed; has no effect for TWS sessions.
+     */
     static void setNonBrokerageAccountDialogClosed() {
         if (!SessionManager.isGateway()) return;
         lock.lock();
@@ -159,6 +185,11 @@ public class SessionManager {
         }
     }
     
+    /**
+     * Records the session's main window and marks the session as initialised.
+     *
+     * @param window the main window of TWS/Gateway
+     */
     static void setMainWindow(JFrame window) {
         lock.lock();
         try {

@@ -26,6 +26,10 @@ import javax.swing.JFrame;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+/**
+ * Handles the Trades window, configuring it to show all trades and re-opening it
+ * when the user closes it while ShowAllTrades is active.
+ */
 public class TradesFrameHandler implements WindowHandler {
 
     boolean firstTradesWindowOpened;

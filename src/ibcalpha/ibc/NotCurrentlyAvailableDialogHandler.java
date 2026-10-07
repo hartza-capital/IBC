@@ -24,6 +24,9 @@ import java.awt.event.WindowEvent;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 
+/**
+ * Handles the dialog shown when the requested facility is not currently available.
+ */
 class NotCurrentlyAvailableDialogHandler implements WindowHandler {
     /**
      * Determines whether to process window events for the "not currently available" dialog.

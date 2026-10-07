@@ -24,6 +24,10 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 
+/**
+ * Abstract manager that tracks the login state and supplies the credentials used to
+ * automate TWS/Gateway login.
+ */
 public abstract class LoginManager {
 
     private static LoginManager _LoginManager;
@@ -59,6 +63,9 @@ public abstract class LoginManager {
         return _LoginManager;
     }
 
+    /**
+     * The stage of the login process reached.
+     */
     public enum LoginState{
         LOGGED_OUT,
         LOGGED_IN,
@@ -68,6 +75,12 @@ public abstract class LoginManager {
         AWAITING_CREDENTIALS
     }
 
+    /**
+     * Reports whether a read-only login is required, as configured by the ReadOnlyLogin setting.
+     *
+     * @return true if the login should be read-only; false otherwise, including when read-only
+     * login is configured but Gateway does not support it
+     */
     boolean readonlyLoginRequired() {
         boolean readOnly = Settings.settings().getBoolean("ReadOnlyLogin", false);
         if (readOnly && SessionManager.isGateway()) {
@@ -78,10 +91,20 @@ public abstract class LoginManager {
     }
     
     private volatile JFrame loginFrame = null;
+    /**
+     * Returns the login frame currently being handled.
+     *
+     * @return the login frame, or null if none has been recorded
+     */
     JFrame getLoginFrame() {
         return loginFrame;
     }
 
+    /**
+     * Records the login frame being handled.
+     *
+     * @param window the login frame
+     */
     void setLoginFrame(JFrame window) {
         loginFrame = window;
     }
@@ -126,6 +149,11 @@ public abstract class LoginManager {
     private Instant LoginStartTime;
     private ScheduledFuture<?> shutdownAfterTimeTask;
 
+    /**
+     * Handles the closing of the second factor authentication dialog, either scheduling an exit
+     * if login does not complete within the configured interval, or re-initiating the login after
+     * the authentication timeout expires.
+     */
     void secondFactorAuthenticationDialogClosed() {
         if (LoginStartTime == null) {
             // login did not proceed from the SecondFactorAuthentication dialog - for
@@ -194,6 +222,12 @@ public abstract class LoginManager {
         return Settings.settings().getBoolean("ReloginAfterSecondFactorAuthenticationTimeout", false);
     }
     
+    /**
+     * Schedules an exit with an error after the given number of seconds unless login completes first.
+     *
+     * @param secondsTillShutdown seconds to wait before exiting
+     * @param message the error message reported when IBC exits
+     */
     void restartAfterTime(final int secondsTillShutdown, final String message) {
         try {
             shutdownAfterTimeTask = MyScheduledExecutorService.getInstance().schedule(()->{

@@ -20,6 +20,10 @@ package ibcalpha.ibc;
 
 import javax.swing.JFrame;
 
+/**
+ * Default {@link LoginManager} implementation that takes the TWS and FIX credentials from the
+ * settings file, or from the command-line arguments passed to its constructor.
+ */
 public class DefaultLoginManager extends LoginManager {
 
     /**

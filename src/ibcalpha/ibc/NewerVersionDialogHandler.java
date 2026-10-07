@@ -23,6 +23,9 @@ import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
+/**
+ * Handles the dialog announcing that a newer version of TWS/Gateway is available.
+ */
 class NewerVersionDialogHandler implements WindowHandler {
     /**
      * Determines whether to process window events for the newer version dialog.

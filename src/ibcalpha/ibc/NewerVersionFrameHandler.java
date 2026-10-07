@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 
+/**
+ * Handles the frame announcing that a newer version of TWS/Gateway is available.
+ */
 class NewerVersionFrameHandler implements WindowHandler {
     /**
      * Determines whether to process window events for the newer version frame.

@@ -27,6 +27,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Schedules automatic saves of the TWS/Gateway settings at the times configured by
+ * the SaveTwsSettingsAt setting.
+ */
 class TwsSettingsSaver {
     /**
      * Singleton instance responsible for scheduling automatic TWS/Gateway
@@ -46,6 +50,11 @@ class TwsSettingsSaver {
      */
     private TwsSettingsSaver() {};
 
+    /**
+     * Returns the singleton TwsSettingsSaver instance.
+     *
+     * @return the singleton instance
+     */
     static TwsSettingsSaver getInstance() {return instance;}
 
     /**

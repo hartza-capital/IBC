@@ -21,6 +21,10 @@ package ibcalpha.ibc;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 
+/**
+ * Abstract accessor for the TWS/Gateway main window, used by IBC's handlers and
+ * configuration tasks.
+ */
 public abstract class MainWindowManager {
 
     private static MainWindowManager _mainWindowManager;
@@ -63,42 +67,22 @@ public abstract class MainWindowManager {
 
 
     /**
-     * Returns the main window, if necessary blocking the calling thread until
-     * either it is available or a specified timeout has elapsed.
+     * Returns the main window, blocking the calling thread until it is available or the
+     * timeout elapses. Returns immediately if the main window is already open.
      *
-     * If the main window is currently open, it is returned immediately without blocking
-     * the calling thread.
-     *
-     * Calling this method from the Swing event dispatch thread results in an IllegalStateException
-     * being thrown.
-     *
-     * @param timeout
-     * the length of time to wait for the main window to become available. If this is
-     * negative, the calling thread blocks until the window becomes available.
-     * @param unit
-     * the time units for the timeout parameter
-     * @return
-     * null if the timeout expires before the main window becomes available; otherwise
-     * the main window
-     * @throws IllegalStateException
-     * the method has been called from the Swing event dispatch thread
+     * @param timeout how long to wait; a negative value blocks until the window becomes available
+     * @param unit the time unit of timeout
+     * @return the main window, or null if the timeout expires first
+     * @throws IllegalStateException if called from the Swing event dispatch thread
      */
     public abstract JFrame getMainWindow(long timeout, TimeUnit unit);
 
     /**
-     * Returns the main window, if necessary blocking the calling thread until
-     * it is available.
+     * Returns the main window, blocking the calling thread until it is available. Returns
+     * immediately if the main window is already open.
      *
-     * If the main window is currently open, it is returned immediately without blocking
-     * the calling thread.
-     *
-     * Calling this method from the Swing event dispatch thread results in an IllegalStateException
-     * being thrown.
-     *
-     * @return
-     * the main window
-     * @throws IllegalStateException
-     * the method has been called from the Swing event dispatch thread
+     * @return the main window
+     * @throws IllegalStateException if called from the Swing event dispatch thread
      */
     public abstract JFrame getMainWindow() throws IllegalStateException;
 

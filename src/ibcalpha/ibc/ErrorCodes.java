@@ -19,10 +19,7 @@
 package ibcalpha.ibc;
 
 /**
- * Exit codes used by IBC to indicate the reason for termination.
- *
- * These constants are used when IBC exits, providing diagnostic information to the host system
- * about whether the shutdown was normal or due to an error condition.
+ * Exit codes reported when IBC terminates, indicating the reason for the shutdown.
  */
 public final class ErrorCodes {
 

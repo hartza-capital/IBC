@@ -25,6 +25,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 
+/**
+ * Callable that opens the TWS or Gateway Global Configuration dialog through the main window menu
+ * and blocks until the dialog has been registered.
+ */
 class GetConfigDialogTask implements Callable<JDialog>{
     private volatile JDialog mConfigDialog;
     private final Lock lock = new ReentrantLock();
@@ -67,6 +71,11 @@ class GetConfigDialogTask implements Callable<JDialog>{
         return mConfigDialog;
     }  
 
+    /**
+     * Records the Global Configuration dialog and releases any caller waiting in {@link #call()}.
+     *
+     * @param configDialog the Global Configuration dialog that has just been opened
+     */
     void setConfigDialog(JDialog configDialog) {
         lock.lock();
         try {

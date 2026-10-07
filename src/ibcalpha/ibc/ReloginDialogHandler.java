@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Handles the dialog that prompts the user to re-login.
+ */
 public class ReloginDialogHandler implements WindowHandler {
 
     /**

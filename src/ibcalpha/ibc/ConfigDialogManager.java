@@ -21,6 +21,10 @@ package ibcalpha.ibc;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JDialog;
 
+/**
+ * Manages access to the TWS Global Configuration dialog, letting configuration
+ * tasks obtain the dialog, run against it and release it.
+ */
 public abstract class ConfigDialogManager
 {
     private static ConfigDialogManager _ConfigDialogManager;
@@ -76,42 +80,26 @@ public abstract class ConfigDialogManager
     public abstract boolean getApiConfigChangeConfirmationExpected();
 
     /**
-     * Returns the Global Configuration dialog, if necessary blocking the calling thread until
-     * either it is available or a specified timeout has elapsed.
+     * Returns the Global Configuration dialog, blocking the calling thread until it
+     * is available or the timeout elapses; returns it immediately if it is already
+     * open.
      *
-     * If the Global Configuration dialog is currently open, it is returned immediately without blocking
-     * the calling thread.
-     *
-     * Calling this method from the Swing event dispatch thread results in an IllegalStateException
-     * being thrown.
-     *
-     * @param timeout
-     * the length of time to wait for the Global Configuration dialog to become available. If this is
-     * negative, the calling thread blocks until the dialog becomes available.
-     * @param unit
-     * the time units for the timeout parameter
-     * @return
-     * null if the timeout expires before the Global Configuration dialog becomes available; otherwise
-     * the Global Configuration dialog
-     * @throws IllegalStateException
-     * the method has been called from the Swing event dispatch thread
+     * @param timeout the time to wait for the dialog to become available; if
+     *     negative, blocks until it is available
+     * @param unit the time unit of timeout
+     * @return the Global Configuration dialog, or null if the timeout expires before
+     *     the dialog becomes available
+     * @throws IllegalStateException if called from the Swing event dispatch thread
      */
     public abstract JDialog getConfigDialog(long timeout, TimeUnit unit) throws IllegalStateException;
 
     /**
-     * Returns the Global Configuration dialog, if necessary blocking the calling thread until
-     * it is available.
+     * Returns the Global Configuration dialog, blocking the calling thread until it
+     * is available; returns it immediately if it is already open.
      *
-     * If the Global Configuration dialog is currently open, it is returned immediately without blocking
-     * the calling thread.
-     *
-     * Calling this method from the Swing event dispatch thread results in an IllegalStateException
-     * being thrown.
-     *
-     * @return
-     * the Global Configuration dialog, or null if the relevant menu entries cannot be found
-     * @throws IllegalStateException
-     * the method has been called from the Swing event dispatch thread
+     * @return the Global Configuration dialog, or null if the relevant menu entries
+     *     cannot be found
+     * @throws IllegalStateException if called from the Swing event dispatch thread
      */
     public abstract JDialog getConfigDialog() throws IllegalStateException;
 

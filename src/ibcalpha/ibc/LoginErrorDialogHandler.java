@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Handles the login error dialog by logging its message and initiating a cold restart.
+ */
 public class LoginErrorDialogHandler implements WindowHandler {
 
     /**

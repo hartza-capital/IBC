@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Handles the confirmation dialog displayed before resetting the API order ID sequence.
+ */
 public class ResetOrderIdConfirmationDialogHandler implements WindowHandler {
     
     static volatile boolean orderIdResetRequestedAtStart;

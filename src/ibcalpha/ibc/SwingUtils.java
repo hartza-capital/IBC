@@ -48,6 +48,10 @@ import javax.swing.ListModel;
 import javax.swing.MenuElement;
 import javax.swing.tree.TreeModel;
 
+/**
+ * Static helpers for locating and manipulating Swing components by their text,
+ * used by the window handlers to drive TWS/Gateway dialogs.
+ */
 class SwingUtils {
 
     static final String NEWLINE = System.lineSeparator();
@@ -68,6 +72,11 @@ class SwingUtils {
         return true;
     }
 
+    /**
+     * Clicks a button, enabling it first if it is disabled, and logs the click.
+     *
+     * @param button the button to click
+     */
     static void clickButton(final JButton button) {
         if (! button.isEnabled()) {
             button.setEnabled(true);
@@ -242,6 +251,12 @@ class SwingUtils {
         return null;
     }
 
+    /**
+     * Concatenates the text of every JLabel in the container, one per line.
+     *
+     * @param container the Container to search in
+     * @return the labels' texts separated by line breaks, or an empty string if none
+     */
     static String getLabelTexts(Container container) {
         ComponentIterator iter = new ComponentIterator(container);
         String s = "";
@@ -258,6 +273,12 @@ class SwingUtils {
         return s;
     }
 
+    /**
+     * Concatenates the text of every JTextArea in the container, one per line.
+     *
+     * @param container the Container to search in
+     * @return the text areas' contents separated by line breaks, or an empty string if none
+     */
     static String getTexts(Container container) {
         ComponentIterator iter = new ComponentIterator(container);
         String s = "";
@@ -297,14 +318,12 @@ class SwingUtils {
     }
 
     /**
-     * Traverses a container hierarchy and returns the JTextPane
-     * that contains the given substring.
-     * @param container
-     *  the Container to search in
-     * @param text
-     *  the substring to find in a JTextPane
-     * @return
-     *  the JTextArea, if it was found;  otherwise null
+     * Traverses a container hierarchy and returns the JTextPane whose text contains
+     * the given substring, ignoring case.
+     *
+     * @param container the Container to search in
+     * @param text the substring to find in a JTextPane
+     * @return the JTextPane, if it was found; otherwise null
      */
     static JTextPane findTextPane(Container container, String text) {
         ComponentIterator iter = new ComponentIterator(container);
@@ -321,14 +340,12 @@ class SwingUtils {
     }
 
     /**
-     * Traverses a container hierarchy and returns the radio button with
-     * the given text.
-     * @param container
-     *  the Container to search in
-     * @param text
-     *  the label of the radio button to be found
-     * @return
-     *  the radio button, if it was found;  otherwise null
+     * Traverses a container hierarchy and returns the toggle button with the given
+     * text.
+     *
+     * @param container the Container to search in
+     * @param text the label of the toggle button to be found
+     * @return the toggle button, if it was found; otherwise null
      */
     static JToggleButton findToggleButton(Container container, String text) {
         ComponentIterator iter = new ComponentIterator(container);
@@ -549,13 +566,10 @@ class SwingUtils {
 
     /**
      * Indicates whether the specified JCheckBox is selected.
-     * @param window
-     * the window in which to search for the required JCheckBox
-     * @param buttonText
-     * the label of the required JCheckBox
-     * @return
-     * true if the JCheckBox is enabled; false if there is no such JCheckBox, or it
-     * is not selected
+     *
+     * @param window the window in which to search for the required JCheckBox
+     * @param buttonText the label of the required JCheckBox
+     * @return true if the JCheckBox is selected; false if there is no such JCheckBox, or it is not selected
      */
     static boolean isCheckBoxSelected(Window window, String buttonText) {
         final JCheckBox cb = findCheckBox(window, buttonText);
@@ -566,13 +580,10 @@ class SwingUtils {
 
     /**
      * Indicates whether the specified JRadioButton is selected.
-     * @param window
-     * the window in which to search for the required JRadioButton
-     * @param buttonText
-     * the label of the required JRadioButton
-     * @return
-     * true if the JRadioButton is enabled; false if there is no such JRadioButton, or it
-     * is not selected
+     *
+     * @param window the window in which to search for the required JRadioButton
+     * @param buttonText the label of the required JRadioButton
+     * @return true if the JRadioButton is selected; false if there is no such JRadioButton, or it is not selected
      */
     static boolean isRadioButtonSelected(Window window, String buttonText) {
         final JRadioButton rb = findRadioButton(window, buttonText);
@@ -629,10 +640,9 @@ class SwingUtils {
     }
 
     /**
-     * Selects the specified JRadioButton if it is not already selected, by
-     * simulating a click. Radio buttons cannot be programmatically cleared
-     * (only another button in the same group can deselect them), so this
-     * method only ever selects, never clears.
+     * Selects the specified JRadioButton if it is not already selected, by simulating
+     * a click. Radio buttons cannot be programmatically cleared, so this method only
+     * ever selects, never clears.
      *
      * @param window the window in which to search for the required JRadioButton
      * @param buttonText the label for the required JRadioButton
@@ -698,6 +708,12 @@ class SwingUtils {
         return (title != null && title.equalsIgnoreCase(text));
     }
 
+    /**
+     * Converts an AWT window event ID into its human-readable name.
+     *
+     * @param eventID the AWT window event ID
+     * @return the event's name, or "???" if the ID is not recognised
+     */
     static String windowEventToString(int eventID) {
         switch (eventID) { 
             case WindowEvent.WINDOW_ACTIVATED:
@@ -726,6 +742,12 @@ class SwingUtils {
     }
 
     static final String NO_TITLE = "** no title **"; 
+      /**
+       * Returns the title of a dialog or frame window.
+       *
+       * @param window the window whose title is required
+       * @return the window's title, or {@link #NO_TITLE} if it has none or is neither a dialog nor a frame
+       */
       static String getWindowTitle(Window window) {
         String title = NO_TITLE;
         if (window instanceof JDialog) {

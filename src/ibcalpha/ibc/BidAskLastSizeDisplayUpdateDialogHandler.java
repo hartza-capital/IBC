@@ -23,6 +23,9 @@ import java.awt.event.WindowEvent;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 
+/**
+ * Handles the TWS "Bid, Ask and Last Size Display Update" dialog.
+ */
 public class BidAskLastSizeDisplayUpdateDialogHandler implements WindowHandler {
 
     /**

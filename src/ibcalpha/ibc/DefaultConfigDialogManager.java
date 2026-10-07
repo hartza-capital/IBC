@@ -28,6 +28,10 @@ import java.util.concurrent.TimeoutException;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
+/**
+ * Default {@link ConfigDialogManager} implementation that locates the Global Configuration
+ * dialog through the TWS or Gateway menu and caches it while it remains open.
+ */
 public class DefaultConfigDialogManager extends ConfigDialogManager {
 
     private volatile JDialog configDialog = null;

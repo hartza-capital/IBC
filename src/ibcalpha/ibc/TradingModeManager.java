@@ -18,6 +18,10 @@
 
 package ibcalpha.ibc;
 
+/**
+ * Abstract accessor for the trading mode (live or paper) that TWS/Gateway was
+ * instructed to log in with.
+ */
 public abstract class TradingModeManager {
     private static TradingModeManager _TradingModeManager;
 

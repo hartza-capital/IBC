@@ -20,11 +20,20 @@ package ibcalpha.ibc;
 
 import javax.swing.JDialog;
 
+/**
+ * Configuration action that resets the API order ID sequence in the TWS Global
+ * Configuration dialog.
+ */
 public class ConfigureResetOrderIdsTask implements ConfigurationAction {
 
     private final boolean resetOrderIds;
     private JDialog configDialog;
 
+    /**
+     * Creates a task that resets the API order ID sequence when requested.
+     *
+     * @param resetOrderIds true to reset the order ID sequence, false to do nothing
+     */
     ConfigureResetOrderIdsTask(boolean resetOrderIds) {
         this.resetOrderIds = resetOrderIds;
     }

@@ -23,6 +23,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Handles the confirmation dialog displayed before reconnecting market data or the account.
+ */
 public class ReconnectDataOrAccountConfirmationDialogHandler implements WindowHandler {
 
     /**

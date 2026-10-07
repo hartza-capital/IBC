@@ -26,6 +26,10 @@ import java.util.List;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 
+/**
+ * AWT event listener that dispatches window events to the registered
+ * WindowHandler instances and optionally logs window structure.
+ */
 class TwsListener
         implements AWTEventListener {
 
@@ -34,6 +38,12 @@ class TwsListener
     private static String logStructureScope;
     private static String logStructureWhen;
 
+    /**
+     * Creates a listener over the given window handlers and loads the window structure
+     * logging parameters.
+     *
+     * @param windowHandlers the handlers to consult, in order, for each window event
+     */
     TwsListener (List<WindowHandler> windowHandlers) {
         this.windowHandlers = windowHandlers;
         getLogStructureParameters();
@@ -78,8 +88,8 @@ class TwsListener
     }
     
     /**
-     * Initializes logging parameters for window structure logging based on configuration settings.
-     * Handles both legacy LogComponents setting and newer LogStructureScope/LogStructureWhen settings.
+     * Loads the window structure logging parameters from the LogComponents and
+     * LogStructureScope/LogStructureWhen settings.
      */
     private static void getLogStructureParameters() {
         // legacy deprecated setting overrides explicit values of LogStructureScope 
@@ -170,6 +180,12 @@ class TwsListener
         return logStructureWhen;
     }
 
+    /**
+     * Logs the type, title and event of a window detected by the listener.
+     *
+     * @param window the window to log
+     * @param eventID the AWT window event ID
+     */
     static void logWindow(Window window, int eventID) {
         Utils.logToConsole("detected " + getWindowTypeAndTitle(window) + "; event=" + SwingUtils.windowEventToString(eventID));
     }
@@ -191,6 +207,14 @@ class TwsListener
         }
     }
 
+    /**
+     * Logs the component structure of a window when it matches the configured scope
+     * and event.
+     *
+     * @param window the window whose structure may be logged
+     * @param eventID the AWT window event ID
+     * @param windowKnown true if a handler recognised the window; false otherwise
+     */
     static void logWindowStructure(Window window, int eventID, boolean windowKnown) {
         if (logStructureScope.equals("known") && !windowKnown) {
             return;

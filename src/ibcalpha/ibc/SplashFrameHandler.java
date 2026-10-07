@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 
+/**
+ * Handles the Gateway splash frame, using its closure to detect that startup has finished.
+ */
 public class SplashFrameHandler implements WindowHandler {
 
     @Override

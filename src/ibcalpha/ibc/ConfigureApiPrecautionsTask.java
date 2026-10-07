@@ -21,6 +21,10 @@ package ibcalpha.ibc;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 
+/**
+ * Configuration action that applies the API precaution bypass settings in the
+ * TWS Global Configuration dialog.
+ */
 public class ConfigureApiPrecautionsTask implements ConfigurationAction {
     
     private JDialog configDialog;
@@ -36,6 +40,26 @@ public class ConfigureApiPrecautionsTask implements ConfigurationAction {
     private final String bypassNoOverfillProtectionPrecaution;
 
 
+    /**
+     * Creates a task that applies the given precaution bypass settings; an empty
+     * value leaves the corresponding precaution unchanged.
+     *
+     * @param bypassOrderPrecautions "yes" or "no" for bypassing order precautions
+     * @param bypassBondWarning "yes" or "no" for bypassing the bond warning
+     * @param bypassNegativeYieldToWorstConfirmation "yes" or "no" for bypassing the
+     *     negative yield to worst confirmation
+     * @param bypassCalledBondWarning "yes" or "no" for bypassing the called bond warning
+     * @param bypassSameActionPairTradeWarning "yes" or "no" for bypassing the same action
+     *     pair trade warning
+     * @param bypassPriceBasedVolatilityRiskWarning "yes" or "no" for bypassing the
+     *     price-based volatility risk warning
+     * @param bypassUSStocksMarketDataInSharesWarning "yes" or "no" for bypassing the US
+     *     stocks market data in shares warning
+     * @param bypassRedirectOrderWarning "yes" or "no" for bypassing the redirect order
+     *     warning
+     * @param bypassNoOverfillProtectionPrecaution "yes" or "no" for bypassing the no
+     *     overfill protection precaution
+     */
     ConfigureApiPrecautionsTask (
             String bypassOrderPrecautions,
             String bypassBondWarning,

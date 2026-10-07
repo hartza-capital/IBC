@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Handles the confirmation dialog that TWS/Gateway displays when a restart is requested.
+ */
 public class RestartConfirmationDialogHandler implements WindowHandler {
     /**
      * Determines whether to process window events for the restart confirmation dialog.

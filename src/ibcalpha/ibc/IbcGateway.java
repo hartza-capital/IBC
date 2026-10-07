@@ -21,6 +21,9 @@ package ibcalpha.ibc;
 import static ibcalpha.ibc.IbcTws.checkArguments;
 import static ibcalpha.ibc.IbcTws.setupDefaultEnvironment;
 
+/**
+ * Entry point for the IBC automation agent when it runs against IB Gateway.
+ */
 public class IbcGateway {
     /**
      * Starts the IB Gateway automation agent.

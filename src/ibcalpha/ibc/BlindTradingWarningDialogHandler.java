@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Handles the TWS blind trading warning dialog.
+ */
 class BlindTradingWarningDialogHandler implements WindowHandler {
     /**
      * Determines whether to process window events for the blind trading warning dialog.

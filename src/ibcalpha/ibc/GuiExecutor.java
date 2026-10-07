@@ -21,6 +21,10 @@ package ibcalpha.ibc;
 import java.util.concurrent.Executor;
 import javax.swing.SwingUtilities;
 
+/**
+ * Executor singleton that runs tasks on the Swing event dispatch thread, executing them inline when
+ * the caller is already on that thread.
+ */
 class GuiExecutor implements Executor {
     private static final GuiExecutor instance = new GuiExecutor();
 
@@ -29,6 +33,11 @@ class GuiExecutor implements Executor {
      */
     private GuiExecutor() {}
 
+    /**
+     * Returns the single shared instance of this executor.
+     *
+     * @return the executor singleton
+     */
     static GuiExecutor instance() {return instance;}
 
     /**

@@ -18,6 +18,10 @@
 
 package ibcalpha.ibc;
 
+/**
+ * Default {@link TradingModeManager} implementation that resolves the trading mode ("live" or
+ * "paper") from a constructor argument, the command-line arguments or the settings file.
+ */
 public class DefaultTradingModeManager extends TradingModeManager {
 
     private String tradingMode;
@@ -74,10 +78,10 @@ public class DefaultTradingModeManager extends TradingModeManager {
     }
 
     /**
-     * Sets the trading mode to the specified value after validation.
+     * Validates the supplied value and records it as the current trading mode.
      *
-     * @param value the trading mode to set (must be "live" or "paper")
-     * @throws SystemException if the value is not a valid trading mode
+     * @param value the trading mode, "live" or "paper" matched case-insensitively; any other
+     *     value terminates the JVM with {@link ErrorCodes#INVALID_TRADING_MODE}
      */
     private void setTradingMode(String value) {
         if (!(value.equalsIgnoreCase(TRADING_MODE_LIVE) || value.equalsIgnoreCase(TRADING_MODE_PAPER))) {

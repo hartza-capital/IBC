@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 
+/**
+ * Handles the TWS main window, recording it with the session manager when it opens.
+ */
 class MainWindowFrameHandler implements WindowHandler {
     @Override
     /**

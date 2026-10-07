@@ -30,6 +30,10 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
+/**
+ * Collects static helper methods for interacting with Swing components and for
+ * logging from and terminating the IBC process.
+ */
 class Utils {
 
     static final DateTimeFormatter _dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS");
@@ -45,21 +49,14 @@ class Utils {
     private static final String ERROR_BANNER = "!".repeat(79);
 
     /**
-     * Performs a click on the menu item at the specified path, waiting if necessary for the
-     * menu item to become enabled.
-     * 
-     * If there is more than one menu bar within the specified container, they are searched
-     * (in hierarchical containment order) until one is found that contains the specified menu item.
-     * 
-     * Note that this method may block the calling thread if the required menu item is currently disabled.
-     * @param container
-     * the Container to search in
-     * @param path
-     * the path of the required menu item
-     * @return
-     * true if the menu item was successfully clicked; false if the menu item could not be found
-     * @throws  IllegalStateException 
-     * the method has been called on the Swing event dispatch thread
+     * Clicks the menu item at the specified path, waiting for it to become enabled
+     * if necessary. Searches every menu bar in the container in hierarchical
+     * containment order. May block the calling thread while waiting.
+     *
+     * @param container the Container to search in
+     * @param path the path of the required menu item
+     * @return true if the menu item was clicked; false if it could not be found
+     * @throws IllegalStateException if called on the Swing event dispatch thread
      */
     static boolean invokeMenuItem(final Container container, final String[] path) throws IllegalStateException {
         if (SwingUtilities.isEventDispatchThread()) throw new IllegalStateException("Function must not be called on the event dispatch thread, as it may block the thread");
@@ -128,6 +125,9 @@ class Utils {
         exitWithError(errorCode);
     }
 
+    /**
+     * Terminates the JVM with a zero exit code, indicating a clean shutdown.
+     */
     static void exitWithoutError() {
         System.exit(0);
     }
@@ -177,14 +177,30 @@ class Utils {
         getOutStream().println(formatMessage(msg));
     }
 
+    /**
+     * Returns the stream IBC uses for error output.
+     *
+     * @return the error stream
+     */
     static PrintStream getErrStream() {
         return err;
     }
 
+    /**
+     * Returns the stream IBC uses for console output.
+     *
+     * @return the output stream
+     */
     static PrintStream getOutStream() {
         return out;
     }
 
+    /**
+     * Formats a date/time using IBC's timestamp pattern.
+     *
+     * @param date the date/time to format
+     * @return the formatted date/time
+     */
     static String formatDate(LocalDateTime date) {
         return _dateFormatter.format(date);
     }
@@ -247,18 +263,36 @@ class Utils {
         return true;
     }
 
+    /**
+     * Selects the API Settings section in the Global Configuration dialog,
+     * falling back to the API section when no Settings section is available.
+     *
+     * @param configDialog the Global Configuration dialog
+     * @throws IbcException if a UI component could not be found
+     * @throws IllegalStateException if not called on the Swing event dispatch thread
+     */
     static void selectApiSettings(final JDialog configDialog) throws IbcException, IllegalStateException {
             if (!Utils.selectConfigSection(configDialog, new String[] {"API","Settings"}))
                 // older versions of TWS don't have the Settings node below the API node
                 Utils.selectConfigSection(configDialog, new String[] {"API"});
     }
 
+    /**
+     * Opens the Trade Log window from the Account menu on a background thread.
+     */
     static void showTradesLogWindow() {
             MyCachedThreadPool.getInstance().execute(new Runnable () {
                 @Override public void run() {invokeMenuItem(MainWindowManager.mainWindowManager().getMainWindow(), new String[] {"Account", "Trade Log"});}
             });
     }
 
+    /**
+     * Converts each character of the supplied string to its hexadecimal form and
+     * concatenates the results without separators or zero padding.
+     *
+     * @param value the string to convert
+     * @return the concatenated hexadecimal representation of the string's characters
+     */
     static String stringToHex(String value) {
         char[] chars = value.toCharArray();
         StringBuilder sb = new StringBuilder();

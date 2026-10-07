@@ -32,6 +32,10 @@ import java.util.concurrent.TimeoutException;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
+/**
+ * Default {@link MainWindowManager} implementation that supplies the TWS or Gateway main window,
+ * blocking callers until it becomes available or a timeout expires.
+ */
 public class DefaultMainWindowManager extends MainWindowManager {
 
     private volatile JFrame mainWindow = null;

@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 
+/**
+ * Handles the NSE compliance notice frame.
+ */
 public class NSEComplianceFrameHandler  implements WindowHandler {
     /**
      * Determines whether to process window events for the NSE compliance notice frame.

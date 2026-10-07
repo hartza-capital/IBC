@@ -22,6 +22,10 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Window handler for generic Gateway dialogs, triggering a cold restart when the connection to
+ * the server has failed.
+ */
 public class GatewayDialogHandler implements WindowHandler {
     
     @Override

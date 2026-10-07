@@ -23,6 +23,10 @@ import javax.swing.JFrame;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 
+/**
+ * Window handler for the IB Gateway login frame, selecting the gateway mode and supplying the
+ * configured credentials.
+ */
 final class GatewayLoginFrameHandler extends AbstractLoginHandler {
 
     @Override

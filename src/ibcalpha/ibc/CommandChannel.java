@@ -26,6 +26,9 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.SocketException;
 
+/**
+ * Handles I/O for a single client connection to the command server.
+ */
 final class CommandChannel {
 
     private static final String _Prompt = Settings.settings().getString("CommandPrompt", "");
@@ -35,6 +38,12 @@ final class CommandChannel {
     private BufferedReader mInstream = null;
     private BufferedWriter mOutstream = null;
 
+    /**
+     * Creates a command channel for an accepted client connection and sets up
+     * its input and output streams.
+     *
+     * @param socket the connected client socket
+     */
     CommandChannel(Socket socket) {
 
         mSocket = socket;
@@ -43,6 +52,10 @@ final class CommandChannel {
         writeInfo("IBC Command Server");
     }
 
+    /**
+     * Closes the streams and the client socket; does nothing if the channel is
+     * already closed.
+     */
     void close() {
         try {
             if (mSocket == null || mSocket.isClosed()) return;
@@ -68,6 +81,12 @@ final class CommandChannel {
         }
     }
 
+    /**
+     * Reads and returns the next non-blank command line sent by the client,
+     * prompting again after blank lines, and closes the channel on read errors.
+     *
+     * @return the command line, or null if the client disconnected
+     */
     String getCommand() {
         String cmd = null;
 
@@ -92,18 +111,36 @@ final class CommandChannel {
         return cmd;
     }
 
+    /**
+     * Sends an acknowledgement line to the client.
+     *
+     * @param info detail text appended to the acknowledgement
+     */
     void writeAck(String info) {
         replyLine("OK " + info);
     }
 
+    /**
+     * Sends an informational line to the client unless info messages are suppressed.
+     *
+     * @param info the informational text
+     */
     final void writeInfo(String info) {
         if (! _SuppressInfo) replyLine("INFO " + info);
     }
 
+    /**
+     * Sends an error line to the client.
+     *
+     * @param info the error text
+     */
     void writeNack(String info) {
         replyLine("ERROR " + info);
     }
 
+    /**
+     * Sends the configured command prompt to the client, if a prompt is configured.
+     */
     void writePrompt() {
         if (! _Prompt.isEmpty()) reply(_Prompt);
     }

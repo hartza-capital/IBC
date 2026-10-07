@@ -26,6 +26,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/**
+ * Default {@link Settings} implementation backed by a properties file loaded from the configured
+ * settings path.
+ */
 public class DefaultSettings extends Settings {
 
     private final Properties props = new Properties();

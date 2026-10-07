@@ -22,6 +22,10 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Window handler for the cryptocurrency order confirmation dialog, acting on the configured
+ * ConfirmCryptoCurrencyOrders setting.
+ */
 public class CryptoOrderConfirmationDialogHandler implements WindowHandler {
 
     /**
