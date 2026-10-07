@@ -18,6 +18,9 @@
 
 package ibcalpha.ibc;
 
+/**
+ * Uncaught exception handler that logs the throwable and terminates IBC.
+ */
 public final class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
 
     /**

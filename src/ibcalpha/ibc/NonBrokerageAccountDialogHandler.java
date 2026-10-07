@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Handles the warning dialog displayed when logging in to a non-brokerage account.
+ */
 public class NonBrokerageAccountDialogHandler  implements WindowHandler {
     /**
      * Determines whether to process window events for the non-brokerage account dialog.

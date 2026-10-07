@@ -25,6 +25,10 @@ import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.ListModel;
 
+/**
+ * Handles the Second Factor Authentication dialog, performing read-only login,
+ * second factor device selection or automatic TOTP submission.
+ */
 public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
     /**
      * Private constructor prevents external instantiation of this singleton

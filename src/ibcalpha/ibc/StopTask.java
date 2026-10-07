@@ -21,6 +21,10 @@ package ibcalpha.ibc;
 import java.io.File;
 import java.util.Arrays;
 
+/**
+ * Runnable command that shuts down TWS/Gateway and reports progress back to the
+ * requesting client.
+ */
 class StopTask
         implements Runnable {
 
@@ -34,6 +38,13 @@ class StopTask
     private final boolean mForceColdRestart;
     private final String mReason;
 
+    /**
+     * Creates a stop task for the given command channel.
+     *
+     * @param channel the channel used to report progress back to the client
+     * @param forceColdRestart true to force a cold restart on the next start
+     * @param reason a description of why the shutdown was initiated
+     */
     StopTask(final CommandChannel channel, final boolean forceColdRestart, final String reason) {
         mChannel = channel;
         mForceColdRestart = forceColdRestart;

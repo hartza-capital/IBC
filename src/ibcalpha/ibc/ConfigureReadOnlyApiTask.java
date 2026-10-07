@@ -21,11 +21,20 @@ package ibcalpha.ibc;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 
+/**
+ * Configuration action that sets the Read-Only API setting in the TWS Global
+ * Configuration dialog.
+ */
 public class ConfigureReadOnlyApiTask implements ConfigurationAction{
 
     private final boolean readOnlyApi;
     private JDialog configDialog;
 
+    /**
+     * Creates a task that sets the Read-Only API setting.
+     *
+     * @param readOnlyApi true to enable the read-only API, false to disable it
+     */
     ConfigureReadOnlyApiTask(boolean readOnlyApi) {
         this.readOnlyApi = readOnlyApi;
     }

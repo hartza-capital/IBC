@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Handles the Tip of the Day dialog by dismissing it.
+ */
 class TipOfTheDayDialogHandler implements WindowHandler {
     /**
      * Determines whether to process window events for the tip of the day dialog.

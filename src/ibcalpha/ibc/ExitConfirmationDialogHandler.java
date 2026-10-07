@@ -22,6 +22,10 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Window handler for the TWS/Gateway exit confirmation dialog, confirming the exit when IBC has
+ * initiated a shutdown.
+ */
 public class ExitConfirmationDialogHandler implements WindowHandler {
     /**
      * Determines whether to process window events for the exit confirmation dialog.

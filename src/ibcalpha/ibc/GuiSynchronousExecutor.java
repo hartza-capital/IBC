@@ -21,6 +21,10 @@ package ibcalpha.ibc;
 import java.util.concurrent.Executor;
 import javax.swing.SwingUtilities;
 
+/**
+ * Executor singleton that runs tasks on the Swing event dispatch thread and blocks the caller until
+ * the task has completed.
+ */
 class GuiSynchronousExecutor implements Executor{
     private static final GuiSynchronousExecutor instance = new GuiSynchronousExecutor();
 
@@ -29,6 +33,11 @@ class GuiSynchronousExecutor implements Executor{
      */
     private GuiSynchronousExecutor() {}
 
+    /**
+     * Returns the single shared instance of this executor.
+     *
+     * @return the executor singleton
+     */
     static GuiSynchronousExecutor instance() {return instance;}
 
     /**

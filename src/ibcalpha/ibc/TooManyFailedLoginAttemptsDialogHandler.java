@@ -26,6 +26,10 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JDialog;
 import java.util.regex.*;
 
+/**
+ * Handles the "Too many failed login attempts" dialog, optionally scheduling an
+ * automatic re-login once the lockout period has elapsed.
+ */
 public class TooManyFailedLoginAttemptsDialogHandler implements WindowHandler {
     /**
      * Determines whether to process the given AWT event for this window.

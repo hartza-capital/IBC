@@ -21,6 +21,9 @@ package ibcalpha.ibc;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+/**
+ * Provides a shared single-threaded scheduled executor for delayed and periodic tasks.
+ */
 public class MyScheduledExecutorService {
     /**
      * Creates a single-threaded scheduled executor for delayed and periodic

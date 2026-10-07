@@ -23,20 +23,8 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * Generates one-time passcodes for IBKR two-factor authentication,
- * using HOTP (RFC 4226) dynamic truncation over HMAC-SHA1 with a TOTP
- * (RFC 6238) time step.
- *
- * <p>Only the SHA1 / 6-digit / 30-second-step combination is supported,
- * which is what IBKR expects and what IBC has always used in practice:
- * it matches the implicit defaults of the {@code dev.samstevens.totp}
- * library that this class replaced. Nothing here is configurable
- * because nothing in IBC ever configured it.
- *
- * <p>No cryptography is implemented in this class. The HMAC-SHA1
- * primitive comes from the JDK ({@link Mac} / {@link SecretKeySpec});
- * the code below only performs the counter encoding, truncation, and
- * decimal formatting steps defined by the public IETF specifications.
+ * Generates IBKR time-based one-time passcodes (RFC 6238 TOTP) using HMAC-SHA1
+ * and the RFC 4226 dynamic truncation, producing 6-digit codes.
  */
 final class Totp {
 
@@ -77,45 +65,24 @@ final class Totp {
             {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000};
 
     /**
-     * Converts an instant into the time-step counter that
-     * {@link #generate} expects.
+     * Converts an instant into the RFC 6238 time-step counter expected by
+     * {@link #generate}.
      *
-     * <p>Deliberately separate from {@link #generate}: the clock stays
-     * with the caller, so passcode generation remains deterministic and
-     * directly testable, while the 30-second step defined by RFC 6238
-     * lives here rather than being restated at every call site.
-     *
-     * @param epochMillis milliseconds elapsed since the Unix epoch,
-     *                normally {@code System.currentTimeMillis()}
-     * @return the number of whole 30-second time steps elapsed since
-     *                the Unix epoch
+     * @param epochMillis milliseconds elapsed since the Unix epoch, normally {@code System.currentTimeMillis()}
+     * @return the number of whole 30-second time steps elapsed since the Unix epoch
      */
     static long timeStepCounter(final long epochMillis) {
         return epochMillis / TIME_STEP_MILLIS;
     }
 
     /**
-     * Generates the 6-digit TOTP passcode for a Base32 secret at a
-     * given time step.
+     * Generates the 6-digit TOTP passcode for a Base32 secret at a given time step.
      *
-     * <p>This method performs no time arithmetic of its own: the caller
-     * supplies the already-computed time-step counter, so that the
-     * caller owns the clock and this method stays deterministic and
-     * directly testable.
-     *
-     * @param base32Secret the shared secret, Base32-encoded (RFC 4648),
-     *                as supplied by IBKR and configured through IBC's
-     *                {@code Ib2FA} setting
-     * @param timeStepCounter the number of 30-second time steps elapsed
-     *                since the Unix epoch, as returned by
-     *                {@link #timeStepCounter(long)}
+     * @param base32Secret the shared secret, Base32-encoded (RFC 4648), as supplied by IBKR and configured through IBC's {@code Ib2FA} setting
+     * @param timeStepCounter the number of 30-second time steps elapsed since the Unix epoch, as returned by {@link #timeStepCounter(long)}
      * @return the 6-digit passcode, left-padded with zeros as needed
-     * @throws IllegalArgumentException if base32Secret is null, blank,
-     *                or not valid Base32
-     * @throws GeneralSecurityException if the JVM rejects HMAC-SHA1 or
-     *                the decoded secret as a key; unreachable on a
-     *                standard JVM, but declared rather than swallowed
-     *                so a broken security provider cannot fail silently
+     * @throws IllegalArgumentException if base32Secret is null, blank, or not valid Base32
+     * @throws GeneralSecurityException if the JVM rejects HMAC-SHA1 or the decoded secret as a key
      */
     static String generate(final String base32Secret,
                            final long timeStepCounter)
@@ -125,26 +92,14 @@ final class Totp {
     }
 
     /**
-     * Computes an HOTP passcode using the dynamic truncation defined in
-     * RFC 4226 section 5.3.
-     *
-     * <p>The moving factor is encoded as an 8-byte big-endian integer
-     * and passed through HMAC-SHA1. The low nibble of the last hash
-     * byte selects a 4-byte window, whose high bit is cleared so the
-     * value is always a positive 31-bit integer, and that value is
-     * reduced modulo a power of ten to yield the passcode.
+     * Computes an HOTP passcode using the dynamic truncation defined in RFC 4226.
      *
      * @param secretKey the raw, already-decoded shared secret
-     * @param counter the moving factor: an event counter for HOTP, or a
-     *                time-step count for TOTP
-     * @param digits the number of decimal digits to produce; must be
-     *                between 0 and 7 inclusive
-     * @return the passcode, left-padded with zeros to the requested
-     *                number of digits
-     * @throws IllegalArgumentException if digits is outside the
-     *                supported range
-     * @throws GeneralSecurityException if HMAC-SHA1 is unavailable or
-     *                the key is rejected
+     * @param counter the moving factor: an event counter for HOTP, or a time-step count for TOTP
+     * @param digits the number of decimal digits to produce; must be between 0 and 7 inclusive
+     * @return the passcode, left-padded with zeros to the requested number of digits
+     * @throws IllegalArgumentException if digits is outside the supported range
+     * @throws GeneralSecurityException if HMAC-SHA1 is unavailable or the key is rejected
      */
     static String generateHotp(final byte[] secretKey,
                                final long counter,

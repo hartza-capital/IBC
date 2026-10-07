@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Handles the Security Code Card Authentication dialog, optionally initiating a read-only login.
+ */
 public class SecurityCodeDialogHandler implements WindowHandler {
 
     /**

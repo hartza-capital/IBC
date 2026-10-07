@@ -22,19 +22,6 @@ import java.util.Locale;
 
 /**
  * Decodes RFC 4648 Base32 text into raw bytes.
- *
- * <p>This exists so that IBC can decode the Base32 TOTP secret
- * configured via the {@code Ib2FA} setting without depending on an
- * external library: the JDK ships {@code java.util.Base64} but has no
- * Base32 equivalent.
- *
- * <p>Decoding is deliberately lenient — embedded or surrounding
- * whitespace, lowercase letters, and trailing {@code '='} padding are
- * all normalised away before decoding. This accepts a strict superset
- * of canonical Base32, so any canonically-encoded secret still decodes
- * to exactly the same bytes, while secrets copy-pasted from an
- * authenticator app (commonly displayed lowercase or in
- * space-separated groups) work without manual cleanup.
  */
 final class Base32 {
 
@@ -59,18 +46,15 @@ final class Base32 {
     /**
      * Decodes a Base32-encoded string into the bytes it represents.
      *
-     * <p>Any trailing bits that do not form a complete byte are
-     * discarded, which is standard Base32 decoding behaviour and
-     * matches what IBC previously obtained via commons-codec.
+     * <p>Whitespace, lowercase letters and trailing '=' padding are accepted,
+     * and any trailing bits that do not form a complete byte are discarded.
      *
-     * @param encoded the Base32 text to decode; surrounding or embedded
-     *                whitespace, lowercase letters, and trailing '='
-     *                padding are tolerated
-     * @return the decoded bytes; never null, but may be empty if the
-     *                input holds fewer than 8 significant bits
-     * @throws IllegalArgumentException if encoded is null, contains no
-     *                Base32 characters at all, or contains a character
-     *                outside the RFC 4648 Base32 alphabet
+     * @param encoded the Base32 text to decode
+     * @return the decoded bytes; never null, but empty if the input holds
+     *     fewer than 8 significant bits
+     * @throws IllegalArgumentException if encoded is null, contains no Base32
+     *     characters at all, or contains a character outside the RFC 4648
+     *     Base32 alphabet
      */
     static byte[] decode(final String encoded) {
         if (encoded == null) {

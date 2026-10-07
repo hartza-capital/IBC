@@ -25,12 +25,21 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * Iterates over a Swing component tree in depth-first order, yielding each
+ * component and descending into containers.
+ */
 class ComponentIterator implements Iterator<Component> {
 
     Deque<NodeState> mStack = new ArrayDeque<>();
 
     Component mCurrent;
 
+    /**
+     * Creates an iterator rooted at the given container.
+     *
+     * @param container the container whose subtree is iterated
+     */
     ComponentIterator(Container container) {
         if (container == null) Utils.exitWithException(ErrorCodes.UNHANDLED_EXCEPTION,new NullPointerException());
         mStack.push(new NodeState(container));
@@ -96,6 +105,10 @@ class ComponentIterator implements Iterator<Component> {
         }
     }
 
+    /**
+     * Iteration state for one component: its sub-components and the index of the
+     * next one to visit.
+     */
     private class NodeState {
         int index;
         Component[] subComponents;

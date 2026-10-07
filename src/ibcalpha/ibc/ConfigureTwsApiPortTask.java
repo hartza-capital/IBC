@@ -24,11 +24,20 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JTextField;
 
+/**
+ * Configuration action that sets the TWS API socket port in the TWS Global
+ * Configuration dialog.
+ */
 class ConfigureTwsApiPortTask implements ConfigurationAction{
 
     private final int portNumber;
     private JDialog configDialog;
 
+    /**
+     * Creates a task that sets the API socket port.
+     *
+     * @param portNumber the socket port number to set
+     */
     ConfigureTwsApiPortTask(int portNumber) {
         this.portNumber = portNumber;
     }

@@ -22,6 +22,10 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 
+/**
+ * Window handler for the IB Gateway main window, registering it with the session manager as soon
+ * as it opens.
+ */
 class GatewayMainWindowFrameHandler  implements WindowHandler {
     @Override
     /**

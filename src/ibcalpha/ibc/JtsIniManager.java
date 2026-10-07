@@ -28,6 +28,10 @@ import java.util.List;
 import java.util.ListIterator;
 import static java.util.stream.Collectors.toList;
 
+/**
+ * Reads and maintains the TWS/Gateway {@code jts.ini} file, ensuring it holds the minimum
+ * settings IBC requires.
+ */
 class JtsIniManager {
 
     private final static String LOGON_SECTION_HEADER = "[Logon]";
@@ -55,65 +59,12 @@ class JtsIniManager {
     
     private static boolean settingsUpdated;
 
-    /* when TWS starts, there must exist a jts.ini file in the TWS settings directory 
-    *  containing at least the following minimum contents:
-    *
-    * [Logon]
-    * Locale=en
-    * displayedproxymsg=1
-    * UseSSL=true
-    *
-    * The Locale setting is needed to ensure that TWS/Gateway run in English, 
-    * regardless of what the user might have previously set manually.
-    *
-    * The displayedproxymsg setting controls the display of a recently-introduced 
-    * (May 2019) and annoying, factually incorrect, dialog regarding inability to 
-    * access the internet. It's not really important to have this setting, since 
-    * the dialog is non-modal and only appears once per settings location, but
-    * it is very annoying!
-    *
-    * The UseSSL=true setting was added in v3.9.0 (August 2021) because IB started
-    * insisting on use of SSL: if UseSSL=false was set, a dialog was displayed by
-    * TWS and Gateway giving the user the choice to restart using SSL or to close
-    * the program. Ensuring UseSSL=true avoids this situation even if the user has
-    * not manually configured used of SSL (which could be done via the login
-    * dialog). Note also that some Docker images start without a jts.ini
-    * containing UseSSL=true, and this new check ensures that they run properly.
-    * 
-    * As a historical note, the following information describes problems that 
-    * occurred up to about TWS 963. These problems were the original motivation 
-    * for creating the JtsIniManager class. The processing for these settings is 
-    * retained just in case anyone is still using an affected TWS/Gateway version.
-    *
-    * s3store=true
-    *
-    * If this file doesn't exist, or doesn't contain these lines, then TWS won't 
-    * include the 'Store settings on server' checkbox in the login dialog, which
-    * prevents IBC properly handling the StoreSettingsOnServer ini file
-    * option.
-    * 
-    * Note that this problem seems to have been fixed in TWS 960, which displays
-    * the login dialog correctly if there is no s3store setting. There are
-    * specialised configurations where TWS must NOT offer this option: for example
-    * where 'cross connect' is used (ie direct connection to IB's data centre 
-    * rather than via the internet), and these configurations need s3store=false.
-    * However TWS 960 will automatically include s3store=false when such a
-    * configuration is used.
-    *
-    * Note also that this is not a problem for the Gateway, which doesn't provide  
-    * the option to store the settings on the server. 
-    *
-    * However Gateway 960 has another problem. If its jts.ini does not contain the 
-    * following, the gateway displays a login form that has a structure that 
-    * IBC doesn't expect, and it can't find the trading mode selector.
-    *
-    * [IBGateway]
-    * ApiOnly=true
-    *
-    * To avoid these problems, IBC ensures that a jts.ini exists which 
-    * contains at least both sets of lines shown above, with the exception that if it 
-    * already exists and contains s3store=false then this setting will not be altered.
-    */
+    /**
+     * Creates or updates the jts.ini file so that it contains the minimum settings required
+     * for TWS or Gateway to start, writing a new minimal file if none exists.
+     *
+     * @param jtsIniPath the path of the jts.ini file to create or update
+     */
     static void initialise(String jtsIniPath) {
         jtsIniFilePath = jtsIniPath;
         loadIniFile();
@@ -152,6 +103,9 @@ class JtsIniManager {
         return -1;
     }
 
+    /**
+     * Reloads the jts.ini file from disk, discarding the in-memory contents.
+     */
     static void reload() {
         loadIniFile();
     }

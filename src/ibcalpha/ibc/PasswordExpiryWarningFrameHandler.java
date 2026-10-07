@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 
+/**
+ * Handles the password expiry warning frame displayed at login.
+ */
 public class PasswordExpiryWarningFrameHandler  implements WindowHandler {
     /**
      * Determines whether to process window events for the password expiry warning frame.

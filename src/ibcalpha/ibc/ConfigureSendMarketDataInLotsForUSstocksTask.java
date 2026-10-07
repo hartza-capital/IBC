@@ -26,11 +26,20 @@ package ibcalpha.ibc;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 
+/**
+ * Configuration action that sets the Send Market Data In Lots setting for US
+ * stocks in the TWS Global Configuration dialog.
+ */
 public class ConfigureSendMarketDataInLotsForUSstocksTask implements ConfigurationAction{
 
     private final boolean sendMarketDataInLots;
     private JDialog configDialog;
 
+    /**
+     * Creates a task that sets the Send Market Data In Lots setting.
+     *
+     * @param sendMarketDataInLots true to send market data in lots, false otherwise
+     */
     ConfigureSendMarketDataInLotsForUSstocksTask(boolean sendMarketDataInLots) {
         this.sendMarketDataInLots = sendMarketDataInLots;
     }

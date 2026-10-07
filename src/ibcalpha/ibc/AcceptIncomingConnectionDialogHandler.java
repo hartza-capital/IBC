@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Handles the TWS "Accept incoming connection" dialog.
+ */
 class AcceptIncomingConnectionDialogHandler implements WindowHandler {
     /**
      * Determines whether to process window events for the accept incoming connection dialog.

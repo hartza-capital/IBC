@@ -8,23 +8,12 @@
   <includeBaseDirectory>false</includeBaseDirectory>
 
   <fileSets>
-    <!-- resources/ directory — Linux content only -->
+    <!-- resources/ directory -->
     <fileSet>
       <directory>${project.basedir}/resources</directory>
       <includes>
         <include>**/*</include>
       </includes>
-      <excludes>
-        <!-- Windows -->
-        <exclude>**/*.bat</exclude>
-        <exclude>**/*.vbs</exclude>
-        <exclude>IBC (*</exclude>
-        <!-- macOS -->
-        <exclude>**/*macos.sh</exclude>
-        <exclude>**/*.plist</exclude>
-        <!-- Windows task scheduler XML -->
-        <exclude>**/*.xml</exclude>
-      </excludes>
       <outputDirectory>/</outputDirectory>
     </fileSet>
   </fileSets>

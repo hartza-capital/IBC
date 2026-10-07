@@ -1,16 +1,32 @@
 name: Tests
 
 on:
+  # PRs and pushes to the main branches only: a commit inside a PR triggers exactly
+  # one run (the pull_request event); reviewdog (when enabled) runs only on PRs.
+  push:
+    branches: [develop, main]
   pull_request:
-    branches: [main, develop]
+    branches: [develop]
+  workflow_dispatch: # manual re-run without a commit
+
+concurrency:
+  # Cancel superseded runs: a new push to the same branch/PR kills the in-flight one.
+  #
+  # Keyed on workflow_ref (the file path) and not workflow (the `name:` field): every
+  # template here is named "Tests", so a repo declaring two languages deploys two
+  # workflows sharing that name and `github.workflow` would put both in the same
+  # group — the second cancelling the first before either ran.
+  group: ${{ github.workflow_ref }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
-  JAVA_VERSION: "21"
+  JAVA_VERSION: "25"
 
 jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
       actions: write
@@ -34,69 +50,34 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Configure private package access
-        run: git config --global url."https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/".insteadOf "https://github.com/"
-
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
           cache: maven
 
-      # mvn test compiles against the real TWS/Gateway jars via IBC_BIN (see pom.xml's
-      # require-ibc-bin enforcer rule + antrun classpath fileset) — these are IBKR's
-      # proprietary jars, not on Maven Central, so they can't be resolved as a normal
-      # dependency. Cache the extracted install (~335MB) so it's downloaded once, not
-      # on every run; the offline installer's exact version subdir under ~/Jts varies,
-      # so IBC_BIN is resolved by path lookup after restore/install, never hardcoded.
-      - name: Cache TWS/Gateway installer (IBC_BIN)
-        id: cache-ibc-bin
-        uses: actions/cache@v4
-        with:
-          path: ~/Jts
-          # Bump this v1 suffix to force a fresh download if IBKR's "stable" channel
-          # installer ever changes in a way that breaks compatibility with this
-          # repo's pinned IBC version (3.24.1).
-          key: ibc-bin-stable-v1
+      - name: Configure private package access
+        run: git config --global url."https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/".insteadOf "https://github.com/"
 
-      - name: Install TWS/Gateway offline (provides IBC_BIN jars)
-        if: steps.cache-ibc-bin.outputs.cache-hit != 'true'
-        run: |
-          # Public, unauthenticated download — same URL/channel convention used by
-          # hartza-capital/docker-ib-gateway's scheduled "stable" build. The installer
-          # is an InstallAnywhere/LAX shell wrapper; feeding blank input to every
-          # prompt (`yes ''`) runs it non-interactively even with no DISPLAY set,
-          # confirmed by docker-ib-gateway running the identical command on a plain
-          # Debian base with no X server present.
-          wget -q https://download2.interactivebrokers.com/installers/ibgateway/stable-standalone/ibgateway-stable-standalone-linux-x64.sh -O install.sh
-          chmod +x install.sh
-          yes '' | ./install.sh
-          rm install.sh
+      # checkstyle:check fails the build on style violations using the pom's ruleset —
+      # the same config reviewdog annotates on PRs, enforced here on every push.
+      - name: Check style
+        run: ./mvnw -B checkstyle:check
 
-      - name: Resolve IBC_BIN
-        run: |
-          # maxdepth 4 covers both IB Gateway's default layout
-          # (~/Jts/ibgateway/<version>/jars) and TWS's (~/Jts/<version>/jars).
-          jars_dir="$(find "$HOME/Jts" -maxdepth 4 -type d -name jars | sort -V | tail -n1)"
-          if [ -z "$jars_dir" ]; then
-            echo "::error::Could not locate a jars/ directory under \$HOME/Jts after install/cache restore"
-            exit 1
-          fi
-          echo "IBC_BIN=$jars_dir" >> "$GITHUB_ENV"
-          echo "Resolved IBC_BIN=$jars_dir"
-
-      - name: Run tests with coverage
-        run: mvn -B test
+      - name: Run tests
+        run: ./mvnw -B test
 
       - name: Run octocov coverage check
         uses: k1LoW/octocov-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  reviewdog:
+  lint:
+    if: github.event_name == 'pull_request'
     name: Reviewdog (checkstyle)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       pull-requests: write # reviewdog posts checkstyle findings as inline PR review comments
@@ -115,15 +96,15 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Configure private package access
-        run: git config --global url."https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/".insteadOf "https://github.com/"
-
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
           cache: maven
+
+      - name: Configure private package access
+        run: git config --global url."https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/".insteadOf "https://github.com/"
 
       - name: Set up reviewdog
         uses: reviewdog/action-setup@v1
@@ -136,7 +117,7 @@ jobs:
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mvn -B checkstyle:checkstyle
+          ./mvnw -B checkstyle:checkstyle
           # Rewrite absolute file paths to repo-relative so reviewdog can match the diff.
           sed -i "s|${GITHUB_WORKSPACE}/||g" target/checkstyle-result.xml
           reviewdog -f=checkstyle -name=checkstyle -reporter=github-pr-review \
@@ -145,7 +126,7 @@ jobs:
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
-    needs: [test, reviewdog]
+    needs: [test, lint]
     if: always()
 
     steps:

@@ -18,6 +18,10 @@
 
 package ibcalpha.ibc;
 
+/**
+ * Abstract source of IBC's configuration settings, backed by implementations such as
+ * {@link DefaultSettings}.
+ */
 public abstract class Settings {
 
     private static Settings _settings;
@@ -57,12 +61,11 @@ public abstract class Settings {
 
 
     /**
-    returns the boolean value associated with property named key.
-    Returns defaultValue if there is no such property,
-    or if the property value cannot be converted to a boolean.
-     * @param key
-     * @param defaultValue
-     * @return
+     * Returns the boolean value of the property named key.
+     *
+     * @param key the property key
+     * @param defaultValue the value returned if the property does not exist or is not a valid boolean
+     * @return the property's boolean value, or defaultValue
      */
     public abstract boolean getBoolean(String key, boolean defaultValue);
 
@@ -80,31 +83,29 @@ public abstract class Settings {
     public abstract char getChar(String key, String defaultValue);
 
     /**
-    returns the double value associated with property named key.
-    Returns defaultVAlue if there is no such property,
-    or if the property value cannot be converted to a double.
-     * @param key
-     * @param defaultValue
-     * @return
+     * Returns the double value of the property named key.
+     *
+     * @param key the property key
+     * @param defaultValue the value returned if the property does not exist or is not a valid double
+     * @return the property's double value, or defaultValue
      */
     public abstract double getDouble(String key, double defaultValue);
 
     /**
-    returns the int value associated with property named key.
-    Returns defaultValue if there is no such property,
-    or if the property value cannot be converted to an int.
-     * @param key
-     * @param defaultValue
-     * @return
+     * Returns the int value of the property named key.
+     *
+     * @param key the property key
+     * @param defaultValue the value returned if the property does not exist or is not a valid int
+     * @return the property's int value, or defaultValue
      */
     public abstract int getInt(String key, int defaultValue);
 
     /**
-    returns the value associated with property named key.
-    Returns defaultValue if no such property.
-     * @param key
-     * @param defaultValue
-     * @return
+     * Returns the value of the property named key.
+     *
+     * @param key the property key
+     * @param defaultValue the value returned if the property does not exist
+     * @return the property's value, or defaultValue
      */
     public abstract String getString(String key, String defaultValue);
 

@@ -35,6 +35,10 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+/**
+ * Runnable command that restarts or pauses TWS/Gateway and reports progress
+ * back to the requesting client.
+ */
 class RestartTask
         implements Runnable {
 
@@ -241,9 +245,7 @@ class RestartTask
     }
 
     /**
-     * A panel component that displays a countdown timer until the scheduled
-     * restart time. Updates once per second and displays the remaining time
-     * in seconds.
+     * Glass-pane panel that displays the time remaining until a scheduled restart.
      */
     private class Countdown extends JPanel {
         private static final long serialVersionUID = 1L;

@@ -22,6 +22,10 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Window handler for the Global Configuration dialog, registering it when it opens and clearing it
+ * when it closes.
+ */
 class GlobalConfigurationDialogHandler implements WindowHandler {
     @Override
     /**

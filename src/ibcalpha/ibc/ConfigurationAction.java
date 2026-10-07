@@ -20,6 +20,10 @@ package ibcalpha.ibc;
 
 import javax.swing.JDialog;
 
+/**
+ * A configuration change applied to the TWS Global Configuration dialog by a
+ * configuration task.
+ */
 public interface ConfigurationAction extends Runnable {
 
     /**

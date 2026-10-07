@@ -21,6 +21,10 @@ package ibcalpha.ibc;
 import java.util.concurrent.Executor;
 import javax.swing.SwingUtilities;
 
+/**
+ * Executor singleton that schedules tasks on the Swing event dispatch thread without blocking the
+ * caller.
+ */
 class GuiDeferredExecutor implements Executor {
     private static final GuiDeferredExecutor instance = new GuiDeferredExecutor();
 
@@ -29,6 +33,11 @@ class GuiDeferredExecutor implements Executor {
      */
     private GuiDeferredExecutor() {}
 
+    /**
+     * Returns the single shared instance of this executor.
+     *
+     * @return the executor singleton
+     */
     static GuiDeferredExecutor instance() {return instance;}
 
     /**

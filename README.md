@@ -1,254 +1,132 @@
 # IBC — Interactive Brokers Controller
 
-IBC automates many aspects of running [Interactive Brokers](https://www.interactivebrokers.com)
-[Trader Workstation and IB Gateway](https://www.interactivebrokers.com/en/index.php?f=14099#tws-software)
-that would otherwise require manual intervention. It is especially useful for
-automated trading systems built on the [IB API](http://interactivebrokers.github.io).
+IBC automates the unattended running of Interactive Brokers' TWS (Trader
+Workstation) and IB Gateway: it logs in for you, answers the dialogs those
+applications put up, keeps the session alive across daily restarts, and shuts
+down on schedule. It is aimed at automated trading systems built on the IB API.
 
-> **IMPORTANT** — IBC only works with the **offline (standalone)** version of TWS/Gateway.
-> It does **not** work with the self-updating version.
+IBC works only with the **offline (standalone)** TWS/Gateway. It does **not**
+work with the self-updating version. TWS must be set to English so its dialogs
+can be recognised.
 
-## What IBC does
+## Features
 
-- Automatically fills in your username and password on the login dialog and clicks Login
-- Handles Two-Factor Authentication via the IBKR Mobile app, with automatic retries if the alert is missed
-- Clicks through dialog boxes that would otherwise require user interaction
-- Allows TWS/Gateway to auto-restart each day during the week without re-authentication
-- Allows TWS/Gateway to shut down at a scheduled time
-- Accepts or rejects incoming API connections based on your configuration
-- Responds to remote commands (STOP, RESTART, RECONNECT, ENABLEAPI) via a TCP command server
+- **Automated login** — fills the username and password fields on the TWS or
+  Gateway login dialog and clicks Login.
+- **Automated TOTP two-factor authentication** — given a base32 secret, IBC
+  computes the current 6-digit code itself (RFC 4226/6238 over the JDK's
+  HMAC-SHA1, no external library) and submits the 2FA dialog.
+- **Dialog automation** — clicks through the ~30 dialogs TWS/Gateway raise
+  (newer-version prompts, the tip of the day, blind-trading warnings, incoming
+  API connection requests, and more) according to your settings.
+- **Daily auto-restart without re-authentication** — TWS/Gateway restart at a
+  configured time each day; IBC handles the restart transparently.
+- **Scheduled shutdown** — shut TWS/Gateway down at a fixed time (for example
+  Friday evening) via `ClosedownAt`.
+- **Remote command server** — a TCP server accepts `STOP`, `RESTART`,
+  `RECONNECTDATA`, `RECONNECTACCOUNT`, `PAUSE`, `ENABLEAPI` and `EXIT`.
+- **Configuration persistence** — API port, trading mode and related settings
+  are written to the TWS `jts.ini` file and survive a restart.
+
+## Structure
+
+```text
+IBC/
+├── src/
+│   ├── ibcalpha/ibc/          # the automation engine (Java, package ibcalpha.ibc)
+│   └── assembly/              # Maven assembly descriptor for the Linux ZIP
+├── resources/                 # shipped alongside the JAR: config.ini, *.sh, scripts/
+├── test/ibcalpha/ibc/         # JUnit 5 suite and the Stub* test doubles
+├── pom.xml                    # Maven build (Java 25, Maven wrapper in .mvn/)
+├── Makefile                   # convenience targets over ./mvnw
+└── CONTRIBUTING.md            # contributor guide
+```
+
+| Path                | Contents                                                                                                               |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `src/ibcalpha/ibc/` | The Swing automation engine: entry points, window handlers, login, 2FA, configuration tasks, command server, settings. |
+| `src/assembly/`     | Assembly descriptor that packages `resources/` into the Linux ZIP.                                                     |
+| `resources/`        | `twsstart.sh` / `gatewaystart.sh`, `config.ini`, the command client scripts (`commandsend.sh`, `stop.sh`, ...).        |
+| `test/ibcalpha/ibc` | JUnit 5 tests; `StubSettings` / `StubMainWindowManager` replace live TWS.                                              |
+
+## Build
+
+**Prerequisites:** Java 25 JDK, `IBC_BIN` set to the directory holding the
+TWS/Gateway jars. The Maven version is pinned by the wrapper (`./mvnw`), so no
+system Maven is needed.
+
+```bash
+export IBC_BIN=~/Jts/1050/jars
+
+make dev            # compile + resources/IBC.jar (no distribution ZIP)
+make dist           # compile + resources/IBC.jar + dist/IBCLinux-<version>.zip
+make clean          # remove target/, dist/, resources/IBC.jar, resources/version
+make rebuild        # clean + dist
+
+./mvnw -B test            # JUnit 5 suite
+./mvnw -B checkstyle:check
+./mvnw -B spotbugs:check
+```
+
+`make dev` and `make jar` are the same Maven target
+(`./mvnw package -DskipAssembly=true`); `make dist` is plain
+`./mvnw package`.
 
 ## Getting Started
 
-### 1. Install the offline TWS or IB Gateway
-
-Download the **offline** installer from the
-[IBKR software page](https://www.interactivebrokers.com/en/index.php?f=14099#tws-software).
-Do **not** use the self-updating version.
-
-TWS must be set to English so that IBC can recognise its dialogs. Set the language manually
-on the first login.
-
-### 2. Install IBC
-
-Download the latest `IBCLinux-x.y.z.zip` from the
-[Releases page](https://github.com/hartza-capital/IBC/releases) and extract it:
-
 ```bash
-sudo unzip ~/Downloads/IBCLinux-3.24.1.zip -d /opt/ibc
-cd /opt/ibc
-sudo chmod o+x *.sh */*.sh
+git clone https://github.com/hartza-capital/IBC.git
+cd IBC
+export IBC_BIN=~/Jts/1050/jars   # contains the TWS/Gateway jars
+make dist
+sudo unzip dist/IBCLinux-*.zip -d /opt/ibc
+cp /opt/ibc/config.ini ~/ibc/     # edit: IbLoginId, IbPassword, Ib2FA, ...
+/opt/ibc/gatewaystart.sh          # or /opt/ibc/twsstart.sh for TWS
 ```
 
-Default paths assumed by the scripts:
+Set `TWS_MAJOR_VRSN` in the start script to your installed version before the
+first run (a build string of `10.19.1f` means `1019`). IBC writes a log whose
+location is printed at startup.
 
-| Item              | Path               |
-| ----------------- | ------------------ |
-| TWS/Gateway jars  | `~/Jts/<version>/` |
-| IBC program files | `/opt/ibc`         |
-| `config.ini`      | `~/ibc/config.ini` |
+## Configuration
 
-### 3. Configure IBC
+Credentials and behaviour are set in `config.ini` (a commented template ships
+in `resources/`), and the start scripts are configured through shell variables.
 
-Copy `config.ini` from the IBC installation folder to a secure location (e.g. `~/ibc/`),
-then edit it:
+| `config.ini` setting             | Purpose                                                                                      |
+| -------------------------------- | -------------------------------------------------------------------------------------------- |
+| `IbLoginId` / `IbPassword`       | IBKR credentials                                                                             |
+| `TradingMode`                    | `paper` or `live`                                                                            |
+| `Ib2FA`                          | Base32 TOTP secret; empty keeps the 2FA dialog open for a push notification or a manual code |
+| `SecondFactorDevice`             | Device name to pick in the 2FA device list                                                   |
+| `CommandServerPort`              | TCP port for the command server (`0` = disabled)                                             |
+| `AutoRestartTime`                | Daily auto-restart time (no re-authentication)                                               |
+| `ClosedownAt`                    | Scheduled shutdown time                                                                      |
+| `AcceptIncomingConnectionAction` | `accept`, `reject` or `manual`                                                               |
+| `ExistingSessionDetectedAction`  | `primary`, `secondary`, `primaryoverride` or `manual`                                        |
+| `OverrideTwsApiPort`             | Force the API listening port regardless of TWS                                               |
 
-```bash
-mkdir -p ~/ibc
-cp /opt/ibc/config.ini ~/ibc/
-```
+| Start-script variable  | Purpose                                             |
+| ---------------------- | --------------------------------------------------- |
+| `IBC_BIN`              | TWS/Gateway `jars/` directory (required to build)   |
+| `TWS_MAJOR_VRSN`       | Installed TWS/Gateway version                       |
+| `IBC_INI`              | Path to `config.ini` (default `~/ibc/config.ini`)   |
+| `IBC_PATH`             | IBC installation directory (default `/opt/ibc`)     |
+| `TRADING_MODE`         | Overrides the `TradingMode` setting                 |
+| `TWOFA_TIMEOUT_ACTION` | What to do when 2FA times out (`exit` or `restart`) |
+| `JAVA_PATH`            | Java installation used to launch TWS/Gateway        |
+| `LOG_PATH`             | Directory for IBC log files                         |
 
-Minimum settings to review:
+## Documentation
 
-| Setting                            | Description                                           |
-| ---------------------------------- | ----------------------------------------------------- |
-| `IbLoginId`                        | Your IBKR username                                    |
-| `IbPassword`                       | Your IBKR password                                    |
-| `TradingMode`                      | `paper` or `live` (default: `live`)                   |
-| `AcceptNonBrokerageAccountWarning` | Set to `yes` to auto-accept the paper account warning |
-| `AcceptIncomingConnectionAction`   | `accept`, `reject`, or `manual`                       |
-| `CommandServerPort`                | TCP port for the command server (`0` = disabled)      |
-| `AutoRestartTime`                  | Time for daily auto-restart without re-authentication |
-| `ClosedownAt`                      | Time for scheduled shutdown (e.g. Friday evening)     |
+- [`src/ibcalpha/ibc/README.md`](src/ibcalpha/ibc/README.md) — the package
+  reference: every class, its role and its public surface.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — build from source, the `WindowHandler`
+  pattern and the PR checklist.
+- [`AGENTS.md`](AGENTS.md) — architecture notes, conventions and pitfalls for
+  coding agents working in this repository.
 
-The `config.ini` file contains detailed comments for every setting.
-
-### 4. Set the TWS version in the start scripts
-
-Edit `twsstart.sh` or `gatewaystart.sh` and set `TWS_MAJOR_VRSN` to match your installed
-version. To find the version, open TWS manually and click `Help > About Trader Workstation`.
-A build string like `Build 10.19.1f` means version `1019`.
-
-### 5. Start IBC
-
-```bash
-/opt/ibc/twsstart.sh       # start TWS under IBC
-/opt/ibc/gatewaystart.sh   # start IB Gateway under IBC
-```
-
-IBC writes a log file whose location is displayed at startup. Include this log when
-reporting issues.
-
-## Auto-restart
-
-IBC supports TWS/Gateway's built-in weekly auto-restart mechanism (introduced in TWS 974).
-With auto-restart configured, a single authentication on Sunday is enough to keep
-TWS running all week:
-
-1. In the TWS/Gateway Global Configuration dialog, set the **AutoRestart** time in the
-   Lock and Exit section.
-2. Alternatively, use the `AutoRestartTime` setting in `config.ini`.
-
-TWS shuts down and restarts at the configured time each day; IBC handles the restart
-transparently without re-authentication. On Sunday the session credentials expire and
-a fresh login is required.
-
-Use `ClosedownAt` in `config.ini` to shut down automatically on Friday evening.
-
-## Running with crontab
-
-Use `crontab` to start IBC automatically. The scripts detect if IBC is already running
-and skip a duplicate start:
-
-```cron
-# Start gateway every 15 minutes Mon–Fri (only starts if not already running)
-0,15,30,45 * * * 1-5 export DISPLAY=:10 && /bin/bash /opt/ibc/gatewaystart.sh
-```
-
-## Two-Factor Authentication
-
-IBC supports three 2FA modes, set via `Ib2FA` in `config.ini`:
-
-### TOTP (recommended for automation)
-
-IBC generates the one-time code automatically from your TOTP secret — no manual
-intervention required:
-
-```ini
-Ib2FA=YOUR_BASE32_TOTP_SECRET
-```
-
-Set `Ib2FA` to the base32 secret key (the same key you would scan as a QR code into
-an authenticator app). IBC computes the current 6-digit code itself — a small in-tree
-implementation of RFC 4226/6238 over the JDK's own HMAC-SHA1, with no external
-dependency — and submits it automatically.
-
-If you have multiple 2FA methods registered and need to select a specific device:
-
-```ini
-SecondFactorDevice=TOTP
-```
-
-### IBKR Mobile
-
-IBC waits for you to acknowledge the push notification on your device. If you miss
-the alert within 3 minutes, IBC can automatically retry:
-
-```ini
-Ib2FA=IBKR Mobile
-ReloginAfterSecondFactorAuthenticationTimeout=yes
-```
-
-To auto-restart if login fails even after acknowledging the alert:
-
-```ini
-SecondFactorAuthenticationExitInterval=60
-```
-
-And set `TWOFA_TIMEOUT_ACTION=restart` in the start script.
-
-### None
-
-```ini
-Ib2FA=none
-```
-
-## Command Server
-
-IBC listens on a TCP port for remote commands (configure `CommandServerPort` in
-`config.ini`). Send commands via `telnet` or the provided `commandsend.sh` script:
-
-| Command            | Effect                                                                                                                                                               |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `STOP`             | Shuts down TWS/Gateway cleanly                                                                                                                                       |
-| `RESTART`          | Initiates auto-restart (no re-authentication needed)                                                                                                                 |
-| `PAUSE`            | Shuts down tidily like `STOP`, but preserves login credentials so the next IBC start resumes the session without re-authenticating (useful with a UPS on power loss) |
-| `RECONNECTDATA`    | Refreshes all market data connections (Ctrl-Alt-F equivalent)                                                                                                        |
-| `RECONNECTACCOUNT` | Reconnects to the IB login server (Ctrl-Alt-R equivalent)                                                                                                            |
-| `ENABLEAPI`        | Enables the ActiveX/Socket Clients API checkbox                                                                                                                      |
-| `EXIT`             | Closes the command server connection                                                                                                                                 |
-
-## Multiple IBC Instances
-
-To run multiple TWS/Gateway instances simultaneously (e.g. live + paper), create a
-separate start script for each instance and set a different `TWS_SETTINGS_PATH` in each:
-
-```bash
-# In StartTWSLive.sh
-TWS_SETTINGS_PATH=/home/user/JtsLive
-
-# In StartTWSPaper.sh
-TWS_SETTINGS_PATH=/home/user/JtsPaper
-```
-
-Each instance needs its own `config.ini` with separate credentials and a different
-`LOG_PATH`.
-
-## Building from Source
-
-**Prerequisites:** Java 17 JDK, Maven 3.8+, environment variable `IBC_BIN` pointing
-to your TWS/Gateway `jars/` directory.
-
-```bash
-export IBC_BIN=/home/user/Jts/1045/jars
-
-make jar       # compile + build resources/IBC.jar (no ZIP)
-make dist      # compile + build resources/IBC.jar + dist/IBCLinux-x.y.z.zip
-make clean     # remove build artifacts
-make rebuild   # clean + dist
-```
-
-Direct Maven equivalents: `mvn compile`, `mvn package -DskipAssembly=true` (jar
-only, matches `make jar`/`make dev`), `mvn package` (jar + distribution ZIP,
-matches `make dist`), `mvn clean`.
-
-The compiled output is `resources/IBC.jar` — a plain JAR containing only IBC's own
-classes, since IBC has no external runtime dependencies.
-
-To update the version: change `<version>` in `pom.xml`.
-
-## Support
-
-- **User Group:** [https://groups.io/g/ibcalpha](https://groups.io/g/ibcalpha)
-- **Issue Tracker:** [https://github.com/IbcAlpha/IBC/issues](https://github.com/IbcAlpha/IBC/issues)
-
-Please include the IBC log file (location shown at startup) in any problem reports,
-along with the IBC and TWS/Gateway version numbers.
-
-## Contributing
-
-Please read the [contributor guidelines](CONTRIBUTING.md) and submit a pull request.
-
-## License
+## Licence
 
 IBC is licensed under the
 [GNU General Public License v3](http://www.gnu.org/licenses/gpl.html).
-
-## History
-
-IBC is a fork of the original [IBController project](https://github.com/ib-controller/ib-controller),
-maintained by Richard L King (rlktradewright on GitHub) from 2004 to 2018.
-This fork was created in early 2018 to continue development and support.
-
-If switching from IBController, note these key changes:
-
-| IBController                                       | IBC                              |
-| -------------------------------------------------- | -------------------------------- |
-| `IBController.ini`                                 | `config.ini`                     |
-| `ForceTwsApiPort`                                  | `OverrideTwsApiPort`             |
-| `AcceptIncomingConnectionAction` default: `accept` | default: `manual`                |
-| `IbControllerPort`                                 | `CommandServerPort` (default: 0) |
-| `IbControlFrom`                                    | `ControlFrom`                    |
-| `IbBindAddress`                                    | `BindAddress`                    |
-| `IBControllerStart.sh`                             | `twsstart.sh`                    |
-| `IBControllerGatewayStart.sh`                      | `gatewaystart.sh`                |

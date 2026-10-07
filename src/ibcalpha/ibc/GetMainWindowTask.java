@@ -24,6 +24,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.JFrame;
 
+/**
+ * Callable that blocks until the TWS or Gateway main window has been registered and then returns
+ * it.
+ */
 class GetMainWindowTask implements Callable<JFrame>{
     private volatile JFrame mMainWindow;
     private final Lock lock = new ReentrantLock();
@@ -51,6 +55,11 @@ class GetMainWindowTask implements Callable<JFrame>{
         return mMainWindow;
     }  
 
+    /**
+     * Records the main window and releases any caller waiting in {@link #call()}.
+     *
+     * @param window the main TWS or Gateway window frame
+     */
     void setMainWindow(JFrame window) {
         lock.lock();
         try {

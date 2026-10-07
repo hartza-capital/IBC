@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Handles the Shutdown progress dialog by shutting down IBC's worker threads and the command server.
+ */
 public class ShutdownProgressDialogHandler implements WindowHandler {
     /**
      * Determines whether to process window events for the shutdown progress dialog.

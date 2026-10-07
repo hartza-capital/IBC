@@ -18,6 +18,10 @@
 
 package ibcalpha.ibc;
 
+/**
+ * Simple one-shot latch that can be set once and cleared, used to detect that an
+ * operation is already in progress.
+ */
 class SwitchLock {
     private boolean mIsSet;
 

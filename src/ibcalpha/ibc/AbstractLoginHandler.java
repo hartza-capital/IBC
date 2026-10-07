@@ -25,6 +25,10 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
+/**
+ * Base class for handlers that automate a TWS login frame, providing the
+ * shared login flow and delegating frame-specific steps to subclasses.
+ */
 public abstract class AbstractLoginHandler implements WindowHandler {
 
     /**
@@ -91,10 +95,22 @@ public abstract class AbstractLoginHandler implements WindowHandler {
     public abstract boolean recogniseWindow(Window window);
     
     private static int loginAttemptNumber = 0;
+
+    /**
+     * Returns the number of login attempts made so far.
+     *
+     * @return the count of login attempts
+     */
     int currentLoginAttemptNumber() {
         return loginAttemptNumber;
     }
     
+    /**
+     * Starts a login attempt by setting the login state to awaiting credentials,
+     * initialising the frame, filling the credential fields and submitting the login.
+     *
+     * @param window the login frame
+     */
     void initiateLogin(Window window) {
         LoginManager.loginManager().setLoginState(LoginManager.LoginState.AWAITING_CREDENTIALS);
         try {

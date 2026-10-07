@@ -22,6 +22,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Handles the "Login failed" dialog by logging the failure and initiating a cold restart.
+ */
 public class LoginFailedDialogHandler implements WindowHandler  {
     final String DIALOG_TITLE = "Login failed";
 

@@ -23,6 +23,10 @@ import java.awt.event.KeyEvent;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 
+/**
+ * Processes commands received on a single command channel and invokes the
+ * matching action for each.
+ */
 class CommandDispatcher
         implements Runnable {
 
@@ -40,9 +44,6 @@ class CommandDispatcher
      * Returns the modifier mask used to simulate TWS reconnect keyboard
      * shortcuts.
      *
-     * The value is computed lazily because accessing the AWT toolkit during
-     * class initialisation fails in headless environments.
-     *
      * @return the modifier mask combining the platform menu shortcut and Alt
      */
     private static int getShortcutModifiers() {
@@ -55,6 +56,11 @@ class CommandDispatcher
     }
 
 
+    /**
+     * Creates a dispatcher that handles commands arriving on the given channel.
+     *
+     * @param channel the command channel to read from and reply to
+     */
     CommandDispatcher(final CommandChannel channel) {
         mChannel = channel;
     }

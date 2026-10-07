@@ -23,26 +23,8 @@ import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
 /**
- * After the 'Existing Session Detected' dialog is handled (whether by the user
- * or by IBC) such that this session is continued, AND the user is enrolled in
- * IB's 2 Factor Authentication scheme, then the 'Second Factor Authentication'
- * dialog is displayed (IBC does not handle this dialog). Once the user has
- * completed the 2FA, the 'Trading Login Handoff' dialog is displayed to
- * confirm the user's intention to continue the session or hand over to the
- * other session (ie the user can potentially change their mind).
- * 
- * As far as IBC is concerned, it must simply do what is specified in the
- * ExistingSessionDetectedAction setting. However if this setting is not
- * 'manual', then IBC must have elected to continue this session when handling
- * the ExistingSessionDetectedAction (otherwise this dialog would not have been
- * displayed). So the only relevant cases here are:
- * 
- *  ExistingSessionDetectedAction=manual (nothing for IBC to do)
- *  ExistingSessionDetectedAction=primary (IBC must again continue this session)
- * 
- * If ExistingSessionDetectedAction is set to 'primaryoverride' or 'secondary'
- * then something unexpected has happened, and we crash out.
- * 
+ * Handles the Trading Login Handoff dialog, which confirms whether to continue
+ * this session or hand over to the other one.
  */
 public class TradingLoginHandoffDialogHandler implements WindowHandler {
     final String DIALOG_TITLE = "Trading Login Handoff";

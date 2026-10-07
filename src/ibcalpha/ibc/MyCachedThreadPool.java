@@ -21,6 +21,9 @@ package ibcalpha.ibc;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Provides a shared cached thread pool for concurrent task execution.
+ */
 public class MyCachedThreadPool {
     /**
      * Creates a new cached thread pool for concurrent task execution.

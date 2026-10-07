@@ -22,6 +22,10 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 
+/**
+ * Window handler for the "Existing session detected" dialog, applying the configured
+ * {@code ExistingSessionDetectedAction} to resolve which session continues.
+ */
 public class ExistingSessionDetectedDialogHandler implements WindowHandler {
 
     private boolean attempted;

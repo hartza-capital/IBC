@@ -27,16 +27,31 @@ import javax.swing.JLabel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
+/**
+ * Configuration action that sets the TWS auto logoff or auto restart time.
+ */
 class ConfigureAutoLogoffOrRestartTimeTask implements ConfigurationAction {
     private final String autoActionTime;
     private final String autoActionName;
     private JDialog configDialog;
 
+    /**
+     * Creates a task that sets the given auto action time.
+     *
+     * @param autoActionName the radio button label selecting logoff or restart
+     * @param autoActionTime the time to set, in hh:mm AM/PM format
+     */
     ConfigureAutoLogoffOrRestartTimeTask(String autoActionName, String autoActionTime) {
         this.autoActionName=autoActionName;
         this.autoActionTime = autoActionTime;
     }
 
+    /**
+     * Creates a task that sets the given auto action time.
+     *
+     * @param autoActionName the radio button label selecting logoff or restart
+     * @param autoActionTime the time to set
+     */
     ConfigureAutoLogoffOrRestartTimeTask(String autoActionName, LocalTime autoActionTime) {
         this.autoActionName=autoActionName;
         this.autoActionTime = autoActionTime.format(DateTimeFormatter.ofPattern("hh:mm a"));

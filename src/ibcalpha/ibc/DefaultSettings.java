@@ -26,6 +26,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/**
+ * Default {@link Settings} implementation backed by a properties file loaded from the configured
+ * settings path.
+ */
 public class DefaultSettings extends Settings {
 
     private final Properties props = new Properties();
@@ -106,22 +110,14 @@ public class DefaultSettings extends Settings {
     }
 
     /**
-     * Generates the default settings file path based on the operating system and user home directory.
+     * Returns the default path of the IBC settings file.
      *
      * @return the default path to the settings file
      */
     static String generateDefaultIniPath() {
-        if (System.getProperty("os.name").startsWith("Windows")) {
-            return System.getenv("HOMEDRIVE") +
-                    System.getenv("HOMEPATH") + File.separator +
-                    "Documents" + File.separator +
-                    "IBC" + File.separator +
-                    "config.ini";
-        } else {
-            return System.getProperty("user.home") + File.separator +
-                    "ibc" + File.separator +
-                    "config.ini";
-        }
+        return System.getProperty("user.home") + File.separator +
+                "ibc" + File.separator +
+                "config.ini";
     }
 
     /**

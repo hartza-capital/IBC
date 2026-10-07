@@ -21,12 +21,21 @@ package ibcalpha.ibc;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 
+/**
+ * Configuration action that enables socket API connections in the Global Configuration dialog.
+ */
 class EnableApiTask implements ConfigurationAction{
 
     private final CommandChannel mChannel;
 
     private JDialog configDialog;
 
+    /**
+     * Creates a task that enables API connections and reports the outcome on the supplied
+     * command channel.
+     *
+     * @param channel the command channel to which the acknowledgement or error reply is written
+     */
     EnableApiTask(final CommandChannel channel) {
         mChannel = channel;
     }

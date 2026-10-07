@@ -24,6 +24,9 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+/**
+ * Handles the TWS/Gateway login frame, supplying credentials and driving the login sequence.
+ */
 final class LoginFrameHandler extends AbstractLoginHandler {
 
     /**

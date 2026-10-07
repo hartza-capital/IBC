@@ -28,6 +28,10 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+/**
+ * Listens for client connections on the configured command server port and
+ * dispatches each connection to a CommandDispatcher.
+ */
 class CommandServer
         implements Runnable {
 
@@ -37,6 +41,11 @@ class CommandServer
     private static CommandServer _commandServer;
 
 
+    /**
+     * Creates the command server, recording it as the singleton instance.
+     *
+     * @throws IllegalArgumentException if a command server already exists
+     */
     CommandServer() {
         if (_commandServer != null) throw new IllegalArgumentException();
         _commandServer = this;

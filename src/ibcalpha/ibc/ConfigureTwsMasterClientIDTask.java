@@ -24,11 +24,20 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JTextField;
 
+/**
+ * Configuration action that sets the TWS Master API client ID in the TWS Global
+ * Configuration dialog.
+ */
 class ConfigureTwsMasterClientIDTask implements ConfigurationAction{
 
     private final String masterClientID;
     private JDialog configDialog;
 
+    /**
+     * Creates a task that sets the Master API client ID.
+     *
+     * @param masterClientID the master client ID to set
+     */
     ConfigureTwsMasterClientIDTask(String masterClientID) {
         this.masterClientID = masterClientID;
     }

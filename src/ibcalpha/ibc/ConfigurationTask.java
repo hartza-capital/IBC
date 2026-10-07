@@ -21,6 +21,10 @@ package ibcalpha.ibc;
 import java.util.concurrent.FutureTask;
 import javax.swing.JDialog;
 
+/**
+ * Runs a ConfigurationAction against the Global Configuration dialog, either
+ * on the calling thread or on a background thread.
+ */
 public class ConfigurationTask {
 
     private final ConfigurationAction configAction;
@@ -53,6 +57,10 @@ public class ConfigurationTask {
         (new ConfigTaskRunner()).run();
     }
 
+    /**
+     * Binds a configuration action to the Global Configuration dialog and runs it
+     * on the Swing EDT.
+     */
     private class ConfigTaskRunner implements Runnable {
         /**
          * Executes the configuration action workflow.
