@@ -8,6 +8,18 @@ automated trading systems built on the [IB API](http://interactivebrokers.github
 > **IMPORTANT** — IBC only works with the **offline (standalone)** version of TWS/Gateway.
 > It does **not** work with the self-updating version.
 
+## Scope
+
+> **Linux only.** This fork supports **Linux exclusively**. The original
+> [IbcAlpha/IBC](https://github.com/IbcAlpha/IBC) repository shipped Windows,
+> macOS and Linux resources; here the Windows (`.bat`, `.vbs`, `.lnk`, Task
+> Scheduler XML) and macOS (`*macos.sh`, `.plist`) files have been removed, and
+> the only distribution produced is `IBCLinux-x.y.z.zip`.
+
+All of IBC's own functionality — login and 2FA automation, dialog handling,
+session management, auto-restart and the command server — is available on Linux,
+unchanged.
+
 ## What IBC does
 
 - Automatically fills in your username and password on the login dialog and clicks Login
@@ -17,6 +29,25 @@ automated trading systems built on the [IB API](http://interactivebrokers.github
 - Allows TWS/Gateway to shut down at a scheduled time
 - Accepts or rejects incoming API connections based on your configuration
 - Responds to remote commands (STOP, RESTART, RECONNECT, ENABLEAPI) via a TCP command server
+
+## What this fork adds
+
+The upstream project, [IbcAlpha/IBC](https://github.com/IbcAlpha/IBC), was retired
+on 1 September 2026 and its repository archived read-only. This fork carries IBC
+forward, focused on Linux (see [Scope](#scope)) and on unattended operation:
+
+- **Automated TOTP two-factor authentication.** Set `Ib2FA` in `config.ini` to
+  the base32 secret from your authenticator app: IBC computes the current
+  6-digit code itself, fills it in and submits the 2FA dialog, with no manual
+  step. The implementation is in-tree (`Totp`, `Base32` — RFC 4226/6238 over the
+  JDK's own HMAC-SHA1), so there is no external dependency.
+- **A current, enforced toolchain.** Java 25 and Maven replace the retired
+  Ant/Ivy build. A JUnit 5 test suite runs in CI with JaCoCo coverage reported
+  by octocov, Checkstyle (with reviewdog annotations on pull requests) and
+  SpotBugs static analysis.
+- **Testability refactors** behind that suite: settings, the login and session
+  managers and the command dispatcher are reached through interfaces and stubs,
+  so behaviour is verified against fakes rather than a live TWS.
 
 ## Getting Started
 
@@ -117,51 +148,45 @@ and skip a duplicate start:
 
 ## Two-Factor Authentication
 
-IBC supports three 2FA modes, set via `Ib2FA` in `config.ini`:
+The `Ib2FA` setting in `config.ini` decides what IBC does with the Second Factor
+Authentication dialog.
 
-### TOTP (recommended for automation)
+### Automated TOTP
 
-IBC generates the one-time code automatically from your TOTP secret — no manual
-intervention required:
+Set `Ib2FA` to the base32 secret behind your authenticator app — the same key you
+would scan as a QR code. IBC computes the current 6-digit code itself (an in-tree
+implementation of RFC 4226/6238 over the JDK's own HMAC-SHA1, with no external
+dependency), fills the code field, and submits the dialog:
 
 ```ini
 Ib2FA=YOUR_BASE32_TOTP_SECRET
 ```
 
-Set `Ib2FA` to the base32 secret key (the same key you would scan as a QR code into
-an authenticator app). IBC computes the current 6-digit code itself — a small in-tree
-implementation of RFC 4226/6238 over the JDK's own HMAC-SHA1, with no external
-dependency — and submits it automatically.
-
-If you have multiple 2FA methods registered and need to select a specific device:
+When several 2FA methods are registered, IBKR presents a device list before the code
+field. `SecondFactorDevice` selects the entry whose name matches exactly:
 
 ```ini
 SecondFactorDevice=TOTP
 ```
 
-### IBKR Mobile
+### Manual / IBKR Mobile
 
-IBC waits for you to acknowledge the push notification on your device. If you miss
-the alert within 3 minutes, IBC can automatically retry:
+Leave `Ib2FA` empty. IBC submits nothing and logs an error; the dialog stays open
+for you to acknowledge the push notification on your device, or to type a code.
+
+If you acknowledge the alert but login does not complete within the time IBKR
+allows, IBC can repeat the login sequence rather than give up:
 
 ```ini
-Ib2FA=IBKR Mobile
 ReloginAfterSecondFactorAuthenticationTimeout=yes
-```
-
-To auto-restart if login fails even after acknowledging the alert:
-
-```ini
 SecondFactorAuthenticationExitInterval=60
 ```
 
-And set `TWOFA_TIMEOUT_ACTION=restart` in the start script.
+Set `TWOFA_TIMEOUT_ACTION=restart` in the start script so IBC relaunches and repeats
+the authentication.
 
-### None
-
-```ini
-Ib2FA=none
-```
+Any other value of `Ib2FA` is decoded as a base32 secret, so a string that is not one
+makes IBC submit a wrong code.
 
 ## Command Server
 
@@ -196,11 +221,12 @@ Each instance needs its own `config.ini` with separate credentials and a differe
 
 ## Building from Source
 
-**Prerequisites:** Java 17 JDK, Maven 3.8+, environment variable `IBC_BIN` pointing
-to your TWS/Gateway `jars/` directory.
+**Prerequisites:** Java 25 JDK, Maven 3.9+, environment variable `IBC_BIN` pointing
+to your TWS/Gateway `jars/` directory. The pinned Maven version comes with the
+wrapper (`./mvnw`), so an installed Maven is only needed if you bypass it.
 
 ```bash
-export IBC_BIN=/home/user/Jts/1045/jars
+export IBC_BIN=/home/user/Jts/1050/jars
 
 make jar       # compile + build resources/IBC.jar (no ZIP)
 make dist      # compile + build resources/IBC.jar + dist/IBCLinux-x.y.z.zip
@@ -208,9 +234,9 @@ make clean     # remove build artifacts
 make rebuild   # clean + dist
 ```
 
-Direct Maven equivalents: `mvn compile`, `mvn package -DskipAssembly=true` (jar
-only, matches `make jar`/`make dev`), `mvn package` (jar + distribution ZIP,
-matches `make dist`), `mvn clean`.
+Direct Maven equivalents, via the wrapper: `./mvnw compile`,
+`./mvnw package -DskipAssembly=true` (jar only, matches `make jar`/`make dev`),
+`./mvnw package` (jar + distribution ZIP, matches `make dist`), `./mvnw clean`.
 
 The compiled output is `resources/IBC.jar` — a plain JAR containing only IBC's own
 classes, since IBC has no external runtime dependencies.
@@ -219,8 +245,13 @@ To update the version: change `<version>` in `pom.xml`.
 
 ## Support
 
-- **User Group:** [https://groups.io/g/ibcalpha](https://groups.io/g/ibcalpha)
-- **Issue Tracker:** [https://github.com/IbcAlpha/IBC/issues](https://github.com/IbcAlpha/IBC/issues)
+IBC is developed and supported in this fork:
+
+- **Issue Tracker:** [https://github.com/hartza-capital/IBC/issues](https://github.com/hartza-capital/IBC/issues)
+
+The upstream project, [IbcAlpha/IBC](https://github.com/IbcAlpha/IBC), was retired on
+1 September 2026 and its repository archived read-only, so no issues or pull requests
+can be opened there.
 
 Please include the IBC log file (location shown at startup) in any problem reports,
 along with the IBC and TWS/Gateway version numbers.
