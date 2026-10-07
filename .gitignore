@@ -1,8 +1,8 @@
-target
-dist
-nbproject
-bin
-build
+target/
+dist/
+nbproject/
+bin/
+build/
 resources/*.jar
 resources/version
 dependency-reduced-pom.xml
