@@ -6,8 +6,8 @@ IBC is a 100% Java project. It automates TWS and IB Gateway by listening to AWT 
 
 ## Prerequisites
 
-- **Java 17 JDK** — `javac --version` must report `javac 17.x`
-- **Maven 3.8+** — `mvn --version`
+- **Java 25 JDK** — `javac --version` must report `javac 25.x`
+- **Maven 3.9+** — `./mvnw --version` (the wrapper pins the exact version used by CI)
 - **TWS or IB Gateway installed offline** — IBC compiles against their JAR files
 - **`IBC_BIN` environment variable** — must point to the directory that contains the TWS/Gateway JARs (e.g., the `jars/` folder inside the TWS installation)
 
@@ -25,8 +25,8 @@ The build enforces this variable at the `validate` phase; Maven will fail immedi
 # Fast build — produces resources/IBC.jar, skips the Linux distribution ZIP
 make dev
 
-# Equivalent Maven command (same result)
-mvn -q package -DskipAssembly=true
+# Equivalent Maven command (same result, via the wrapper)
+./mvnw -q package -DskipAssembly=true
 
 # Full build — also produces dist/IBCLinux-<version>.zip
 make dist
