@@ -27,7 +27,6 @@ import javax.swing.JFrame;
  */
 public class SplashFrameHandler implements WindowHandler {
 
-    @Override
     /**
      * Determines whether this handler should act on the given window event.
      * Only acts on WINDOW_CLOSED because that indicates Gateway is ready to handle menu commands.
@@ -36,6 +35,7 @@ public class SplashFrameHandler implements WindowHandler {
      * @param eventId the AWT event ID.
      * @return true if this handler should process the event; false otherwise.
      */
+    @Override
     public boolean filterEvent(Window window, int eventId) {
         /*
          * Note that we are only interested in the closing of the gateway splash
@@ -54,7 +54,6 @@ public class SplashFrameHandler implements WindowHandler {
         }
     }
 
-    @Override
     /**
      * Marks the splash screen as closed and updates login state for Gateway.
      * For Gateway, sets login state to LOGGED_IN when the splash closes.
@@ -62,6 +61,7 @@ public class SplashFrameHandler implements WindowHandler {
      * @param window the splash frame window.
      * @param eventID the AWT event ID.
      */
+    @Override
     public void handleWindow(Window window, int eventID) {
         if (SessionManager.isGateway()) {
             LoginManager.loginManager().setLoginState(LoginManager.LoginState.LOGGED_IN);
@@ -70,13 +70,13 @@ public class SplashFrameHandler implements WindowHandler {
         SessionManager.setSplashScreenClosed();
     }
 
-    @Override
     /**
      * Identifies the splash frame by its "Starting application..." title.
      *
      * @param window the window to identify.
      * @return true if this is the splash frame; false otherwise.
      */
+    @Override
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JFrame))  return false;
 

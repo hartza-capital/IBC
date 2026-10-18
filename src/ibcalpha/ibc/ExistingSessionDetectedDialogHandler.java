@@ -28,6 +28,7 @@ import javax.swing.JDialog;
  */
 public class ExistingSessionDetectedDialogHandler implements WindowHandler {
 
+    /** True once this handler has already asked to continue the current session. */
     private boolean attempted;
 
     /**

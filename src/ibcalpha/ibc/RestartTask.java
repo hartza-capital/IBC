@@ -122,8 +122,11 @@ class RestartTask
     }
 
     /**
-     * Creates a marker file that tells the startup script to preserve the
-     * current session instead of performing a full re-authentication.
+     * Creates the PAUSE marker file that tells the startup script to preserve the
+     * current session across the restart.
+     *
+     * <p>Exits IBC with {@link ErrorCodes#UNHANDLED_EXCEPTION} if the file cannot be
+     * created.</p>
      */
     private void createPauseFlagFile() {
         try {
@@ -248,6 +251,7 @@ class RestartTask
      * Glass-pane panel that displays the time remaining until a scheduled restart.
      */
     private class Countdown extends JPanel {
+        /** Serialization identifier for this panel class. */
         private static final long serialVersionUID = 1L;
 
         /** Font used to draw the countdown text. */

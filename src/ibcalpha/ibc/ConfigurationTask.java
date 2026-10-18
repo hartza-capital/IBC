@@ -27,6 +27,7 @@ import javax.swing.JDialog;
  */
 public class ConfigurationTask {
 
+    /** Configuration action executed by this task. */
     private final ConfigurationAction configAction;
 
     /**

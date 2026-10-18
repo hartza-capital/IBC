@@ -29,8 +29,11 @@ import javax.swing.JFrame;
  * it.
  */
 class GetMainWindowTask implements Callable<JFrame>{
+    /** Frame registered by the handler; null until it appears. */
     private volatile JFrame mMainWindow;
+    /** Guards {@link #mMainWindow} and {@link #gotFrame}. */
     private final Lock lock = new ReentrantLock();
+    /** Signalled once the main window has been registered. */
     private final Condition gotFrame = lock.newCondition();
 
     /**

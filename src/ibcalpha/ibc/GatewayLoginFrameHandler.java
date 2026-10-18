@@ -29,7 +29,6 @@ import javax.swing.JToggleButton;
  */
 final class GatewayLoginFrameHandler extends AbstractLoginHandler {
 
-    @Override
     /**
      * Identifies whether the window is the IB Gateway login frame.
      * Checks for Gateway title variants and the presence of a login button.
@@ -37,6 +36,7 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
      * @param window the window to identify.
      * @return true if this is the Gateway login frame; false otherwise.
      */
+    @Override
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JFrame)) return false;
 
@@ -48,7 +48,6 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
                 SwingUtils.findButton(window, "Paper Log In") != null));    // TWS 974+
     }
 
-    @Override
     /**
      * Initializes the Gateway login frame by selecting the gateway mode (FIX or IB API).
      * Also sets the trading mode if the Trading Mode label is present.
@@ -58,6 +57,7 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
      * @return true if initialization succeeded; false otherwise.
      * @throws IbcException if gateway mode selection fails.
      */
+    @Override
     protected final boolean initialise(final Window window, int eventID) throws IbcException {
         selectGatewayMode(window);
         if (SwingUtils.findLabel(window, "Trading Mode") != null)  {
@@ -66,7 +66,6 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
         return true;
     }
 
-    @Override
     /**
      * Performs pre-login validation and preparation by checking which credentials are missing.
      * Routes to FIX or IB API credential checking based on session mode.
@@ -76,6 +75,7 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
      * @return true if all required credentials are present; false if any are missing.
      * @throws IbcException if credential validation fails.
      */
+    @Override
     protected final boolean preLogin(final Window window, int eventID) throws IbcException {
         boolean result;
         if (SessionManager.isFIX()) {
@@ -131,7 +131,6 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
         return result;
     }
 
-    @Override
     /**
      * Fills in the login frame fields with credentials based on the current session mode.
      * For FIX mode, sets FIX and IB API credentials; for IB API mode, sets only IB API credentials.
@@ -141,6 +140,7 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
      * @return true if all credential fields were successfully populated.
      * @throws IbcException if credential setting fails.
      */
+    @Override
     protected final boolean setFields(Window window, int eventID) throws IbcException {
         if (SessionManager.isFIX()) {
             Utils.logToConsole("Setting FIX user name");
@@ -208,7 +208,6 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
         }
     }
 
-    @Override
     /**
      * Checks whether the user ID field is disabled or absent from the Gateway login frame.
      * Field index depends on session mode (FIX vs IB API).
@@ -216,6 +215,7 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
      * @param window the Gateway login frame.
      * @return true if the user ID field is absent or disabled; false if enabled.
      */
+    @Override
     protected boolean isUserIdDisabledOrAbsent(Window window) {
         int index = SessionManager.isFIX() ? 2 : 0;
         JTextField userID = SwingUtils.findTextField(window, index);
@@ -223,7 +223,6 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
         return ! userID.isEnabled();
     }
 
-    @Override
     /**
      * Checks whether the password field is disabled or absent from the Gateway login frame.
      * Field index depends on session mode (FIX vs IB API).
@@ -231,6 +230,7 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
      * @param window the Gateway login frame.
      * @return true if the password field is absent or disabled; false if enabled.
      */
+    @Override
     protected boolean isPasswordDisabledOrAbsent(Window window) {
         int index = SessionManager.isFIX() ? 3 : 1;
         JTextField password = SwingUtils.findTextField(window, index);

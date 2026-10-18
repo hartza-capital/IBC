@@ -74,7 +74,8 @@ TWS entry point. Private constructor (utility class).
 | `main`                                      | `(final String[] args)`                    | `void`  | Installs the default uncaught-exception handler, validates arguments, sets up the environment, calls `load()`.           |
 | `load`                                      | `()`                                       | `void`  | Prints diagnostics, starts the command server, registers the Toolkit listener, schedules shutdown, starts settings save. |
 | `setupDefaultEnvironment` (package-private) | `(final String[] args, boolean isGateway)` | `void`  | Initialises `SessionManager`, `Settings`, `LoginManager`, `MainWindowManager`, `TradingModeManager`.                     |
-| `checkArguments` (package-private)          | `(String[] args)`                          | `void`  | Exits with `INCORRECT_NUMBER_OF_ARGS` if more than six arguments are supplied.                                           |
+| `checkArguments` (package-private)          | `(String[] args)`                          | `void`  | Exits with `INCORRECT_NUMBER_OF_ARGS` above six arguments; never echoes their values.                                    |
+| `validateTwoFactorAuthenticationSetting`    | `()`                                       | `void`  | Exits with `INVALID_SETTING_VALUE` when `Ib2FA` is set but is not valid Base32.                                          |
 | `printVersionInfo`                          | `()`                                       | `void`  | Logs `IbcVersionInfo.IBC_VERSION` to the console.                                                                        |
 
 Accepted argument forms: none; `<iniFile> [<tradingMode>]`;
@@ -297,25 +298,29 @@ factor device"), or an automatic TOTP submission.
 - **Device selection** reads `SecondFactorDevice` and selects the matching entry
   in the dialog's list, then clicks OK. An empty `SecondFactorDevice` logs an
   error and leaves the dialog.
-- **TOTP** reads `Ib2FA`, sets state `TWO_FA_IN_PROGRESS`, generates the code with
-  `Totp`/`Base32` and submits the dialog with OK. An **empty** `Ib2FA` logs
-  "You should specify the required 2FA secret using the Ib2FA setting in
-  config.ini" and returns without submitting, so the dialog stays open for a
-  push notification or a manually entered code.
-- Any **non-empty** `Ib2FA` value is decoded as Base32. There is **no**
-  special-casing of `none`, `IBKR Mobile` or any other literal string; such a
-  value is decoded as Base32 and, unless it happens to be valid Base32, TOTP
-  generation fails and is logged.
+- **TOTP** reads `Ib2FA`, sets state `TWO_FA_IN_PROGRESS`, then calls
+  `fillTotpCode`, which generates the code with `Totp`/`Base32` and writes it into
+  the passcode field. The dialog is submitted with OK **only** when a code was
+  written; otherwise it is logged and left open, because submitting an empty or
+  wrong code spends a failed login attempt and IBKR locks the account after a few.
+  An **empty** `Ib2FA` logs "You should specify the required 2FA secret using the
+  Ib2FA setting in config.ini" and leaves the dialog open for a push notification
+  or a manually entered code.
+- A **non-empty** `Ib2FA` that is not valid Base32 stops IBC at startup
+  (`IbcTws.validateTwoFactorAuthenticationSetting`), so a malformed secret never
+  reaches the dialog. There is **no** special-casing of `none`, `IBKR Mobile` or
+  any other literal string.
 
 On close it calls `LoginManager.secondFactorAuthenticationDialogClosed()` (or
 sets `LOGGED_IN` for read-only login).
 
-| Method                                  | Parameters                     | Returns                                   | Description                                     |
-| --------------------------------------- | ------------------------------ | ----------------------------------------- | ----------------------------------------------- |
-| `getInstance` (static, package-private) | `()`                           | `SecondFactorAuthenticationDialogHandler` | Singleton accessor.                             |
-| `filterEvent`                           | `(Window window, int eventId)` | `boolean`                                 | `WINDOW_OPENED` or `WINDOW_CLOSED`.             |
-| `handleWindow`                          | `(Window window, int eventID)` | `void`                                    | Read-only / device selection / TOTP submission. |
-| `recogniseWindow`                       | `(Window window)`              | `boolean`                                 | Matches the two dialog titles.                  |
+| Method                                  | Parameters                     | Returns                                   | Description                                      |
+| --------------------------------------- | ------------------------------ | ----------------------------------------- | ------------------------------------------------ |
+| `getInstance` (static, package-private) | `()`                           | `SecondFactorAuthenticationDialogHandler` | Singleton accessor.                              |
+| `filterEvent`                           | `(Window window, int eventId)` | `boolean`                                 | `WINDOW_OPENED` or `WINDOW_CLOSED`.              |
+| `handleWindow`                          | `(Window window, int eventID)` | `void`                                    | Read-only / device selection / TOTP submission.  |
+| `fillTotpCode` (package-private)        | `(Container container)`        | `boolean`                                 | Writes a fresh TOTP code; false if none written. |
+| `recogniseWindow`                       | `(Window window)`              | `boolean`                                 | Matches the two dialog titles.                   |
 
 ### Totp
 
@@ -323,11 +328,13 @@ Package-private static utility generating 6-digit RFC 6238 TOTP codes over
 HMAC-SHA1 (RFC 4226 dynamic truncation, RFC 4648 Base32), on a 30-second step.
 No external library.
 
-| Method (static, package-private) | Parameters                                                       | Returns  | Description                                                                                                   |
-| -------------------------------- | ---------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------- |
-| `timeStepCounter`                | `(final long epochMillis)`                                       | `long`   | Whole 30-second steps since the epoch.                                                                        |
-| `generate`                       | `(final String base32Secret, final long timeStepCounter)`        | `String` | 6-digit passcode; throws `IllegalArgumentException` on bad Base32, `GeneralSecurityException` on JCE failure. |
-| `generateHotp`                   | `(final byte[] secretKey, final long counter, final int digits)` | `String` | HOTP passcode; `digits` must be 0..7.                                                                         |
+| Method (static, package-private) | Parameters | Returns | Description |
+
+| `validateSecret`  | `(String base32Secret)`                                          | `void`   | Throws `IllegalArgumentException` when the secret is not valid Base32.                                        |
+| ----------------- | ---------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------- |
+| `timeStepCounter` | `(final long epochMillis)`                                       | `long`   | Whole 30-second steps since the epoch.                                                                        |
+| `generate`        | `(final String base32Secret, final long timeStepCounter)`        | `String` | 6-digit passcode; throws `IllegalArgumentException` on bad Base32, `GeneralSecurityException` on JCE failure. |
+| `generateHotp`    | `(final byte[] secretKey, final long counter, final int digits)` | `String` | HOTP passcode; `digits` must be 0..7.                                                                         |
 
 ### Base32
 

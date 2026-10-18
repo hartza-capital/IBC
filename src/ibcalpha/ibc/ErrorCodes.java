@@ -23,17 +23,30 @@ package ibcalpha.ibc;
  */
 public final class ErrorCodes {
 
+    /** Exit code for an exception that no handler caught. */
     public static final int UNHANDLED_EXCEPTION = 1100;
+    /** Exit code for a dialog control that could not be located. */
     public static final int CANT_FIND_CONTROL = 1101;
+    /** Exit code for more command-line arguments than IBC accepts. */
     public static final int INCORRECT_NUMBER_OF_ARGS = 1102;
+    /** Exit code for an ini file path that does not name an existing file. */
     public static final int INI_FILE_DOES_NOT_EXIST = 1103;
+    /** Exit code for an unrecognised trading mode. */
     public static final int INVALID_TRADING_MODE = 1104;
+    /** Exit code for a setting whose value cannot be used. */
     public static final int INVALID_SETTING_VALUE = 1105;
+    /** Exit code for a TWS settings directory that cannot be created. */
     public static final int CANT_CREATE_TWS_SETTINGS_DIR = 1106;
+    /** Exit code for a missing TWS/Gateway entry point class. */
     public static final int CANT_FIND_ENTRYPOINT = 1107;
+    /** Exit code for a jts.ini path that cannot be used, such as a directory. */
     public static final int INVALID_JTSINI_PATH = 1108;
+    /** Exit code for an I/O failure while reading or writing jts.ini. */
     public static final int IO_EXCEPTION_ON_JTSINI = 1109;
+    /** Exit code for an operation attempted in an unsuitable session state. */
     public static final int INVALID_STATE = 1110;
+    /** Exit code for a login that did not finish within the second factor authentication timeout. */
     public static final int SECOND_FACTOR_AUTH_LOGIN_TIMED_OUT = 1111;
+    /** Exit code for a login dialog that never appeared within the configured timeout. */
     public static final int LOGIN_DIALOG_DISPLAY_TIMED_OUT = 1112;
 }

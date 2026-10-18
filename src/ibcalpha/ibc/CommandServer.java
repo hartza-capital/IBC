@@ -35,9 +35,12 @@ import java.util.List;
 class CommandServer
         implements Runnable {
 
+    /** Server socket accepting client connections, null until the port is opened. */
     private ServerSocket mSocket = null;
+    /** True once shutdown is requested, which stops the accept loop. */
     private volatile boolean mQuitting = false;
 
+    /** Most recently created command server, or null if none exists. */
     private static CommandServer _commandServer;
 
 

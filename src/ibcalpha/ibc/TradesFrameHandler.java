@@ -36,7 +36,6 @@ public class TradesFrameHandler implements WindowHandler {
 
     boolean showAllTrades;
 
-    @Override
     /**
      * Determines whether this handler should act on the given window event.
      * Acts on WINDOW_OPENED, WINDOW_CLOSING, and WINDOW_CLOSED events.
@@ -45,6 +44,7 @@ public class TradesFrameHandler implements WindowHandler {
      * @param eventId the AWT event ID.
      * @return true if this handler should process the event; false otherwise.
      */
+    @Override
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -56,7 +56,6 @@ public class TradesFrameHandler implements WindowHandler {
         }
     }
 
-    @Override
     /**
      * Manages the Trades window lifecycle based on the ShowAllTrades setting.
      * Opens and configures the Trades window to display all trades if enabled;
@@ -65,6 +64,7 @@ public class TradesFrameHandler implements WindowHandler {
      * @param window the Trades frame.
      * @param eventID the AWT event ID (WINDOW_OPENED, WINDOW_CLOSING, or WINDOW_CLOSED).
      */
+    @Override
     public void handleWindow(final Window window, int eventID) {
         if (!firstTradesWindowOpened) {
             showAllTrades = Settings.settings().getBoolean("ShowAllTrades", false);
@@ -126,13 +126,13 @@ public class TradesFrameHandler implements WindowHandler {
 
     }
 
-    @Override
     /**
      * Identifies the Trades window by looking for "Trades" in the window title.
      *
      * @param window the window to identify.
      * @return true if this is the Trades window; false otherwise.
      */
+    @Override
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JFrame))  return false;
 
@@ -149,12 +149,12 @@ public class TradesFrameHandler implements WindowHandler {
     private void monitorAllTradesCheckbox(Window window, String text) {
         final JCheckBox check = SwingUtils.findCheckBox(window, text);
         if (check != null) check.addChangeListener(new ChangeListener() {
-            @Override
             /**
              * Handles state changes to the monitored checkbox by re-selecting it if deselected.
              *
              * @param ce the change event.
              */
+            @Override
             public void stateChanged(ChangeEvent ce) {
                 Utils.logToConsole("Checkbox: " + check.getText() + "; selected=" + check.isSelected());
                 if (!check.isSelected()) {

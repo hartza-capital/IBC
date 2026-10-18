@@ -34,15 +34,17 @@ import javax.swing.SwingUtilities;
  */
 public class DefaultConfigDialogManager extends ConfigDialogManager {
 
+    /** Cached Global Configuration dialog, null while none is open. */
     private volatile JDialog configDialog = null;
+    /** Task opening the config dialog, null when no open is pending. */
     private volatile GetConfigDialogTask configDialogTask;
 
+    /** Guards creation and assignment of the config dialog future. */
     private final Object futureCreationLock = new Object();
+    /** Pending lookup that yields the config dialog, null when none is running. */
     private Future<JDialog> configDialogFuture;
 
-    /* records the number of 'things' (including possibly the user) that
-     * are currently accessing the config dialog
-    */
+    /** Number of open handles on the config dialog, possibly including the user. */
     private int usageCount;
 
     /**
@@ -63,19 +65,13 @@ public class DefaultConfigDialogManager extends ConfigDialogManager {
     }
 
     /**
-     * Returns the Global Configuration dialog, if necessary blocking the calling thread until
-     * either it is available or a specified timeout has elapsed.
+     * Returns the Global Configuration dialog, blocking until it is available or
+     * the timeout expires, and immediately if it is already open.
      *
-     * If the Global Configuration dialog is currently open, it is returned immediately without blocking
-     * the calling thread.
-     *
-     * Calling this method from the Swing event dispatch thread results in an IllegalStateException
-     * being thrown.
-     *
-     * @param timeout the length of time to wait for the Global Configuration dialog to become available. If negative, blocks until available
-     * @param unit the time units for the timeout parameter
-     * @return null if the timeout expires before the Global Configuration dialog becomes available; otherwise the Global Configuration dialog
-     * @throws IllegalStateException if the method has been called from the Swing event dispatch thread
+     * @param timeout how long to wait for the dialog; negative blocks indefinitely
+     * @param unit the time unit of timeout
+     * @return the Global Configuration dialog, or null if the timeout expires first
+     * @throws IllegalStateException if called from the Swing event dispatch thread
      */
     @Override
     public JDialog getConfigDialog(long timeout, TimeUnit unit) throws IllegalStateException {
@@ -130,23 +126,20 @@ public class DefaultConfigDialogManager extends ConfigDialogManager {
     }
 
     /**
-     * Returns the Global Configuration dialog, if necessary blocking the calling thread until
+     * Returns the Global Configuration dialog, blocking the calling thread until
      * it is available.
      *
-     * If the Global Configuration dialog is currently open, it is returned immediately without blocking
-     * the calling thread.
+     * <p>Returns immediately if the dialog is already open.</p>
      *
-     * Calling this method from the Swing event dispatch thread results in an IllegalStateException
-     * being thrown.
-     *
-     * @return the Global Configuration dialog, or null if the relevant menu entries cannot be found
-     * @throws IllegalStateException if the method has been called from the Swing event dispatch thread
+     * @return the Global Configuration dialog, or null if it cannot be found
+     * @throws IllegalStateException if called from the Swing event dispatch thread
      */
     @Override
     public JDialog getConfigDialog() throws IllegalStateException {
         return getConfigDialog(-1, TimeUnit.MILLISECONDS);
     }
 
+    /** True when the user opened the config dialog rather than an automated task. */
     private boolean openedByUser;
     /**
      * Sets the Global Configuration dialog and records whether it was opened by an automated task or the user.
@@ -166,6 +159,7 @@ public class DefaultConfigDialogManager extends ConfigDialogManager {
         }
     }
 
+    /** True when an API configuration change confirmation dialog is expected. */
     private boolean apiConfigChangeConfirmationExpected;
     /**
      * Indicates whether an API configuration change confirmation dialog is expected to appear.

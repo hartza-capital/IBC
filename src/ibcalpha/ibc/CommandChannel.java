@@ -31,11 +31,16 @@ import java.net.SocketException;
  */
 final class CommandChannel {
 
+    /** Prompt written before each command, empty when no prompt is configured. */
     private static final String _Prompt = Settings.settings().getString("CommandPrompt", "");
+    /** True when INFO replies are withheld from the client. */
     private static final boolean _SuppressInfo = Settings.settings().getBoolean("SuppressInfoMessages", true);
 
+    /** Socket of the connected client. */
     private Socket mSocket;
+    /** Reader for commands from the client, null before the streams are set up. */
     private BufferedReader mInstream = null;
+    /** Writer for replies to the client, null before the streams are set up. */
     private BufferedWriter mOutstream = null;
 
     /**

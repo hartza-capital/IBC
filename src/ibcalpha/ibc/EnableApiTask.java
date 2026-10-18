@@ -26,8 +26,10 @@ import javax.swing.JDialog;
  */
 class EnableApiTask implements ConfigurationAction{
 
+    /** Channel that receives the acknowledgement or error reply for this action. */
     private final CommandChannel mChannel;
 
+    /** Global Configuration dialog this action operates on. */
     private JDialog configDialog;
 
     /**

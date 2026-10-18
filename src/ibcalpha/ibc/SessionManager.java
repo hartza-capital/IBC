@@ -39,6 +39,7 @@ public class SessionManager {
         _isGateway = isGateway;
     }
     
+    /** True when the session runs IB Gateway rather than TWS. */
     private static boolean _isGateway = false;
     /**
      * Indicates whether the current session is for IB Gateway.
@@ -49,6 +50,7 @@ public class SessionManager {
         return _isGateway;
     };
     
+    /** True when the session uses the FIX protocol. */
     private static boolean _isFIX = false;
     /**
      * Indicates whether the current session uses the FIX protocol.
@@ -61,6 +63,7 @@ public class SessionManager {
         return _isFIX;
     }
 
+    /** True when the session was started by an automatic restart. */
     private static boolean _isRestart;
     /**
      * Indicates whether the current session was started by an automatic restart rather
@@ -73,6 +76,7 @@ public class SessionManager {
         return _isRestart;
     }
     
+    /** True once {@link #startSession()} has run. */
     private static boolean _isSessionStarted = false;
     /**
      * Marks the session as started, records the FIX and restart flags, and schedules IBC
@@ -103,6 +107,7 @@ public class SessionManager {
         }
     }
     
+    /** True once the session is ready for menu and dialog automation. */
     private static volatile boolean _InitialisationCompleted;
     /**
      * Synchronization lock protecting access to initialization state and
@@ -147,6 +152,7 @@ public class SessionManager {
         }
     }
 
+    /** True once the Gateway splash screen has closed. */
     private static volatile boolean splashScreenClosed;
     /**
      * Records that the Gateway splash screen has closed. Completion is signalled once
@@ -166,6 +172,7 @@ public class SessionManager {
         }
     }
     
+    /** True once the non-brokerage account dialog has closed. */
     private static volatile boolean nonBrokerageAccountDialogClosed;
     /**
      * Records that the non-brokerage account dialog has closed. Completion is signalled

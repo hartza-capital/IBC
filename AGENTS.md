@@ -11,30 +11,35 @@ Linux-only distribution. `origin` is this fork (default branch `develop`),
 
 ## Build System
 
-**Prerequisites:** Java 25 JDK, Maven 3.9+, `IBC_BIN` env var pointing to the TWS/Gateway `jars/` directory (e.g. `~/Jts/1050/jars`). Use `./mvnw` — the Maven wrapper pins the version CI uses — rather than a system `mvn`.
+**Prerequisites:** Java 25 JDK, Maven 3.9+, `IBC_BIN` env var pointing to the TWS/Gateway `jars/` directory (e.g. `~/Jts/1050/jars`). Use `./mvnw` — the Maven wrapper pins the version CI uses — rather than a system `mvn`. The JDK is keg-only: `export JAVA_HOME=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home` (see Pitfalls). The `Makefile` picks the JDK itself: the ambient `JAVA_HOME` when it holds a javac >= 25, else the keg-only Homebrew `openjdk@25`, else whatever is on `PATH`, and `check-jdk` vets the result before Maven starts. **Your shell does not need to export `JAVA_HOME`** — export it only to force a specific JDK. `check-env` likewise rejects an `IBC_BIN` that is unset, not a directory, or without jars, which is what a TWS/Gateway upgrade leaves behind (the version in the path changes).
 
 ```bash
 export IBC_BIN=~/Jts/1050/jars   # required for all builds
 
-make dev      # compile + produce resources/IBC.jar (no distribution ZIP)
+make dev      # compile + produce resources/IBC.jar (build only: no tests, no ZIP)
 make dist     # compile + resources/IBC.jar + dist/IBCLinux-x.y.z.zip
 make clean    # remove build artifacts (target/, dist/, resources/IBC.jar, resources/version)
 make rebuild  # clean + dist
 make format   # run prettier --write on **/*.md and **/*.json
-make check-env  # fail fast if IBC_BIN is unset
+make check-env  # fail fast if IBC_BIN is unset, not a directory, or holds no jars
+make check-jdk  # fail fast if the active javac is older than 25
 ```
 
-`make dev` and `make jar` are the same target (`package -DskipAssembly=true`).
-Tests, lint and static analysis have **no Makefile target** — run them through Maven:
+`make dev` and `make jar` are the same target
+(`package -DskipTests -DskipAssembly=true`): they **build only**, so they stay
+quiet. `make dist` additionally runs the test phase before packaging — a
+shippable ZIP is never built from unvalidated code. `make checkstyle` and
+`make test` exist so the git hook and humans share the same JDK selection; the
+remaining gates run through Maven:
 
 ```bash
-./mvnw -B test                # JUnit 5 suite in test/ibcalpha/ibc/ (18 files, 97 @Test)
-./mvnw -B checkstyle:check    # same ruleset reviewdog annotates on PRs
+./mvnw -B test                # JUnit 5 suite in test/ibcalpha/ibc/ (19 files, 105 @Test)
+./mvnw -B checkstyle:check    # config/checkstyle.xml — the same ruleset CI and reviewdog use
 ./mvnw -B spotbugs:check      # advisory only (failOnError=false)
 ./mvnw -B verify              # test + jacoco + jar + dist ZIP + spotbugs (checkstyle is not bound to any phase)
 ```
 
-lefthook's pre-commit (`lefthook install`) runs `./mvnw -q checkstyle:check`, `./mvnw -q -B test` and `prettier --check` on staged files.
+lefthook's pre-commit (`lefthook install`) runs `make checkstyle`, `make test` and `prettier --check` on staged files. It goes through `make` on purpose: a bare `./mvnw` inherits the developer's `JAVA_HOME` and fails with `release version 25 not supported`. `lefthook.yml` is generated from the toolbox template, so the same change belongs upstream or the next `sync-repos.sh` reverts it.
 
 Direct Maven equivalents, via the wrapper: `./mvnw compile`, `./mvnw package -DskipAssembly=true`, `./mvnw clean`.
 
@@ -90,6 +95,8 @@ These run after login to configure TWS/Gateway programmatically by opening the G
 
 `SecondFactorAuthenticationDialogHandler` handles the 2FA flow. When `Ib2FA` is a base32 string, it generates a TOTP code automatically via the in-tree `Totp`/`Base32` classes (RFC 4226/4648/6238 over the JDK's HMAC-SHA1 — no external library). Any non-empty value is decoded as base32; there is **no** special-casing of `none` or `IBKR Mobile`. Leave `Ib2FA` empty to keep the dialog open for a push notification or manual code.
 
+The dialog is submitted **only** once the passcode field has actually been written (`fillTotpCode` returns true). A secret that is not valid Base32 stops IBC at startup (`IbcTws.validateTwoFactorAuthenticationSetting`); a secret that decodes but is wrong cannot be detected — which is why `config.ini` ships `Ib2FA=` empty. Both paths exist because a wrong or empty submission spends a failed login attempt, and IBKR locks the account after a few.
+
 ### GUI Execution Utilities
 
 - `GuiDeferredExecutor` — posts work to the Swing EDT via `SwingUtilities.invokeLater`
@@ -108,19 +115,19 @@ These run after login to configure TWS/Gateway programmatically by opening the G
 
 - Commit messages follow Conventional Commits: `<type>(<scope>): <subject>` (`feat`, `fix`, `docs`, `style`, `test`, `chore`, `build`); squash-merged PR titles end with `(#<issue>)`.
 - Production code lives in `src/ibcalpha/ibc/`, package `ibcalpha.ibc`; new classes are declared `public`/package-private deliberately, and handlers are singletons exposing `getInstance()`.
-- **Checkstyle applies to `src/` only** — all rules are suppressed for `test/` (see `checkstyle-suppressions.xml`).
+- **Checkstyle applies to `src/` only** — all rules are suppressed for `test/` (see `checkstyle-suppressions.xml`). The ruleset is `config/checkstyle.xml`: defect-shaped rules (imports, empty blocks, switch defaults, fallthrough, `equals`/`hashCode`, `System.out` misuse), **not** the Sun formatting rules the plugin falls back to when no `configLocation` is set. Formatting debt (80-column lines, `final` parameters, javadoc on fields) is deliberately out of scope and tracked separately.
 - Markdown and JSON are formatted with prettier (printWidth 80, `proseWrap: preserve`); run `make format` before committing docs, or the pre-commit hook fails.
 - Fork-added and fork-touched methods carry Javadoc (see `Totp`, `Base32`, `SecondFactorAuthenticationDialogHandler`).
-- CI (`.github/workflows/test-java.yml`) runs checkstyle, `./mvnw -B test`, reviewdog on PRs, and octocov, which requires **80% line coverage** (`.octocov.yml`).
+- CI (`.github/workflows/test-java.yml`) runs checkstyle, `./mvnw -B test`, reviewdog on PRs, and octocov. octocov's `acceptable` value is a **ratchet** on line coverage (currently 20%, measured); raise it as tests land, never lower it to unblock a build.
 
 ## Pitfalls
 
-- **`IBC_BIN` must point at a directory containing the TWS/Gateway jars**, and this workstation has **no JDK 25** (`java` is Homebrew openjdk 27, and can be absent) and no local `jars/` directory. Build and test in a container instead, mounting the Gateway jars at `/w/jars`; the wrapper downloads Maven, but the image still has to supply JDK 25, which none available on the host does: `docker run --rm -v "$PWD":/w -w /w -e IBC_BIN=/w/jars eclipse-temurin:25-jdk ./mvnw -B test`.
+- **`IBC_BIN` must point at a directory containing the TWS/Gateway jars**; the default JDK on this workstation is Temurin 17, and `release=25` is pinned in the pom, so a build under 17 fails. Install the JDK keg-only (`brew install openjdk@25`) and export `JAVA_HOME=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home`, since `openjdk@25` is not linked into `/opt/homebrew`. A container works too: `docker run --rm -v "$PWD":/w -w /w -e IBC_BIN=/w/jars eclipse-temurin:25-jdk ./mvnw -B test`.
 - `resources/IBC.jar` and `resources/version` are **build outputs**, gitignored and removed by `make clean`. Never commit them.
 - `IbcVersionInfo.java` is generated — edit `<version>` in `pom.xml`, not the file.
 - Upstream-derived files keep their **CRLF** line endings (e.g. `SecondFactorAuthenticationDialogHandler.java`) while newer ones are LF. Don't renormalize endings; keep diffs minimal.
-- `resources/config.ini` ships `Ib2FA=XXXXXXXXXX` as a placeholder. Because any non-empty value is base32-decoded, leaving it makes IBC submit a wrong code — set a real secret or leave the value empty.
-- The PR template's checklist (`make lint`, `make test`, `make format-check`) names targets that **do not exist**; use the Maven commands above.
+- `resources/config.ini` ships `Ib2FA=` **empty** on purpose: any non-empty placeholder is encoded into a passcode and submitted, spending a failed login attempt. `SecondFactorAuthenticationDialogHandlerTest.shippedConfigShipsNoTwoFactorSecret` fails if a secret creeps back into the shipped config.
+- The PR template's checklist names the Maven commands; there are no `make lint`/`make test` targets.
 - Tests run headless (`java.awt.headless=true` with `--add-opens` flags in the surefire config); Swing tests must not require a display.
 
 ## Adding a New Dialog Handler

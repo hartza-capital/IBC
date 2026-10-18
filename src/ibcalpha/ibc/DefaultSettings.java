@@ -32,7 +32,9 @@ import java.util.Properties;
  */
 public class DefaultSettings extends Settings {
 
+    /** Settings loaded from the properties file. */
     private final Properties props = new Properties();
+    /** Path of the properties file the settings were loaded from. */
     private String path;
 
     /**

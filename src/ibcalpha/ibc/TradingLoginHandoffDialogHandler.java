@@ -27,9 +27,9 @@ import javax.swing.JDialog;
  * this session or hand over to the other one.
  */
 public class TradingLoginHandoffDialogHandler implements WindowHandler {
+    /** Title text that identifies the Trading Login Handoff dialog. */
     final String DIALOG_TITLE = "Trading Login Handoff";
 
-    @Override
     /**
      * Determines whether this handler should act on the given window event.
      *
@@ -37,6 +37,7 @@ public class TradingLoginHandoffDialogHandler implements WindowHandler {
      * @param eventId the AWT event ID (e.g., WINDOW_OPENED).
      * @return true if this handler should process the event; false otherwise.
      */
+    @Override
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -46,7 +47,6 @@ public class TradingLoginHandoffDialogHandler implements WindowHandler {
         }
     }
 
-    @Override
     /**
      * Handles the Trading Login Handoff dialog based on the ExistingSessionDetectedAction setting.
      * Routes to disconnecting the other session, exiting with error, or manual handling based on configuration.
@@ -54,6 +54,7 @@ public class TradingLoginHandoffDialogHandler implements WindowHandler {
      * @param window the Trading Login Handoff dialog.
      * @param eventID the AWT event ID.
      */
+    @Override
     public void handleWindow(Window window, int eventID) {
         final String MESSAGE_STUB = DIALOG_TITLE + " dialog; ";
         final String INFO_MESSAGE = MESSAGE_STUB + "{}";
@@ -78,13 +79,13 @@ public class TradingLoginHandoffDialogHandler implements WindowHandler {
         }
     }
 
-    @Override
     /**
      * Identifies the Trading Login Handoff dialog by its title.
      *
      * @param window the window to identify.
      * @return true if this is the Trading Login Handoff dialog; false otherwise.
      */
+    @Override
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JDialog)) return false;
 

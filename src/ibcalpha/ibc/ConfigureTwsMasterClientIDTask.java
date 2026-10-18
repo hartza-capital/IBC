@@ -30,7 +30,9 @@ import javax.swing.JTextField;
  */
 class ConfigureTwsMasterClientIDTask implements ConfigurationAction{
 
+    /** Master API client ID to configure. */
     private final String masterClientID;
+    /** Global Configuration dialog the setting is applied to. */
     private JDialog configDialog;
 
     /**

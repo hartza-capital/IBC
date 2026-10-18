@@ -46,15 +46,12 @@ final class Base32 {
     /**
      * Decodes a Base32-encoded string into the bytes it represents.
      *
-     * <p>Whitespace, lowercase letters and trailing '=' padding are accepted,
-     * and any trailing bits that do not form a complete byte are discarded.
+     * <p>Whitespace, lowercase letters and '=' padding are accepted; incomplete
+     * trailing bits are discarded.</p>
      *
      * @param encoded the Base32 text to decode
-     * @return the decoded bytes; never null, but empty if the input holds
-     *     fewer than 8 significant bits
-     * @throws IllegalArgumentException if encoded is null, contains no Base32
-     *     characters at all, or contains a character outside the RFC 4648
-     *     Base32 alphabet
+     * @return the decoded bytes, empty when the input holds under 8 bits
+     * @throws IllegalArgumentException if encoded is null, blank, or holds a character outside the alphabet
      */
     static byte[] decode(final String encoded) {
         if (encoded == null) {

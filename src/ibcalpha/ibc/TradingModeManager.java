@@ -23,6 +23,7 @@ package ibcalpha.ibc;
  * instructed to log in with.
  */
 public abstract class TradingModeManager {
+    /** Process-wide instance returned by {@link #tradingModeManager()}. */
     private static TradingModeManager _TradingModeManager;
 
     static {
@@ -63,7 +64,9 @@ public abstract class TradingModeManager {
     public abstract void logDiagnosticMessage();
 
 
+    /** Trading mode value for a live account. */
     public static final String TRADING_MODE_LIVE = "live";
+    /** Trading mode value for a paper trading account. */
     public static final String TRADING_MODE_PAPER = "paper";
 
     /**
