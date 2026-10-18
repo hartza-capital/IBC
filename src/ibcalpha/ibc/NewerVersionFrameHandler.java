@@ -48,9 +48,9 @@ class NewerVersionFrameHandler implements WindowHandler {
      * @param eventID the AWT window event ID
      */
     public void handleWindow(Window window, int eventID) {
-        if (SwingUtils.clickButton(window, "OK")) {
-        } else if (SwingUtils.clickButton(window, "No")) { // ie no we don't want the opportunity to upgrade now - Linux version only
-        } else {
+        // "No" means: decline the opportunity to upgrade now (Linux version only)
+        if (!SwingUtils.clickButton(window, "OK")
+                && !SwingUtils.clickButton(window, "No")) {
             Utils.logError("could not dismiss Newer Version because we could not find one of the controls.");
         }
     }

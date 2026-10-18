@@ -81,6 +81,10 @@ public abstract class AbstractLoginHandler implements WindowHandler {
                     // allow automatic relogin to ptoceed
 
                 }
+                break;
+            default:
+                // every other state is driven by the LoginManager, not by this handler
+                break;
         }
     }
 
@@ -94,6 +98,7 @@ public abstract class AbstractLoginHandler implements WindowHandler {
     @Override
     public abstract boolean recogniseWindow(Window window);
     
+    /** Number of login attempts made so far in this session. */
     private static int loginAttemptNumber = 0;
 
     /**

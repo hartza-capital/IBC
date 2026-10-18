@@ -58,14 +58,12 @@ public class CryptoOrderConfirmationDialogHandler implements WindowHandler {
             case "manual":
                 break;
             case "transmit":
-                if (SwingUtils.clickButton(window, "Transmit")) {
-                } else {
+                if (!SwingUtils.clickButton(window, "Transmit")) {
                     Utils.logError("could not confirm cryptocurrency order because we could not find the Transmit button");
                 }
                 break;
             case "cancel":
-                if (SwingUtils.clickButton(window, "Cancel")) {
-                } else {
+                if (!SwingUtils.clickButton(window, "Cancel")) {
                     Utils.logError("could not cancel cryptocurrency order because we could not find the Cancel button");
                 }
                 break;

@@ -30,8 +30,11 @@ import javax.swing.JFrame;
  * and blocks until the dialog has been registered.
  */
 class GetConfigDialogTask implements Callable<JDialog>{
+    /** Dialog registered by the handler; null until it appears. */
     private volatile JDialog mConfigDialog;
+    /** Guards {@link #mConfigDialog} and {@link #gotConfigDialog}. */
     private final Lock lock = new ReentrantLock();
+    /** Signalled once the configuration dialog has been registered. */
     private final Condition gotConfigDialog = lock.newCondition();
 
     /**
@@ -54,8 +57,10 @@ class GetConfigDialogTask implements Callable<JDialog>{
         Utils.logToConsole("Invoking config dialog menu");
         if (SessionManager.isGateway()) {
             if (!Utils.invokeMenuItem(mainForm, new String[] {"Configure", "Settings"})) throw new IbcException("'Configure > Settings' menu item");
-        } else if (Utils.invokeMenuItem(mainForm, new String[] {"Edit", "Global Configuration..."})) /* TWS's Classic layout */ {
-        } else if (Utils.invokeMenuItem(mainForm, new String[] {"File", "Global Configuration..."})) /* TWS's Mosaic layout */ {
+        } else if (Utils.invokeMenuItem(mainForm, new String[] {"Edit", "Global Configuration..."})) {
+            // TWS's Classic layout
+        } else if (Utils.invokeMenuItem(mainForm, new String[] {"File", "Global Configuration..."})) {
+            // TWS's Mosaic layout
         } else {
             throw new IbcException("'Edit > Global Configuration' or 'File > Global Configuration' menu items");
         }

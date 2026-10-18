@@ -244,7 +244,7 @@ public class IbcVersionInfo {
             data is ever recorded (jacoco:report then finds no jacoco.exec and
             produces nothing, which is what was happening before this fix).
           -->
-          <argLine>@{argLine} --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.desktop/java.awt=ALL-UNNAMED</argLine>
+          <argLine>@{argLine} -XX:+EnableDynamicAgentLoading --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.desktop/java.awt=ALL-UNNAMED</argLine>
         </configuration>
       </plugin>
 
@@ -279,7 +279,9 @@ public class IbcVersionInfo {
         <artifactId>maven-checkstyle-plugin</artifactId>
         <version>3.6.0</version>
         <configuration>
+          <configLocation>config/checkstyle.xml</configLocation>
           <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
+          <includeTestSourceDirectory>false</includeTestSourceDirectory>
         </configuration>
       </plugin>
 

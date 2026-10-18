@@ -57,14 +57,12 @@ class AcceptIncomingConnectionDialogHandler implements WindowHandler {
         if (acceptIncomingConnectionAction.equalsIgnoreCase(Manual)) return;
 
         if (acceptIncomingConnectionAction.equalsIgnoreCase(Accept)) {
-            if (SwingUtils.clickButton(window, "OK")) {
-            } else if (SwingUtils.clickButton(window, "Yes")) {
-            } else {
+            if (!SwingUtils.clickButton(window, "OK")
+                    && !SwingUtils.clickButton(window, "Yes")) {
                 Utils.logError("could not accept incoming connection because we could not find one of the controls.");
             }
         } else if (acceptIncomingConnectionAction.equalsIgnoreCase(Reject)) {
-            if (SwingUtils.clickButton(window, "No")) {
-            } else {
+            if (!SwingUtils.clickButton(window, "No")) {
                 Utils.logError("could not accept incoming connection because we could not find one of the controls.");
             }
         } else {
