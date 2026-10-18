@@ -12,7 +12,7 @@ IBC is a 100% Java project. It automates TWS and IB Gateway by listening to AWT 
 - **`IBC_BIN` environment variable** — must point to the directory that contains the TWS/Gateway JARs (e.g., the `jars/` folder inside the TWS installation)
 
 ```bash
-export IBC_BIN=/opt/ibgateway/1019/jars   # adjust to your installation
+export IBC_BIN=/opt/ibgateway/1050/jars   # adjust to your installation
 ```
 
 The build enforces this variable at the `validate` phase; Maven will fail immediately if it is not set.

@@ -85,7 +85,7 @@ cp /opt/ibc/config.ini ~/ibc/     # edit: IbLoginId, IbPassword, Ib2FA, ...
 ```
 
 Set `TWS_MAJOR_VRSN` in the start script to your installed version before the
-first run (a build string of `10.19.1f` means `1019`). IBC writes a log whose
+first run (a build string of `10.50.1f` means `1050`). IBC writes a log whose
 location is printed at startup.
 
 ## Configuration
