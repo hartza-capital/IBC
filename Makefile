@@ -34,6 +34,11 @@ endif
 # Install/refresh the Maven wrapper at MAVEN_VERSION. Needs a system `mvn` to
 # run the generator; afterwards every other target goes through ./mvnw.
 init:
+	@command -v mvn >/dev/null 2>&1 || { \
+		echo "Error: 'mvn' is not on PATH; this target needs a system Maven to generate the wrapper."; \
+		echo "  brew install maven   (or run ./mvnw, which needs no system mvn)"; \
+		exit 1; \
+	}
 	@mvn -N -B org.apache.maven.plugins:maven-wrapper-plugin:wrapper -Dmaven=$(MAVEN_VERSION)
 
 check-env:
@@ -78,8 +83,8 @@ check-jdk:
 dev: check-env check-jdk
 	@./mvnw -q package -DskipTests -DskipAssembly=true
 
-jar: check-env check-jdk
-	@./mvnw -q package -DskipTests -DskipAssembly=true
+# Alias of dev: same artifact, so the recipe lives in one place.
+jar: dev
 
 # No -q here: these two run the test phase, and with the test output redirected to
 # target/surefire-reports the console keeps Maven's summary and hides the chatter.
@@ -106,8 +111,17 @@ test: check-env check-jdk
 rebuild: check-env check-jdk
 	@./mvnw -B clean package
 
+# Both ignore files: .gitignore keeps target/ and dist/ out, .prettierignore is
+# what lefthook passes on staged files - using only one of them means `make
+# format` and the hook disagree about the file set.
 format:
-	@prettier --write "**/*.md" "**/*.json" --ignore-path .gitignore
+	@command -v prettier >/dev/null 2>&1 || { \
+		echo "Error: 'prettier' is not on PATH."; \
+		echo "  npm install -g prettier"; \
+		exit 1; \
+	}
+	@prettier --write "**/*.md" "**/*.json" \
+		--ignore-path .gitignore --ignore-path .prettierignore
 
 # Pre-release filter shared by every versions:* target. Case-insensitive ((?i))
 # and tolerant of separators, so milestones such as 3.6.0-M1 and release
@@ -126,6 +140,8 @@ plugins-update:
 
 update: deps-update plugins-update
 
+# Rewrites pom.xml in place (dependencies and plugins). Review the diff: this is
+# the only target that mutates a tracked file.
 deps-upgrade:
 	@./mvnw versions:use-latest-releases \
 		-DallowSnapshots=false \
