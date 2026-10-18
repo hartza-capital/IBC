@@ -1,0 +1,15 @@
+# Line-ending and text rules for the Linux-only IBC fork.
+#
+# Shell scripts are the distribution's entry points (twsstart.sh,
+# gatewaystart.sh -> scripts/ibcstart.sh): they must be LF-terminated, and their
+# executable bit is carried by the git index (mode 100755).
+*.sh text eol=lf
+
+# The Maven build rewrites resources/version on every package; it is a build
+# output, not a source file.
+resources/version -text
+
+# Binary distributions and shipped archives.
+*.jar binary
+*.zip binary
+*.pdf binary

@@ -30,7 +30,9 @@ import javax.swing.JTextField;
  */
 class ConfigureTwsApiPortTask implements ConfigurationAction{
 
+    /** API socket port number to configure. */
     private final int portNumber;
+    /** Global Configuration dialog the setting is applied to. */
     private JDialog configDialog;
 
     /**

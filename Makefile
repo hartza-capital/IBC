@@ -1,8 +1,35 @@
-.PHONY: init check-env dev jar dist clean rebuild format deps-update plugins-update update deps-upgrade
+.PHONY: init check-env check-jdk dev jar dist clean rebuild checkstyle test format deps-update plugins-update update deps-upgrade
 
 # Maven version pinned by the wrapper. Source of truth for `make init`; the
 # generated .mvn/wrapper/maven-wrapper.properties carries it to ./mvnw.
 MAVEN_VERSION := 3.9.16
+
+# The pom compiles with <release>25</release>; an older javac fails with
+# "release version 25 not supported" and no hint about the cause.
+REQUIRED_JAVA_VERSION := 25
+
+# Where Homebrew installs the keg-only JDK that satisfies REQUIRED_JAVA_VERSION;
+# check-jdk quotes it in both shell syntaxes.
+HOMEBREW_JDK := /opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
+
+# JDK selection. The ambient JAVA_HOME wins when it is new enough, then a
+# keg-only Homebrew openjdk@25 (not on PATH and not in the macOS JVM registry),
+# then whatever javac is on PATH, which check-jdk vets. Each recipe imports the
+# exported JAVA_HOME, so ./mvnw and Ant's <javac> both see the chosen JDK.
+AMBIENT_JAVA_HOME := $(JAVA_HOME)
+JDK_CANDIDATES := $(AMBIENT_JAVA_HOME) \
+	/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home \
+	/usr/local/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
+
+JDK_HOME := $(shell for home in $(JDK_CANDIDATES); do \
+	[ -x "$$home/bin/javac" ] || continue; \
+	java_major=`"$$home/bin/javac" -version 2>&1 | sed 's/^javac //' | cut -d. -f1`; \
+	if [ "$$java_major" -ge $(REQUIRED_JAVA_VERSION) ] 2>/dev/null; then echo "$$home"; break; fi; \
+	done)
+
+ifneq ($(JDK_HOME),)
+export JAVA_HOME := $(JDK_HOME)
+endif
 
 # Install/refresh the Maven wrapper at MAVEN_VERSION. Needs a system `mvn` to
 # run the generator; afterwards every other target goes through ./mvnw.
@@ -11,20 +38,65 @@ init:
 
 check-env:
 	@test -n "$$IBC_BIN" || (echo "Error: environment variable 'IBC_BIN' not set (set it to the directory containing the TWS/Gateway jar files)" && exit 1)
+	@test -d "$$IBC_BIN" || (echo "Error: IBC_BIN='$$IBC_BIN' is not a directory (point it at the TWS/Gateway jars/ directory of the installed version)" && exit 1)
+	@test -n "$$(find "$$IBC_BIN" -maxdepth 1 -name '*.jar' -print -quit 2>/dev/null)" || (echo "Error: IBC_BIN='$$IBC_BIN' contains no .jar files (point it at the TWS/Gateway jars/ directory)" && exit 1)
 
-dev: check-env
-	@./mvnw -q package -DskipAssembly=true
+# Resolves the javac the wrapper will use (JAVA_HOME if set, else PATH) and
+# fails with an actionable message when it is older than REQUIRED_JAVA_VERSION.
+check-jdk:
+	@jdk_hint() { \
+		echo "  install or select JDK $(REQUIRED_JAVA_VERSION):"; \
+		echo "    brew install openjdk@25"; \
+		echo "    bash/zsh:  export JAVA_HOME=$(HOMEBREW_JDK)"; \
+		echo "    fish:      set -gx JAVA_HOME $(HOMEBREW_JDK)"; \
+	}; \
+	if [ -n "$$JAVA_HOME" ] && [ -x "$$JAVA_HOME/bin/javac" ]; then \
+		javac_bin="$$JAVA_HOME/bin/javac"; \
+	else \
+		javac_bin=$$(command -v javac 2>/dev/null); \
+	fi; \
+	if [ -z "$$javac_bin" ] || [ ! -x "$$javac_bin" ]; then \
+		echo "Error: no javac found (JAVA_HOME='$$JAVA_HOME')."; \
+		jdk_hint; \
+		exit 1; \
+	fi; \
+	java_version=$$("$$javac_bin" -version 2>&1 | sed 's/^javac //'); \
+	java_major=$$(echo "$$java_version" | cut -d. -f1); \
+	if [ "$$java_major" -lt $(REQUIRED_JAVA_VERSION) ]; then \
+		echo "Error: javac $$java_version is too old; the pom compiles with release=$(REQUIRED_JAVA_VERSION)."; \
+		jdk_hint; \
+		exit 1; \
+	fi
+	@if [ -n "$(JDK_HOME)" ] && [ "$(JDK_HOME)" != "$(AMBIENT_JAVA_HOME)" ]; then \
+		if [ -z "$(AMBIENT_JAVA_HOME)" ]; then \
+			echo "make: no JAVA_HOME in the environment; building with $(JDK_HOME)"; \
+		else \
+			echo "make: JAVA_HOME=$(AMBIENT_JAVA_HOME) is older than $(REQUIRED_JAVA_VERSION); building with $(JDK_HOME)"; \
+		fi; \
+	fi
 
-jar: check-env
-	@./mvnw -q package -DskipAssembly=true
+dev: check-env check-jdk
+	@./mvnw -q package -DskipTests -DskipAssembly=true
 
-dist: check-env
+jar: check-env check-jdk
+	@./mvnw -q package -DskipTests -DskipAssembly=true
+
+dist: check-env check-jdk
 	@./mvnw -q package
 
 clean:
 	@./mvnw -q clean
 
-rebuild: clean dist
+# Lint and tests through make, so they inherit the JDK selection above: the
+# lefthook pre-commit hook used to call ./mvnw directly and failed with
+# "release version 25 not supported" in a shell whose JAVA_HOME is older.
+checkstyle: check-jdk
+	@./mvnw -q checkstyle:check
+
+test: check-env check-jdk
+	@./mvnw -q -B test
+
+rebuild: check-jdk clean dist
 
 format:
 	@prettier --write "**/*.md" "**/*.json" --ignore-path .gitignore

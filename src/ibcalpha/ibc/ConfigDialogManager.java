@@ -27,6 +27,7 @@ import javax.swing.JDialog;
  */
 public abstract class ConfigDialogManager
 {
+    /** Active ConfigDialogManager implementation used by configuration tasks. */
     private static ConfigDialogManager _ConfigDialogManager;
 
     static {

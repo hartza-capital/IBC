@@ -7,3 +7,5 @@ resources/*.jar
 resources/version
 dependency-reduced-pom.xml
 resources/IBC.jar
+# The fork is Linux-only: the Windows wrapper script is not tracked.
+mvnw.cmd

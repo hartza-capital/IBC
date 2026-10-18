@@ -33,9 +33,12 @@ import javax.swing.JFrame;
 class TwsListener
         implements AWTEventListener {
 
+    /** Handlers consulted, in order, for each window event. */
     private final List<WindowHandler> windowHandlers;
 
+    /** Which windows have their component structure logged. */
     private static String logStructureScope;
+    /** Which window event makes the component structure be logged. */
     private static String logStructureWhen;
 
     /**
@@ -101,12 +104,13 @@ class TwsListener
     }
     
     /**
-     * Determines the scope of windows for which component structure should be logged.
-     * Valid scopes are: "known" (recognized windows), "unknown" (unrecognized windows),
-     * "untitled" (windows without a title), or "all" (all windows).
+     * Determines the scope of windows whose component structure is logged, and
+     * stores it in the shared scope field.
      *
-     * @param logComponentsSetting the legacy LogComponents setting value
-     * @return a validated scope string
+     * <p>An unrecognised value is logged as an error and replaced by "known".</p>
+     *
+     * @param logComponentsSetting LogComponents setting value; anything other than "ignore" selects scope "all"
+     * @return one of "known", "unknown", "untitled" or "all"
      */
     private static String getLogStructureScope(String logComponentsSetting) {
         if (logComponentsSetting.equals("ignore")) {
@@ -130,12 +134,14 @@ class TwsListener
     }
     
     /**
-     * Determines when window component structure should be logged.
-     * Valid values are: "activate" (when window is activated), "open" (when window is opened),
-     * "openclose" (on both open and close), "never" (no logging), or a specific window event name.
+     * Determines which window event triggers component structure logging, and
+     * stores it in the shared timing field.
      *
-     * @param logComponentsSetting the legacy LogComponents setting value
-     * @return a validated "when" string
+     * <p>"yes"/"true" are treated as "open" and "no"/"false" as "never". An
+     * unrecognised value is logged as an error and replaced by "never".</p>
+     *
+     * @param logComponentsSetting LogComponents setting value; anything other than "ignore" is used as the timing value
+     * @return one of "activate", "open", "openclose", "never" or a window event name
      */
     private static String getLogStructureWhen(String logComponentsSetting) {
         if (logComponentsSetting.equals("ignore")) {

@@ -8,13 +8,40 @@
   <includeBaseDirectory>false</includeBaseDirectory>
 
   <fileSets>
-    <!-- resources/ directory -->
+    <!-- resources/ contents, minus the shell scripts (handled below so they
+         keep their executable bit) and minus leftovers from removed tooling. -->
     <fileSet>
       <directory>${project.basedir}/resources</directory>
       <includes>
         <include>**/*</include>
       </includes>
+      <excludes>
+        <exclude>**/*.sh</exclude>
+        <exclude>.claude/**</exclude>
+        <exclude>**/.DS_Store</exclude>
+      </excludes>
       <outputDirectory>/</outputDirectory>
     </fileSet>
+
+    <!-- The launchers must be executable in the unpacked distribution:
+         twsstart.sh and gatewaystart.sh abort unless scripts/ibcstart.sh or
+         scripts/displaybannerandlaunch.sh is executable. -->
+    <fileSet>
+      <directory>${project.basedir}/resources</directory>
+      <includes>
+        <include>**/*.sh</include>
+      </includes>
+      <outputDirectory>/</outputDirectory>
+      <fileMode>0755</fileMode>
+    </fileSet>
   </fileSets>
+
+  <files>
+    <!-- Every source file's header refers to COPYING.txt: ship it. -->
+    <file>
+      <source>${project.basedir}/COPYING.txt</source>
+      <outputDirectory>/</outputDirectory>
+      <fileMode>0644</fileMode>
+    </file>
+  </files>
 </assembly>

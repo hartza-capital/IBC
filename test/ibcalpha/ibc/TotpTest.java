@@ -114,4 +114,19 @@ class TotpTest {
         assertThrows(IllegalArgumentException.class, () -> Totp.generate("", 0));
         assertThrows(IllegalArgumentException.class, () -> Totp.generate(null, 0));
     }
+
+    @Test
+    void validateSecretAcceptsAWellFormedSecret() {
+        Totp.validateSecret(RFC4226_KEY_BASE32);
+        Totp.validateSecret("gezdgnbv gy3tqojq gezdgnbv gy3tqojq");
+    }
+
+    @Test
+    void validateSecretRejectsNonBase32Text() {
+        // Only A-Z and 2-7 are Base32: digits 0, 1, 8 and 9 and punctuation are not.
+        assertThrows(IllegalArgumentException.class, () -> Totp.validateSecret("1234"));
+        assertThrows(IllegalArgumentException.class, () -> Totp.validateSecret("not-valid-base32!"));
+        assertThrows(IllegalArgumentException.class, () -> Totp.validateSecret(""));
+        assertThrows(IllegalArgumentException.class, () -> Totp.validateSecret(null));
+    }
 }

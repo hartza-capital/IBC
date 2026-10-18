@@ -30,6 +30,7 @@ import javax.swing.JFrame;
  */
 public abstract class LoginManager {
 
+    /** The active LoginManager implementation. */
     private static LoginManager _LoginManager;
 
     static {
@@ -90,6 +91,7 @@ public abstract class LoginManager {
         return readOnly;
     }
     
+    /** Login frame currently being handled; null when no login is in progress. */
     private volatile JFrame loginFrame = null;
     /**
      * Returns the login frame currently being handled.
@@ -109,6 +111,7 @@ public abstract class LoginManager {
         loginFrame = window;
     }
     
+    /** Current stage of the login process. */
     private volatile LoginState loginState = LoginState.LOGGED_OUT;
     /**
      * Returns the current login state.
@@ -146,7 +149,9 @@ public abstract class LoginManager {
         }
     }
 
+    /** When the current login attempt started; null before login begins. */
     private Instant LoginStartTime;
+    /** Pending scheduled exit, if one has been set. */
     private ScheduledFuture<?> shutdownAfterTimeTask;
 
     /**

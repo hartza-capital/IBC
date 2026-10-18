@@ -54,6 +54,7 @@ import javax.swing.tree.TreeModel;
  */
 class SwingUtils {
 
+    /** Line separator used when building multi-line component descriptions. */
     static final String NEWLINE = System.lineSeparator();
 
     /**
@@ -594,16 +595,14 @@ class SwingUtils {
     }
 
     /**
-     * Returns a string representing the structure of the specified window.
+     * Returns a description of the specified window's component hierarchy, with each
+     * component indented to reflect its depth.
      *
-     * Details of each component in the window are included, indented to
-     * reflect the component's position in the hierarchy. If an exception
-     * occurs while walking the component tree, its stack trace is appended
-     * to the returned string instead of being thrown.
+     * <p>An exception raised while walking the component tree is appended to the
+     * returned text.</p>
      *
      * @param window the Window whose structure is to be returned
-     * @return a human-readable, indented description of the window's
-     *     component hierarchy
+     * @return a human-readable, indented description of the window's component hierarchy
      */
     static String getWindowStructure(Window window) {
         StringBuilder builder = new StringBuilder();
@@ -660,18 +659,14 @@ class SwingUtils {
 
     /**
      * Sets the specified JTextField to the given value.
-     * @param window
-     * the window in which to search for the JTextField
-     * @param fieldNumber
-     * the number of the required JTextField in the window, counting
-     * from 0
-     * @param value
-     * the value to be set in the JTextField
-     * @return
-     * true if the required JTextField was found; otherwise false
+     *
+     * @param container the container in which to search for the JTextField
+     * @param fieldNumber the number of the required JTextField in the container, counting from 0
+     * @param value the value to be set in the JTextField
+     * @return true if the required JTextField was found; otherwise false
      */
-    static boolean setTextField(Window window, int fieldNumber, final String value) {
-        final JTextField tf = findTextField(window, fieldNumber);
+    static boolean setTextField(Container container, int fieldNumber, final String value) {
+        final JTextField tf = findTextField(container, fieldNumber);
         if (tf != null) {
             tf.setText(value);
             return true;

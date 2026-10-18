@@ -27,6 +27,7 @@ import javax.swing.JFrame;
  */
 public abstract class MainWindowManager {
 
+    /** The active MainWindowManager implementation. */
     private static MainWindowManager _mainWindowManager;
 
     static {

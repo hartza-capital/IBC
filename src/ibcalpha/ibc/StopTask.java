@@ -34,8 +34,11 @@ class StopTask
      */
     private static final SwitchLock _Running = new SwitchLock();
 
+    /** Channel used to report progress to the client; null when there is no client. */
     private final CommandChannel mChannel;
+    /** True to force a cold restart when the application is next started. */
     private final boolean mForceColdRestart;
+    /** Description of why the shutdown was initiated. */
     private final String mReason;
 
     /**
@@ -95,7 +98,7 @@ class StopTask
      *
      * @return true if a shutdown is in progress, false otherwise
      */
-    public final static boolean shutdownInProgress()
+    public static final boolean shutdownInProgress()
     {
         return _Running.query();
     }

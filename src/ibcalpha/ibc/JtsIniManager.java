@@ -34,29 +34,50 @@ import static java.util.stream.Collectors.toList;
  */
 class JtsIniManager {
 
-    private final static String LOGON_SECTION_HEADER = "[Logon]";
-    private final static String IBGATEWAY_SECTION_HEADER = "[IBGateway]";
-    private final static String DISPLAYEDPROXYMSG_SETTING = "displayedproxymsg";
-    private final static String DISPLAYEDPROXYMSG_SETTING_1 = DISPLAYEDPROXYMSG_SETTING + "=1";
-    private final static String LOCALE_SETTING = "Locale";
-    private final static String LOCALE_SETTING_EN = LOCALE_SETTING + "=en";
-    private final static String S3STORE_SETTING = "s3store";
-    private final static String S3STORE_SETTING_FALSE = S3STORE_SETTING + "=false";
-    private final static String S3STORE_SETTING_TRUE = S3STORE_SETTING + "=true";
-    private final static String USESSL_SETTING = "UseSSL";
-    private final static String USESSL_SETTING_TRUE = USESSL_SETTING + "=true";
-    private final static String APIONLY_SETTING = "ApiOnly";
-    private final static String APIONLY_SETTING_TRUE = APIONLY_SETTING + "=true";
-    private final static String APIONLY_SETTING_FALSE = APIONLY_SETTING + "=false";
-    private final static String TRUSTED_IPS_SETTING = "TrustedIPs";
-    private final static String LOCAL_SERVER_PORT = "LocalServerPort";
+    /** Header of the jts.ini [Logon] section. */
+    private static final String LOGON_SECTION_HEADER = "[Logon]";
+    /** Header of the jts.ini [IBGateway] section. */
+    private static final String IBGATEWAY_SECTION_HEADER = "[IBGateway]";
+    /** Name of the setting recording that the proxy message was displayed. */
+    private static final String DISPLAYEDPROXYMSG_SETTING = "displayedproxymsg";
+    /** Complete {@code displayedproxymsg=1} line. */
+    private static final String DISPLAYEDPROXYMSG_SETTING_1 = DISPLAYEDPROXYMSG_SETTING + "=1";
+    /** Name of the Locale setting. */
+    private static final String LOCALE_SETTING = "Locale";
+    /** Complete {@code Locale=en} line. */
+    private static final String LOCALE_SETTING_EN = LOCALE_SETTING + "=en";
+    /** Name of the s3store setting. */
+    private static final String S3STORE_SETTING = "s3store";
+    /** Complete {@code s3store=false} line. */
+    private static final String S3STORE_SETTING_FALSE = S3STORE_SETTING + "=false";
+    /** Complete {@code s3store=true} line. */
+    private static final String S3STORE_SETTING_TRUE = S3STORE_SETTING + "=true";
+    /** Name of the UseSSL setting. */
+    private static final String USESSL_SETTING = "UseSSL";
+    /** Complete {@code UseSSL=true} line. */
+    private static final String USESSL_SETTING_TRUE = USESSL_SETTING + "=true";
+    /** Name of the ApiOnly setting. */
+    private static final String APIONLY_SETTING = "ApiOnly";
+    /** Complete {@code ApiOnly=true} line. */
+    private static final String APIONLY_SETTING_TRUE = APIONLY_SETTING + "=true";
+    /** Complete {@code ApiOnly=false} line. */
+    private static final String APIONLY_SETTING_FALSE = APIONLY_SETTING + "=false";
+    /** Name of the TrustedIPs setting. */
+    private static final String TRUSTED_IPS_SETTING = "TrustedIPs";
+    /** Name of the LocalServerPort setting. */
+    private static final String LOCAL_SERVER_PORT = "LocalServerPort";
     
-    private final static String LOCAL_HOST = "127.0.0.1";
+    /** Loopback address always listed as a trusted API client. */
+    private static final String LOCAL_HOST = "127.0.0.1";
 
+    /** Path of the jts.ini file being managed. */
     private static String jtsIniFilePath;
+    /** File handle for the jts.ini file being managed. */
     private static File jtsIniFile;
+    /** In-memory copy of the jts.ini lines. */
     private static List<String> lines;
     
+    /** Set when a setting value has been changed in memory. */
     private static boolean settingsUpdated;
 
     /**

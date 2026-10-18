@@ -24,6 +24,7 @@ package ibcalpha.ibc;
  */
 public abstract class Settings {
 
+    /** The active Settings implementation. */
     private static Settings _settings;
 
     /**

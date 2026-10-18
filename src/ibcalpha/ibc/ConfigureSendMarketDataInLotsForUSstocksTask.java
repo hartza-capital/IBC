@@ -32,7 +32,9 @@ import javax.swing.JDialog;
  */
 public class ConfigureSendMarketDataInLotsForUSstocksTask implements ConfigurationAction{
 
+    /** True to send US stock market data in lots, false otherwise. */
     private final boolean sendMarketDataInLots;
+    /** Global Configuration dialog the setting is applied to. */
     private JDialog configDialog;
 
     /**

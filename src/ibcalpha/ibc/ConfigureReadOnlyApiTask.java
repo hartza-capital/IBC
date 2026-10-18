@@ -27,7 +27,9 @@ import javax.swing.JDialog;
  */
 public class ConfigureReadOnlyApiTask implements ConfigurationAction{
 
+    /** True to enable the Read-Only API setting, false to disable it. */
     private final boolean readOnlyApi;
+    /** Global Configuration dialog the setting is applied to. */
     private JDialog configDialog;
 
     /**

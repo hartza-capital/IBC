@@ -24,7 +24,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JDialog;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Handles the "Too many failed login attempts" dialog, optionally scheduling an

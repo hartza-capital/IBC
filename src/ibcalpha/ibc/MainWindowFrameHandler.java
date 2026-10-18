@@ -26,7 +26,6 @@ import javax.swing.JFrame;
  * Handles the TWS main window, recording it with the session manager when it opens.
  */
 class MainWindowFrameHandler implements WindowHandler {
-    @Override
     /**
      * Determines whether this handler should act on the given window event.
      *
@@ -34,6 +33,7 @@ class MainWindowFrameHandler implements WindowHandler {
      * @param eventId the AWT event ID (e.g., WINDOW_OPENED).
      * @return true if this handler should process the event; false otherwise.
      */
+    @Override
     public boolean filterEvent(Window window, int eventId) {
         switch (eventId) {
             case WindowEvent.WINDOW_OPENED:
@@ -43,26 +43,26 @@ class MainWindowFrameHandler implements WindowHandler {
         }
     }
 
-    @Override
     /**
      * Records the TWS main window when it opens.
      *
      * @param window the TWS main window.
      * @param eventID the AWT event ID.
      */
+    @Override
     public void handleWindow(Window window, int eventID) {
         if (eventID != WindowEvent.WINDOW_OPENED) return;
 
         SessionManager.setMainWindow((JFrame) window);
     }
 
-    @Override
     /**
      * Identifies the TWS main window by looking for the File > Lock Application menu item.
      *
      * @param window the window to identify.
      * @return true if this is the TWS main window; false otherwise.
      */
+    @Override
     public boolean recogniseWindow(Window window) {
         if (! (window instanceof JFrame)) return false;
 

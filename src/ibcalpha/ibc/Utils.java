@@ -36,11 +36,14 @@ import javax.swing.tree.TreePath;
  */
 class Utils {
 
+    /** Formatter for the timestamps written by {@link #formatDate}. */
     static final DateTimeFormatter _dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS");
 
     // set these to the defaults, so that we can continue to use them
     // even when TWS redirects System.out and System.err to its own logfile
+    /** Stream to the standard output captured when the class was loaded. */
     private static final PrintStream out = System.out;
+    /** Stream to the standard error output captured when the class was loaded. */
     private static final PrintStream err = System.err;
 
     /**
@@ -231,17 +234,15 @@ class Utils {
     }
 
     /**
-     * Selects the specified section in the Global Configuration dialog.
-     * @param configDialog
-     * the Global Configuration dialog
-     * @param path
-     * the path to the required configuration section in the Global Configuration dialog
-     * @return
-     * true if the specified section can be found; otherwise false
-     * @throws IbcException
-     * a UI component could not be found
-     * @throws IllegalStateException
-     * the method has not been called on the SWing event dispatch thread
+     * Selects the specified section of the Global Configuration dialog's tree.
+     *
+     * <p>Expands the selected path and must run on the Swing event dispatch thread.</p>
+     *
+     * @param configDialog the Global Configuration dialog
+     * @param path the node names leading to the required configuration section
+     * @return true if the section was found and selected; false otherwise
+     * @throws IbcException if the configuration tree cannot be found
+     * @throws IllegalStateException if not called on the Swing event dispatch thread
      */
     static boolean selectConfigSection(final JDialog configDialog, final String[] path) throws IbcException, IllegalStateException {
         if (!SwingUtilities.isEventDispatchThread()) throw new IllegalStateException("selectConfigSection must be run on the event dispatch thread");

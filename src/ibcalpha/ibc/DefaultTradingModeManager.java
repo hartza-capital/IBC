@@ -24,6 +24,7 @@ package ibcalpha.ibc;
  */
 public class DefaultTradingModeManager extends TradingModeManager {
 
+    /** Trading mode in force, either "live" or "paper". */
     private String tradingMode;
 
     /**
@@ -90,7 +91,9 @@ public class DefaultTradingModeManager extends TradingModeManager {
         tradingMode = value;
     }
 
+    /** Human-readable description of where the trading mode came from, used in diagnostics. */
     private final String message;
+    /** True when the trading mode must still be read from settings. */
     private final boolean fromSettings;
 
     /**

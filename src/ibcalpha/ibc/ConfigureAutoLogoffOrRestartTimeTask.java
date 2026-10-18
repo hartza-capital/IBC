@@ -31,8 +31,11 @@ import javax.swing.JTextField;
  * Configuration action that sets the TWS auto logoff or auto restart time.
  */
 class ConfigureAutoLogoffOrRestartTimeTask implements ConfigurationAction {
+    /** Time to set, in hh:mm AM/PM format. */
     private final String autoActionTime;
+    /** Radio button label selecting logoff or restart. */
     private final String autoActionName;
+    /** Global Configuration dialog the setting is applied to. */
     private JDialog configDialog;
 
     /**
@@ -103,11 +106,10 @@ class ConfigureAutoLogoffOrRestartTimeTask implements ConfigurationAction {
             JRadioButton pm = SwingUtils.findRadioButton(c, "PM");
             if (tf == null || autoAction == null || am == null || pm == null) throw new IbcException("could not find auto logoff/restart time controls");
 
-            DateTimeFormatter timeFormatter12Hour = DateTimeFormatter.ofPattern("hh:mm");
-            String time = newAutoActionTime.format(timeFormatter12Hour);
-
-            DateTimeFormatter ampmFormatter = DateTimeFormatter.ofPattern("a");
-            String ampm = newAutoActionTime.format(ampmFormatter);
+            final int hourOfTwelveHourClock = newAutoActionTime.getHour() % 12 == 0
+                    ? 12 : newAutoActionTime.getHour() % 12;
+            final String time = String.format("%02d:%02d", hourOfTwelveHourClock, newAutoActionTime.getMinute());
+            final String ampm = newAutoActionTime.getHour() < 12 ? "AM" : "PM";
             
             LocalTime currentAutoActionTime = LocalTime.parse(tf.getText() + (am.isSelected() ? " AM" : " PM"), timeFormatter12HourAmPm);
 

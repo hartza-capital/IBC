@@ -22,6 +22,7 @@ package ibcalpha.ibc;
  * Exception signalled when an IBC operation cannot be completed, carrying a human-readable message.
  */
 public class IbcException extends Exception {
+    /** Serialization identifier for this exception class. */
     private static final long serialVersionUID = 20140324L;
 
     /**

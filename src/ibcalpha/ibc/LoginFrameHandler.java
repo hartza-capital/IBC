@@ -53,6 +53,7 @@ final class LoginFrameHandler extends AbstractLoginHandler {
                 SessionManager.isRestart()));
     }
     
+    /** True once the username change listener has been attached to the frame. */
     private boolean listeningForUsernameChange;
 
     /**

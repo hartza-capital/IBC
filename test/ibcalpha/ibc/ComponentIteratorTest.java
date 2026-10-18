@@ -80,6 +80,13 @@ class ComponentIteratorTest {
     }
 
     @Test
+    void nullRootContainerIsRejected() {
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new ComponentIterator(null));
+        assertTrue(thrown.getMessage().contains("container"));
+    }
+
+    @Test
     void removeIsUnsupported() {
         JPanel panel = new JPanel();
         panel.add(new JButton("B"));

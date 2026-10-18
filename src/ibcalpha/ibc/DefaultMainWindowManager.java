@@ -38,11 +38,15 @@ import javax.swing.SwingUtilities;
  */
 public class DefaultMainWindowManager extends MainWindowManager {
 
+    /** Cached main window, null until it has been found. */
     private volatile JFrame mainWindow = null;
 
+    /** Task opening the main window, null when no open is pending. */
     private volatile GetMainWindowTask mainWindowTask;
 
+    /** Guards creation and assignment of the main window future. */
     private final Object futureCreationLock = new Object();
+    /** Pending lookup that yields the main window, null when none is running. */
     private Future<JFrame> mainWindowFuture;
 
     /**
@@ -54,19 +58,13 @@ public class DefaultMainWindowManager extends MainWindowManager {
     }
 
     /**
-     * Returns the main window, if necessary blocking the calling thread until
-     * either it is available or a specified timeout has elapsed.
+     * Returns the main window, blocking until it is available or the timeout
+     * expires, and immediately if it is already open.
      *
-     * If the main window is currently open, it is returned immediately without blocking
-     * the calling thread.
-     *
-     * Calling this method from the Swing event dispatch thread results in an IllegalStateException
-     * being thrown.
-     *
-     * @param timeout the length of time to wait for the main window to become available. If negative, blocks until available
-     * @param unit the time units for the timeout parameter
-     * @return null if the timeout expires before the main window becomes available; otherwise the main window
-     * @throws IllegalStateException if the method has been called from the Swing event dispatch thread
+     * @param timeout how long to wait for the window; negative blocks indefinitely
+     * @param unit the time unit of timeout
+     * @return the main window, or null if the timeout expires first
+     * @throws IllegalStateException if called from the Swing event dispatch thread
      */
     @Override
     public JFrame getMainWindow(long timeout, TimeUnit unit) {
@@ -110,17 +108,12 @@ public class DefaultMainWindowManager extends MainWindowManager {
     }
 
     /**
-     * Returns the main window, if necessary blocking the calling thread until
-     * it is available.
+     * Returns the main window, blocking the calling thread until it is available.
      *
-     * If the main window is currently open, it is returned immediately without blocking
-     * the calling thread.
-     *
-     * Calling this method from the Swing event dispatch thread results in an IllegalStateException
-     * being thrown.
+     * <p>Returns immediately if the window is already open.</p>
      *
      * @return the main window
-     * @throws IllegalStateException if the method has been called from the Swing event dispatch thread
+     * @throws IllegalStateException if called from the Swing event dispatch thread
      */
     @Override
     public JFrame getMainWindow() throws IllegalStateException{

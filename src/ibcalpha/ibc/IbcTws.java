@@ -91,11 +91,30 @@ public class IbcTws {
     static void checkArguments(String[] args) {
         if (args.length > 6) {
             Utils.logError("Incorrect number of arguments passed. quitting...");
-            Utils.logRawToConsole("Number of arguments = " +args.length);
-            for (String arg : args) {
-                Utils.logRawToConsole(arg);
-            }
+            // The values are never echoed: positions 1 to 4 may carry credentials.
+            Utils.logRawToConsole("Number of arguments = " + args.length + "; at most 6 are accepted");
             Utils.exitWithError(ErrorCodes.INCORRECT_NUMBER_OF_ARGS);
+        }
+    }
+
+    /**
+     * Fails fast when the Ib2FA setting is non-empty but is not a usable Base32
+     * TOTP secret, so IBC never reaches the 2FA dialog with a secret it cannot
+     * encode into a passcode.
+     */
+    static void validateTwoFactorAuthenticationSetting() {
+        final String base32Secret = Settings.settings().getString("Ib2FA", "");
+        if (base32Secret.isEmpty()) {
+            return;
+        }
+        try {
+            Totp.validateSecret(base32Secret);
+        } catch (IllegalArgumentException invalidSecret) {
+            Utils.exitWithError(ErrorCodes.INVALID_SETTING_VALUE,
+                    "The Ib2FA setting is not a valid Base32 TOTP secret ("
+                            + invalidSecret.getMessage() + "). Set it to the secret "
+                            + "IBKR issued, or leave it empty to authenticate with a "
+                            + "push notification or a manually entered code.");
         }
     }
 
@@ -111,6 +130,7 @@ public class IbcTws {
             printProperties();
 
             Settings.settings().logDiagnosticMessage();
+            validateTwoFactorAuthenticationSetting();
             LoginManager.loginManager().logDiagnosticMessage();
             MainWindowManager.mainWindowManager().logDiagnosticMessage();
             TradingModeManager.tradingModeManager().logDiagnosticMessage();

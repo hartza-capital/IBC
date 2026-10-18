@@ -18,9 +18,10 @@
 
 package ibcalpha.ibc;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -38,10 +39,11 @@ class TwsSettingsSaver {
      */
     private static final TwsSettingsSaver instance = new TwsSettingsSaver();
     /**
-     * Formats and parses the hh:mm times configured for automatic settings
-     * saving.
+     * Format of the hh:mm times configured for automatic settings saving.
+     * Immutable, so it is safe to share with the scheduler thread.
      */
-    private static final DateFormat dateFormat = new SimpleDateFormat("HH:mm");
+    private static final DateTimeFormatter TIME_OF_DAY_FORMATTER =
+            DateTimeFormatter.ofPattern("H:mm");
 
 
     /**
@@ -180,19 +182,19 @@ class TwsSettingsSaver {
      * @throws IbcException if the time string is not in valid hh:mm format
      */
     private static Calendar getCalendarForTime(String time) throws IbcException {
-        Calendar cal = Calendar.getInstance();
+        final LocalTime saveTime;
         try {
-            cal.setTime(dateFormat.parse(time));
-        } catch (ParseException e) {
+            saveTime = LocalTime.parse(time.trim(), TIME_OF_DAY_FORMATTER);
+        } catch (DateTimeParseException e) {
             throw new IbcException("value '" + time + "' should be in hh:mm format");
         }
-        int saveHour = cal.get(Calendar.HOUR_OF_DAY);
-        int saveMinute = cal.get(Calendar.MINUTE);
-        cal.setTimeInMillis(System.currentTimeMillis());
-        cal.set(Calendar.HOUR_OF_DAY, saveHour);
-        cal.set(Calendar.MINUTE, saveMinute);
-        cal.set(Calendar.SECOND, 0);
-        return cal;
+
+        final Calendar scheduledTime = Calendar.getInstance();
+        scheduledTime.set(Calendar.HOUR_OF_DAY, saveTime.getHour());
+        scheduledTime.set(Calendar.MINUTE, saveTime.getMinute());
+        scheduledTime.set(Calendar.SECOND, 0);
+        scheduledTime.set(Calendar.MILLISECOND, 0);
+        return scheduledTime;
     }
 
     /**
@@ -201,7 +203,8 @@ class TwsSettingsSaver {
      * @param saveTime the time at which to save TWS settings
      */
     private static void scheduleSave(Date saveTime) {
-        Utils.logToConsole("Tws settings will be saved at " + dateFormat.format(saveTime));
+        Utils.logToConsole("Tws settings will be saved at " + TIME_OF_DAY_FORMATTER.format(
+                saveTime.toInstant().atZone(ZoneId.systemDefault()).toLocalTime()));
 
         MyScheduledExecutorService.getInstance().scheduleAtFixedRate(() -> {
             Utils.logToConsole("Saving Tws settings");

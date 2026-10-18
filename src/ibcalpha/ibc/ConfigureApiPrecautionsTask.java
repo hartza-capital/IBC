@@ -27,16 +27,26 @@ import javax.swing.JDialog;
  */
 public class ConfigureApiPrecautionsTask implements ConfigurationAction {
     
+    /** Global Configuration dialog the settings are applied to. */
     private JDialog configDialog;
     
+    /** Bypass setting for order precautions: "yes", "no", or empty to leave it unchanged. */
     private final String bypassOrderPrecautions;
+    /** Bypass setting for the bond warning: "yes", "no", or empty to leave it unchanged. */
     private final String bypassBondWarning;
+    /** Bypass setting for the negative yield to worst confirmation: "yes", "no", or empty to leave it unchanged. */
     private final String bypassNegativeYieldToWorstConfirmation;
+    /** Bypass setting for the called bond warning: "yes", "no", or empty to leave it unchanged. */
     private final String bypassCalledBondWarning;
+    /** Bypass setting for the same action pair trade warning: "yes", "no", or empty to leave it unchanged. */
     private final String bypassSameActionPairTradeWarning;
+    /** Bypass setting for the price-based volatility risk warning: "yes", "no", or empty to leave it unchanged. */
     private final String bypassPriceBasedVolatilityRiskWarning;
+    /** Bypass setting for the US stocks market data in shares warning: "yes", "no", or empty to leave it unchanged. */
     private final String bypassUSStocksMarketDataInSharesWarning;
+    /** Bypass setting for the redirect order warning: "yes", "no", or empty to leave it unchanged. */
     private final String bypassRedirectOrderWarning;
+    /** Bypass setting for the no overfill protection precaution: "yes", "no", or empty to leave it unchanged. */
     private final String bypassNoOverfillProtectionPrecaution;
 
 
