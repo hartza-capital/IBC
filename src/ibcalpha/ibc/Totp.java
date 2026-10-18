@@ -76,6 +76,18 @@ final class Totp {
     }
 
     /**
+     * Checks that a configured secret can be decoded as Base32, so a malformed
+     * Ib2FA setting is rejected at startup.
+     *
+     * @param base32Secret the shared secret, Base32-encoded (RFC 4648)
+     * @throws IllegalArgumentException if base32Secret is null, blank, or not
+     *     valid Base32
+     */
+    static void validateSecret(final String base32Secret) {
+        Base32.decode(base32Secret);
+    }
+
+    /**
      * Generates the 6-digit TOTP passcode for a Base32 secret at a given time step.
      *
      * @param base32Secret the shared secret, Base32-encoded (RFC 4648), as supplied by IBKR and configured through IBC's {@code Ib2FA} setting

@@ -18,8 +18,10 @@
 
 package ibcalpha.ibc;
 
+import java.awt.Container;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
+import java.security.GeneralSecurityException;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -30,6 +32,10 @@ import javax.swing.ListModel;
  * second factor device selection or automatic TOTP submission.
  */
 public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
+
+    /** Index of the passcode text field in the 2FA dialog. */
+    private static final int TOTP_CODE_FIELD_INDEX = 0;
+
     /**
      * Private constructor prevents external instantiation of this singleton
      * handler; use {@link #getInstance()} to obtain the shared instance.
@@ -68,22 +74,6 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
     }
 
     /**
-     * Sets a 2FA credential value (e.g., TOTP code) in the 2FA dialog.
-     *
-     * @param window the 2FA dialog
-     * @param credentialName the name of the credential (for error messages)
-     * @param credentialIndex the field index within the dialog
-     * @param value the credential value to set (e.g., TOTP code)
-     * @throws IbcException if the text field cannot be found or updated
-     */
-    private void setCredential(final Window window,
-                                        final String credentialName,
-                                        final int credentialIndex,
-                                        final String value) throws IbcException {
-        if (! SwingUtils.setTextField(window, credentialIndex, value)) throw new IbcException(credentialName);
-    }
-
-    /**
      * Handles the Second Factor Authentication dialog by processing either a WINDOW_OPENED or WINDOW_CLOSED event.
      * On WINDOW_OPENED: handles read-only login, device selection, or TOTP generation.
      * On WINDOW_CLOSED: updates the login state accordingly.
@@ -99,12 +89,7 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
             } else if (secondFactorDeviceSelectionRequired(window)) {
                 selectSecondFactorDevice(window);
             } else {
-                try {
-                    // if 2FA is required, generate the TOTP and set it in the dialog
-                    doValidate2FA(window);
-                } catch (IbcException e) {
-                    Utils.logError("could not set credential: " + e.getMessage());
-                }
+                doValidate2FA(window);
             }
         } else if (eventID == WindowEvent.WINDOW_CLOSED) {
             if (LoginManager.loginManager().readonlyLoginRequired()) {
@@ -116,34 +101,53 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
     }
 
     /**
-     * Generates a time-based one-time password (TOTP) from the Ib2FA setting and submits the 2FA dialog.
-     * Sets the login state to TWO_FA_IN_PROGRESS before attempting to generate and submit the TOTP.
+     * Fills the passcode field of the 2FA dialog with a freshly generated TOTP
+     * code, leaving the dialog itself untouched.
      *
-     * @param window the 2FA dialog
-     * @throws IbcException if the TOTP code field cannot be set
+     * @param container the 2FA dialog, or any component tree holding its passcode field
+     * @return true if the passcode field was filled, false if the code could not
+     *     be generated or the field could not be found
      */
-    private void doValidate2FA(final Window window) throws IbcException {
-        // Set the login state to TWO_FA_IN_PROGRESS
-        LoginManager.loginManager().setLoginState(LoginManager.LoginState.TWO_FA_IN_PROGRESS);
-
-        // 2FA secret is required to generate the TOTP
-        String secret = Settings.settings().getString("Ib2FA", "");
+    boolean fillTotpCode(final Container container) {
+        final String secret = Settings.settings().getString("Ib2FA", "");
         if (secret.length() == 0) {
             Utils.logError("You should specify the required 2FA secret using the Ib2FA setting in config.ini");
+            return false;
+        }
+
+        final String totpCode;
+        try {
+            totpCode = Totp.generate(secret, Totp.timeStepCounter(System.currentTimeMillis()));
+        } catch (GeneralSecurityException | IllegalArgumentException e) {
+            Utils.logError("the Ib2FA setting does not hold a usable Base32 TOTP secret: " + e.getMessage());
+            return false;
+        }
+
+        if (! SwingUtils.setTextField(container, TOTP_CODE_FIELD_INDEX, totpCode)) {
+            Utils.logError("could not find the passcode field of the second factor authentication dialog");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Moves the login state to TWO_FA_IN_PROGRESS, then fills the dialog with a
+     * generated TOTP code and submits it.
+     *
+     * <p>The dialog is only submitted once the passcode has actually been
+     * written: submitting an empty field spends a failed login attempt, and
+     * IBKR locks the account after a few of them.
+     *
+     * @param window the 2FA dialog
+     */
+    private void doValidate2FA(final Window window) {
+        LoginManager.loginManager().setLoginState(LoginManager.LoginState.TWO_FA_IN_PROGRESS);
+
+        if (! fillTotpCode(window)) {
+            Utils.logError("second factor authentication dialog left open: no passcode was submitted");
             return;
         }
 
-        // Generate the TOTP and set it in the dialog
-        try {
-            long timeStepCounter =
-                    Totp.timeStepCounter(System.currentTimeMillis());
-            String totp = Totp.generate(secret, timeStepCounter);
-            setCredential(window, "IBAPI 2FA", 0, totp);
-        } catch (Exception e) {
-            Utils.logError("could not generate TOTP: " + e.getMessage());
-        }
-
-        // Submit the dialog
         GuiDeferredExecutor.instance().execute(() -> {
             Utils.logToConsole("Second factor authentication dialog submitted");
             SwingUtils.clickButton(window, "OK");

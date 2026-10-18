@@ -84,11 +84,15 @@ public class DefaultLoginManager extends LoginManager {
         message = "getting username and password from constructor (including FIX)";
     }
 
+    /** Human-readable description of where the credentials come from, used in diagnostics. */
     private final String message;
 
+    /** Login handler automating the login frame, null before one is set. */
     private volatile AbstractLoginHandler loginHandler = null;
 
+    /** True when the TWS credentials were supplied as command-line arguments. */
     private final boolean ibapiCredentialsFromArgs;
+    /** True when the FIX credentials were supplied as command-line arguments. */
     private final boolean fixCredentialsFromArgs;
 
     /**
@@ -287,10 +291,8 @@ public class DefaultLoginManager extends LoginManager {
             return false;
         }
         Utils.logError("Incorrect number of arguments passed. quitting...");
-        Utils.logRawToConsole("Number of arguments = " +args.length);
-        for (int i = 0; i < args.length; i++) {
-            Utils.logRawToConsole("arg[" + i + "]=" + args[i]);
-        }
+        // The values are never echoed: positions 1 to 4 may carry credentials.
+        Utils.logRawToConsole("Number of arguments = " + args.length + "; at most 6 are accepted");
         Utils.exitWithError(ErrorCodes.INCORRECT_NUMBER_OF_ARGS);
         return false;
     }
