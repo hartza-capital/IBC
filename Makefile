@@ -96,7 +96,13 @@ checkstyle: check-jdk
 test: check-env check-jdk
 	@./mvnw -q -B test
 
-rebuild: check-jdk clean dist
+# clean and package in one Maven invocation: expressed as two prerequisites
+# (clean, dist) a parallel make runs them concurrently, and clean then deletes
+# target/classes while javac is compiling - which surfaces as "bad class file
+# ... NoSuchFileException" for the main classes and "cannot find symbol" for
+# every test stub.
+rebuild: check-env check-jdk
+	@./mvnw -q clean package
 
 format:
 	@prettier --write "**/*.md" "**/*.json" --ignore-path .gitignore
