@@ -6,7 +6,7 @@
 
   <groupId>org.ibcalpha</groupId>
   <artifactId>ibc</artifactId>
-  <version>3.24.1</version>
+  <version>3.25.0</version>
   <packaging>jar</packaging>
   <name>IBC - Interactive Brokers Controller</name>
   <description>Automates IB TWS and IB Gateway login, dialog handling, and session management</description>
