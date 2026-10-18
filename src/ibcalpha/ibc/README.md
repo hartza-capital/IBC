@@ -46,7 +46,7 @@ design (only what other packages need is `public`).
 | `ConfigDialogManager` | Abstract accessor for the Global Configuration dialog.              |
 | `CommandServer`       | TCP server for remote commands.                                     |
 
-### Window and dialog handlers (33 classes)
+### Window and dialog handlers (34 classes)
 
 All implement `WindowHandler` and are registered, in priority order, by
 `IbcTws.createWindowHandlers()`. `AbstractLoginHandler` is their abstract login
@@ -196,7 +196,7 @@ depth-first order. `remove` is unsupported.
 
 ## Window and Dialog Handlers
 
-All 33 handlers implement `WindowHandler`. Registration order matters: the first
+All 34 handlers implement `WindowHandler`. Registration order matters: the first
 recognising handler wins. `SecondFactorAuthenticationDialogHandler` is
 deliberately registered before `SecurityCodeDialogHandler` because both dialogs
 contain an "Enter Read Only" button.
@@ -205,6 +205,7 @@ contain an "Enter Read Only" button.
 | ------------------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
 | `AcceptIncomingConnectionDialogHandler`           | JDialog, label "Accept incoming connection"                                          | Per `AcceptIncomingConnectionAction` (`accept`/`reject`/`manual`): OK/Yes or No.        |
 | `ApiChangeConfirmationDialogHandler`              | JDialog, label "apply the new socket port setting"                                   | Clicks Yes when an API config change confirmation is expected.                          |
+| `AutoRestartConfirmationDialogHandler`            | JDialog, text pane or option pane message "trading platform restart automatically"   | Confirms the automatic restart (OK).                                                    |
 | `BidAskLastSizeDisplayUpdateDialogHandler`        | JDialog "Bid, Ask and Last Size Display Update"                                      | Per `AcceptBidAskLastSizeDisplayUpdateNotification` (`accept`/`defer`/`ignore`).        |
 | `BlindTradingWarningDialogHandler`                | Order Preview, labels "blind trading" + confirm                                      | Per `AllowBlindTrading`: Override and Transmit / Yes.                                   |
 | `CryptoOrderConfirmationDialogHandler`            | JDialog "Cryptocurrency order confirmation"                                          | Per `ConfirmCryptoCurrencyOrders`: Transmit or Cancel.                                  |
