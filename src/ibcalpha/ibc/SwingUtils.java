@@ -46,6 +46,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.ListModel;
 import javax.swing.MenuElement;
+import javax.swing.text.JTextComponent;
 import javax.swing.tree.TreeModel;
 
 /**
@@ -275,22 +276,23 @@ class SwingUtils {
     }
 
     /**
-     * Concatenates the text of every JTextArea in the container, one per line.
+     * Concatenates the text of every text component in the container, one per line.
+     * Components that have not been given a document yet are skipped.
      *
      * @param container the Container to search in
-     * @return the text areas' contents separated by line breaks, or an empty string if none
+     * @return the components' contents separated by line breaks, or an empty string if none
      */
     static String getTexts(Container container) {
         ComponentIterator iter = new ComponentIterator(container);
         String s = "";
         while (iter.hasNext()) {
             Component component = iter.next();
-            if (component instanceof JTextArea) {
-                String content = ((JTextArea)component).getText();
-                if (content != null) {
-                    if (s.length() != 0) s += NEWLINE;
-                    s += content;
-                }
+            if (component instanceof JTextComponent) {
+                JTextComponent textComponent = (JTextComponent)component;
+                if (textComponent.getDocument() == null) continue;
+                String content = textComponent.getText();
+                if (s.length() != 0) s += NEWLINE;
+                s += content;
             }
         }
         return s;

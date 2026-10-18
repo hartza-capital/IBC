@@ -11,7 +11,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.JToggleButton;
 
 import org.junit.jupiter.api.Test;
@@ -102,6 +104,23 @@ class SwingUtilsTest {
         String texts = SwingUtils.getLabelTexts(panel);
         assertTrue(texts.contains("One"));
         assertTrue(texts.contains("Two"));
+    }
+
+    @Test
+    void getTextsJoinsEveryTextComponent() {
+        JPanel panel = new JPanel();
+        JTextArea textArea = new JTextArea("area text");
+        JTextPane textPane = new JTextPane();
+        textPane.setText("pane text");
+        panel.add(textArea);
+        panel.add(textPane);
+        panel.add(new JTextField("field text"));
+
+        String texts = SwingUtils.getTexts(panel);
+
+        assertTrue(texts.contains("area text"));
+        assertTrue(texts.contains("pane text"));
+        assertTrue(texts.contains("field text"));
     }
 
     @Test
