@@ -7,20 +7,29 @@ pre-commit:
   parallel: true
 
   commands:
+    # Through make, not ./mvnw directly: the Makefile picks a JDK 25 when the
+    # developer's JAVA_HOME is older or unset, whereas a bare ./mvnw fails with
+    # "release version 25 not supported".
     java-checkstyle:
       glob: "*.java"
-      run: ./mvnw -q checkstyle:check
+      run: make checkstyle
 
     java-test:
       glob: "*.java"
-      run: ./mvnw -q -B test
+      run: make test
 
     prettier:
       glob: "*.{md,yml,yaml,json}"
       run: |
-        if command -v prettier &> /dev/null; then
-          prettier --config .prettierrc.json --ignore-path .prettierignore --check {staged_files}
-        else
+        if ! command -v prettier &> /dev/null; then
           echo "⚠️  prettier not found. Install with: npm install -g prettier"
           exit 0
         fi
+        # Lefthook skips a command whose glob matches nothing, but `--force`
+        # runs it anyway; prettier then exits 1 with a usage error because it
+        # received no file at all.
+        if [ -z "{staged_files}" ]; then
+          echo "no markdown/JSON/YAML file staged"
+          exit 0
+        fi
+        prettier --config .prettierrc.json --ignore-path .prettierignore --check {staged_files}
