@@ -81,8 +81,10 @@ dev: check-env check-jdk
 jar: check-env check-jdk
 	@./mvnw -q package -DskipTests -DskipAssembly=true
 
+# No -q here: these two run the test phase, and with the test output redirected to
+# target/surefire-reports the console keeps Maven's summary and hides the chatter.
 dist: check-env check-jdk
-	@./mvnw -q package
+	@./mvnw -B package
 
 clean:
 	@./mvnw -q clean
@@ -102,7 +104,7 @@ test: check-env check-jdk
 # ... NoSuchFileException" for the main classes and "cannot find symbol" for
 # every test stub.
 rebuild: check-env check-jdk
-	@./mvnw -q clean package
+	@./mvnw -B clean package
 
 format:
 	@prettier --write "**/*.md" "**/*.json" --ignore-path .gitignore

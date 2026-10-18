@@ -238,6 +238,15 @@ public class IbcVersionInfo {
             <java.awt.headless>true</java.awt.headless>
           </systemPropertyVariables>
           <!--
+            IBC logs every window, command and setting it handles to stdout, so a
+            test run buries the Maven summary under a few hundred lines. Keep that
+            chatter in target/surefire-reports/*-output.txt; the summary and any
+            failure still reach the console. Without the redirect, `mvn -q` hides
+            Maven's own lines yet lets every test log through, which is the worst
+            of both.
+          -->
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <!--
             @{argLine} is set by jacoco:prepare-agent (the -javaagent flag that
             attaches JaCoCo's coverage instrumentation to the test JVM). It MUST
             be interpolated here, or Surefire silently drops it and no coverage
