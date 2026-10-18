@@ -27,7 +27,16 @@ import javax.swing.JDialog;
  */
 public class ResetOrderIdConfirmationDialogHandler implements WindowHandler {
     
+    /** True while IBC is answering a confirmation dialog for a reset it requested at startup. */
     static volatile boolean orderIdResetRequestedAtStart;
+
+    /**
+     * Records that IBC is itself resetting the order id sequence at startup, so
+     * the confirmation dialog raised by that reset is answered without asking.
+     */
+    static void markOrderIdResetRequestedAtStart() {
+        orderIdResetRequestedAtStart = true;
+    }
 
     /**
      * Determines whether to process window events for the reset order ID confirmation dialog.
@@ -104,6 +113,10 @@ public class ResetOrderIdConfirmationDialogHandler implements WindowHandler {
                     break;
                 case IGNORE_DIALOG:
                     Utils.logToConsole("User must handle order id reset confirmation dialog");
+                    break;
+                default:
+                    // the setting is mapped to one of the cases above; nothing to do
+                    break;
             }
         } catch (IbcException e) {
             Utils.logException(e);

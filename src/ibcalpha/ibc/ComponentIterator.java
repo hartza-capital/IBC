@@ -39,9 +39,12 @@ class ComponentIterator implements Iterator<Component> {
      * Creates an iterator rooted at the given container.
      *
      * @param container the container whose subtree is iterated
+     * @throws IllegalArgumentException if container is null
      */
     ComponentIterator(Container container) {
-        if (container == null) Utils.exitWithException(ErrorCodes.UNHANDLED_EXCEPTION,new NullPointerException());
+        if (container == null) {
+            throw new IllegalArgumentException("ComponentIterator needs a root container, but the window supplied none");
+        }
         mStack.push(new NodeState(container));
     }
 
@@ -106,11 +109,12 @@ class ComponentIterator implements Iterator<Component> {
     }
 
     /**
-     * Iteration state for one component: its sub-components and the index of the
-     * next one to visit.
+     * Iteration state for one component in the component tree.
      */
     private class NodeState {
+        /** Index of the next sub-component to visit. */
         int index;
+        /** Sub-components of the component, or null if it is not a container. */
         Component[] subComponents;
 
         NodeState(Component component) {

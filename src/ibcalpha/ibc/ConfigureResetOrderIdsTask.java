@@ -26,7 +26,9 @@ import javax.swing.JDialog;
  */
 public class ConfigureResetOrderIdsTask implements ConfigurationAction {
 
+    /** True to reset the API order ID sequence, false to skip it. */
     private final boolean resetOrderIds;
+    /** Global Configuration dialog the setting is applied to. */
     private JDialog configDialog;
 
     /**
@@ -64,7 +66,7 @@ public class ConfigureResetOrderIdsTask implements ConfigurationAction {
 
             if (!SessionManager.isGateway()) {
                 // NB: Gateway never displays the confirmation dialog
-                ResetOrderIdConfirmationDialogHandler.orderIdResetRequestedAtStart = true;
+                ResetOrderIdConfirmationDialogHandler.markOrderIdResetRequestedAtStart();
             }
 
             Utils.selectApiSettings(configDialog);
