@@ -26,6 +26,7 @@ import javax.swing.SwingUtilities;
  * the task has completed.
  */
 class GuiSynchronousExecutor implements Executor{
+    /** Shared executor instance returned by {@link #instance()}. */
     private static final GuiSynchronousExecutor instance = new GuiSynchronousExecutor();
 
     /**

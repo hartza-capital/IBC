@@ -117,8 +117,7 @@ final class LoginFrameHandler extends AbstractLoginHandler {
                 }
 
                 /**
-                 * Synchronizes the "Use/store settings on server" checkbox based on the StoreSettingsOnServer configuration.
-                 * Deferred to avoid being overwritten by TWS's own setting logic.
+                 * Sets the "Use/store settings on server" checkbox to the configured value.
                  */
                 private void setStoreSettingsOnServerCheckbox() {
                     if (Settings.settings().getString("StoreSettingsOnServer", "").length() != 0) {

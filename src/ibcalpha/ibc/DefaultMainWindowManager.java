@@ -144,6 +144,7 @@ public class DefaultMainWindowManager extends MainWindowManager {
         mainWindow.addWindowStateListener(listener);
     }
 
+    /** Listens for main window state changes so an early maximize can be re-minimized. */
     private final WindowStateListener listener = new WindowStateListener() {
         /**
          * Handles window state changes to re-minimize the main window if it was maximized too soon after minimization.
@@ -163,6 +164,7 @@ public class DefaultMainWindowManager extends MainWindowManager {
         }
     };
 
+    /** Time in milliseconds at which the main window was last minimized. */
     private Long lastMinimizeTime;
     /**
      * Minimizes the main window if the MinimizeMainWindow setting is enabled.

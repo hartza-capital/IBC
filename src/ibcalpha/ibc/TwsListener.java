@@ -197,10 +197,11 @@ class TwsListener
     }
 
     /**
-     * Returns a string describing the type and title of a window.
+     * Describes a window by its type and title, for logging.
      *
-     * @param window the Window to describe
-     * @return a string indicating whether it is a frame or dialog and the window title
+     * @param window the window to describe
+     * @return a description naming the window as a frame, dialog or other component
+     * @throws NullPointerException if window is null
      */
     private static String getWindowTypeAndTitle(Window window) {
         if (window == null) throw new NullPointerException("window is null");

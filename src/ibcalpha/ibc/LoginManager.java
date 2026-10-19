@@ -68,11 +68,17 @@ public abstract class LoginManager {
      * The stage of the login process reached.
      */
     public enum LoginState{
+        /** No login has been attempted, or the previous login was abandoned. */
         LOGGED_OUT,
+        /** Login has completed and the session is usable. */
         LOGGED_IN,
+        /** The login sequence is in progress. */
         LOGGING_IN,
+        /** Second factor authentication is in progress. */
         TWO_FA_IN_PROGRESS,
+        /** The most recent login attempt failed. */
         LOGIN_FAILED,
+        /** Login is waiting for credentials to be supplied. */
         AWAITING_CREDENTIALS
     }
 

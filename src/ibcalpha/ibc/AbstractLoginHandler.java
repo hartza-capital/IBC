@@ -296,11 +296,11 @@ public abstract class AbstractLoginHandler implements WindowHandler {
     }
 
     /**
-     * Sets the trading mode (Live Trading or Paper Trading) in the login frame.
-     * Handles both toggle button (TWS 974+) and combo box (earlier versions) UI patterns.
+     * Sets the trading mode in the login frame, starting a cold restart when the mode controls
+     * are absent.
      *
      * @param window the login frame
-     * @return true if trading mode was set successfully, false if the dialog is invalid and requires cold restart
+     * @return true if the trading mode was set, false if the frame was invalid and a restart was started
      */
     protected final boolean setTradingMode(final Window window) {
         String tradingMode = TradingModeManager.tradingModeManager().getTradingMode();
