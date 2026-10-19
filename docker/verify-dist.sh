@@ -53,7 +53,7 @@ required_paths=(
     version
     config.ini
     COPYING.txt
-    README.txt
+    README.md
     gatewaystart.sh
     twsstart.sh
     scripts/ibcstart.sh

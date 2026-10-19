@@ -204,7 +204,7 @@ The distribution ZIP, `IBCLinux-3.25.1.zip`, contains:
 - command client scripts: `commandsend.sh`, `stop.sh`, `restart.sh`,
   `pause.sh`, `enableapi.sh`, `reconnectdata.sh`, `reconnectaccount.sh`;
 - a text file called `version` containing the IBC version number;
-- `README.txt`, which points at the project;
+- `README.md`, which points at the project;
 - this User Guide, `userguide.pdf`.
 
 Source code and build scripts are not part of the ZIP; they are in the
