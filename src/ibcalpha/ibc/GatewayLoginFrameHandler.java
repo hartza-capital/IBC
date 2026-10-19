@@ -192,14 +192,13 @@ final class GatewayLoginFrameHandler extends AbstractLoginHandler {
 
     /**
      * Switches the Gateway login frame to IB API mode by clicking the IB API toggle button.
-     * Attempts to find either "IB API" or "TWS/API" button variants.
+     * Looks for the "IB API" toggle button.
      *
      * @param window the Gateway login frame.
-     * @throws IbcException if neither IB API selector button can be found.
+     * @throws IbcException if the IB API selector button cannot be found.
      */
     private void switchToIBAPI(Window window) throws IbcException {
         JToggleButton button = SwingUtils.findToggleButton(window, "IB API");
-        if (button == null) button = SwingUtils.findToggleButton(window, "TWS/API") ;
         if (button == null) throw new IbcException("IB API selector");
 
         if (! button.isSelected()) {

@@ -54,6 +54,20 @@ class SwingUtilsTest {
         assertNull(SwingUtils.findCheckBox(panel, "Disable"));
     }
 
+    /**
+     * Shows that a caption differing only by its final period does not match, which is why
+     * the precaution literals must carry the punctuation the installed build uses.
+     */
+    @Test
+    void findCheckBoxRequiresExactPunctuation() {
+        JPanel panel = new JPanel();
+        JCheckBox bondWarning = new JCheckBox("Bypass Bond warning for API Orders");
+        panel.add(bondWarning);
+
+        assertEquals(bondWarning, SwingUtils.findCheckBox(panel, "BYPASS BOND WARNING FOR API ORDERS"));
+        assertNull(SwingUtils.findCheckBox(panel, "Bypass Bond warning for API Orders."));
+    }
+
     @Test
     void findLabelMatchesSubstring() {
         JPanel panel = new JPanel();

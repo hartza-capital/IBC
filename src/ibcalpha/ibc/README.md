@@ -232,8 +232,7 @@ contain an "Enter Read Only" button.
 | `SecondFactorAuthenticationDialogHandler`         | JFrame/JDialog "Second Factor Authentication" or "Security Code Card Authentication" | Read-only login, device selection, or automatic TOTP submission (see Login).            |
 | `SecurityCodeDialogHandler`                       | JDialog with an "Enter Read Only" button                                             | Starts read-only login when `ReadOnlyLogin` is set.                                     |
 | `ShutdownProgressDialogHandler`                   | JDialog "Shutdown progress"                                                          | Shuts down the thread pools and the command server.                                     |
-| `SplashFrameHandler`                              | JFrame "Starting application..."                                                     | Uses the splash close to mark Gateway startup finished.                                 |
-| `TipOfTheDayDialogHandler`                        | JDialog "Tip of the Day"                                                             | Closes the dialog.                                                                      |
+| `SplashFrameHandler`                              | JFrame "Starting application"                                                        | Uses the splash close to mark Gateway startup finished.                                 |
 | `TooManyFailedLoginAttemptsDialogHandler`         | JDialog text area "Too many failed login attempts"                                   | Per `ReloginAfterSecondFactorAuthenticationTimeout`: schedules a re-login, else OK.     |
 | `TradesFrameHandler`                              | JFrame "Trades"                                                                      | Per `ShowAllTrades`: configures the Trades window and re-opens it if closed.            |
 | `TradingLoginHandoffDialogHandler`                | JDialog "Trading Login Handoff"                                                      | Per `ExistingSessionDetectedAction`: take over this session or hand off.                |
@@ -283,7 +282,7 @@ with `IBAPIUserName()`/`IBAPIPassword()`.
 ### GatewayLoginFrameHandler
 
 Package-private final subclass for IB Gateway. Selects the gateway mode
-(`FIX CTCI` when `FIX` is set, else `IB API`/`TWS/API`) and, when a "Trading
+(`FIX CTCI` when `FIX` is set, else `IB API`) and, when a "Trading
 Mode" label is present, the trading mode. In FIX mode fields 0..3 are FIX
 user/password then API user/password; otherwise fields 0/1 are API
 user/password.
@@ -501,8 +500,8 @@ Calling `getConfigDialog` from the EDT throws `IllegalStateException`.
 ### GetConfigDialogTask
 
 Package-private `Callable<JDialog>` that opens the dialog through the menu:
-`Configure > Settings` on Gateway; `Edit > Global Configuration...` (TWS
-Classic) or `File > Global Configuration...` (TWS Mosaic). It waits for
+`Configure > Settings` on Gateway; `Edit > Global Configuration` (TWS
+Classic) or `File > Global Configuration` (TWS Mosaic). It waits for
 `SessionManager.awaitReady()`.
 
 | Method            | Parameters               | Returns   | Description                                                                           |
