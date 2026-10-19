@@ -72,6 +72,15 @@ make rebuild        # clean + dist
 (`./mvnw package -DskipAssembly=true`); `make dist` is plain
 `./mvnw package`.
 
+The release ZIP is also checked inside Docker, without a local JDK 25:
+
+```bash
+make docker-verify   # archive structure, executable bits, version, jar sanity
+make docker-smoke    # end-to-end: IBC drives a Gateway in the runtime image
+```
+
+See [`docker/README.md`](docker/README.md).
+
 ## Getting Started
 
 ```bash
