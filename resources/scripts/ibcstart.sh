@@ -301,15 +301,47 @@ echo Generating the JAVA VM options
 declare -a vm_options
 index=0
 while read line; do
-	if [[ -n ${line} && ! "${line:0:1}" = "#" && ! "${line:0:2}" = "-D" ]]; then
-		vm_options[$index]="$line"
-		((index++))
-	fi
+	# Keep every parameter the vendor ships in the vmoptions file, -D ones included: they
+	# are what the official launcher passes. Only the properties IBC sets itself further
+	# down are dropped, because a second value for the same key would be ambiguous.
+	case "$line" in
+		""|"#"*) ;;
+		-Dchannel=*|-DjtsConfigDir=*|-Dibcsessionid=*|-Dinstall4jType=*) ;;
+		-Dexe4j.isInstall4j=*|-Dtwslaunch.autoupdate.serviceImpl=*) ;;
+		-DjxBrowserKey=*|-Drestart=*) ;;
+		*)
+			vm_options[$index]="$line"
+			((index++))
+			;;
+	esac
 done <<< $(cat ${vmoptions_source})
 
 java_vm_options=${vm_options[*]}
+
+# The properties below are installation data, so they are read from the installation rather
+# than hardcoded: fullVersion and installDir are what the app reads to know what it runs.
+install4j_params="${install4j}/i4jparams.conf"
+
+# Returns the value of an install4j variable declared in i4jparams.conf.
+#
+# @param $1 the variable name, as written in the <variable name="..."> attribute
+# @returns the value on stdout, empty when the variable is not declared
+install4j_variable() {
+	sed -n "s/.*<variable name=\"$1\" value=\"\([^\"]*\)\".*/\1/p" "$install4j_params" 2>/dev/null | head -n 1
+}
+
+full_version=$(install4j_variable fullVersion)
+if [[ -n "$full_version" ]]; then
+	java_vm_options="$java_vm_options -DfullVersion=$full_version"
+fi
+java_vm_options="$java_vm_options -DinstallDir=${program_path}/"
+
+# Deliberately not mirrored from the install4j launcher: hideTryDemo, installer.groupId,
+# installerUrl, installerVersion, mediaFileArch, nightlyEnabled, privateLabel, productName.
+# These are installer metadata of the official package; IBC starts the installed app
+# directly instead of the update stub, and forwards the install's javaOptions.
 java_vm_options="$java_vm_options -Dtwslaunch.autoupdate.serviceImpl=com.ib.tws.twslaunch.install4j.Install4jAutoUpdateService"
-java_vm_options="$java_vm_options -Dchannel=latest"
+java_vm_options="$java_vm_options -Dchannel=stable"
 java_vm_options="$java_vm_options -Dexe4j.isInstall4j=true"
 java_vm_options="$java_vm_options -Dinstall4jType=standalone"
 java_vm_options="$java_vm_options -DjtsConfigDir=${tws_settings_path}"
@@ -323,7 +355,6 @@ java_vm_options="$java_vm_options -Dibcsessionid=$ibc_session_id"
 # set, otherwise JxBrowser cannot initialise (passkey login fails) and newer
 # versions miss exports they need. The value is version-specific, so read it
 # from the installation rather than hardcoding it.
-install4j_params="${install4j}/i4jparams.conf"
 extra_java_options=""
 if [[ -r "$install4j_params" ]]; then
 	java_options_line=$(grep '<variable name="javaOptions"' "$install4j_params" | head -n 1)
