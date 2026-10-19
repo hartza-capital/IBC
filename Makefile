@@ -1,4 +1,4 @@
-.PHONY: init check-env check-jdk dev jar dist clean rebuild checkstyle test format deps-update plugins-update update deps-upgrade docker-verify docker-smoke
+.PHONY: init check-env check-jdk dev jar dist clean rebuild checkstyle test format deps-update plugins-update update deps-upgrade docker-verify docker-smoke userguide
 
 # Maven version pinned by the wrapper. Source of truth for `make init`; the
 # generated .mvn/wrapper/maven-wrapper.properties carries it to ./mvnw. The
@@ -135,6 +135,25 @@ docker-verify:
 
 docker-smoke:
 	@docker compose run --rm --build smoke
+
+# Regenerates resources/userguide.pdf from docs/userguide.md. pandoc and a LaTeX
+# engine (tectonic) are documentation tooling, not part of the Java build, so no
+# other target depends on this one.
+userguide:
+	@command -v pandoc >/dev/null 2>&1 || { \
+		echo "Error: 'pandoc' is not on PATH."; \
+		echo "  brew install pandoc tectonic"; \
+		exit 1; \
+	}
+	@pandoc docs/userguide.md -o resources/userguide.pdf \
+		--pdf-engine=tectonic \
+		-H docs/userguide-header.tex \
+		-V documentclass=article \
+		-V fontsize=10pt \
+		-V geometry:margin=1in \
+		-V colorlinks=true \
+		-V linkcolor=RoyalBlue \
+		-V urlcolor=RoyalBlue
 
 # Both ignore files: .gitignore keeps target/ and dist/ out, .prettierignore is
 # what lefthook passes on staged files - using only one of them means `make

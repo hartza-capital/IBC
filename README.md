@@ -128,6 +128,8 @@ in `resources/`), and the start scripts are configured through shell variables.
 
 ## Documentation
 
+- [`docs/userguide.md`](docs/userguide.md) — the User Guide for end users,
+  rendered to `resources/userguide.pdf` by `make userguide`.
 - [`src/ibcalpha/ibc/README.md`](src/ibcalpha/ibc/README.md) — the package
   reference: every class, its role and its public surface.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — build from source, the `WindowHandler`

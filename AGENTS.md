@@ -168,6 +168,7 @@ IBC/
 ├── src/
 │   ├── ibcalpha/ibc/README.md   # package reference: every class and its surface
 │   └── assembly/                # Maven assembly descriptor for the Linux ZIP
+├── docs/                        # user guide source (userguide.md) + its LaTeX header
 ├── docker/                      # Dockerfile + release checks (verify, gateway smoke)
 ├── resources/                   # shipped config.ini, start scripts, command clients
 └── test/ibcalpha/ibc/           # JUnit 5 suite and the Stub* doubles
@@ -191,6 +192,8 @@ IBC/
 
 - [`README.md`](README.md) — end-user front door: features, structure, build,
   getting started, configuration.
+- [`docs/userguide.md`](docs/userguide.md) — the User Guide shipped as
+  `resources/userguide.pdf`; `make userguide` renders it.
 - [`docker/README.md`](docker/README.md) — containerised release checks:
   `verify` on the ZIP, `gateway-smoke` end to end.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — build from source, the `WindowHandler`

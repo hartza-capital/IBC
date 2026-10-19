@@ -1,0 +1,16 @@
+% Extra LaTeX settings for docs/userguide.md, passed to pandoc with -H.
+\usepackage{etoolbox}
+% URLs have no breakpoint of their own; xurl lets them break anywhere.
+\usepackage{xurl}
+% Definition lists carry long code terms (`ExistingSessionDetectedAction`,
+% `TWSPASSWORD`): put the term on its own line so the label never runs past the
+% right margin.
+\usepackage{enumitem}
+\setlist[description]{style=nextline, leftmargin=1.5em, labelindent=0pt}
+% This guide is dense in monospace identifiers, which are unbreakable boxes: with
+% justified text every other line is stretched to fill the measure. Ragged right
+% keeps the spacing even and nothing runs past the margin.
+\usepackage{ragged2e}
+\AtBeginDocument{\RaggedRight}
+% Tables stay inside the margin at one size smaller than the body text.
+\AtBeginEnvironment{longtable}{\small}
