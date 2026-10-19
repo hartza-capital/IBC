@@ -133,7 +133,7 @@ public class SessionManager {
          * 
          * It's not obvious how long we need to wait before the menu becomes responsive. However the splash
          * frame that appears in front of the gateway main window during initialisation disappears when everything
-         * is ready, and its close can be detected as a frame entitled 'Starting application...' and a Closed event.
+         * is ready, and its close can be detected as a frame entitled 'Starting application' and a Closed event.
          * 
          * So we wait for the handler for that frame to call setSplashScreenClosed().
          * 

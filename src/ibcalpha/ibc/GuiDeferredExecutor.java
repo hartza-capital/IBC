@@ -26,6 +26,7 @@ import javax.swing.SwingUtilities;
  * caller.
  */
 class GuiDeferredExecutor implements Executor {
+    /** Shared executor instance returned by {@link #instance()}. */
     private static final GuiDeferredExecutor instance = new GuiDeferredExecutor();
 
     /**

@@ -72,6 +72,15 @@ make rebuild        # clean + dist
 (`./mvnw package -DskipAssembly=true`); `make dist` is plain
 `./mvnw package`.
 
+The release ZIP is also checked inside Docker, without a local JDK 25:
+
+```bash
+make docker-verify   # archive structure, executable bits, version, jar sanity
+make docker-smoke    # end-to-end: IBC drives a Gateway in the runtime image
+```
+
+See [`docker/README.md`](docker/README.md).
+
 ## Getting Started
 
 ```bash
@@ -85,7 +94,7 @@ cp /opt/ibc/config.ini ~/ibc/     # edit: IbLoginId, IbPassword, Ib2FA, ...
 ```
 
 Set `TWS_MAJOR_VRSN` in the start script to your installed version before the
-first run (a build string of `10.19.1f` means `1019`). IBC writes a log whose
+first run (a build string of `10.50.1f` means `1050`). IBC writes a log whose
 location is printed at startup.
 
 ## Configuration
@@ -119,6 +128,8 @@ in `resources/`), and the start scripts are configured through shell variables.
 
 ## Documentation
 
+- [`docs/userguide.md`](docs/userguide.md) — the User Guide for end users,
+  rendered to `resources/userguide.pdf` by `make userguide`.
 - [`src/ibcalpha/ibc/README.md`](src/ibcalpha/ibc/README.md) — the package
   reference: every class, its role and its public surface.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — build from source, the `WindowHandler`

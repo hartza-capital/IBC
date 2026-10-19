@@ -274,7 +274,7 @@ fi
 
 if [[ -n "$java_path" ]]; then
 	if [[ ! -e "$java_path/java" ]]; then
-		error_exit $E_NO_JAVA "Java installaton at $java_path/java does not exist"
+		error_exit $E_NO_JAVA "Java installation at $java_path/java does not exist"
 	fi
 fi
 
@@ -301,15 +301,47 @@ echo Generating the JAVA VM options
 declare -a vm_options
 index=0
 while read line; do
-	if [[ -n ${line} && ! "${line:0:1}" = "#" && ! "${line:0:2}" = "-D" ]]; then
-		vm_options[$index]="$line"
-		((index++))
-	fi
+	# Keep every parameter the vendor ships in the vmoptions file, -D ones included: they
+	# are what the official launcher passes. Only the properties IBC sets itself further
+	# down are dropped, because a second value for the same key would be ambiguous.
+	case "$line" in
+		""|"#"*) ;;
+		-Dchannel=*|-DjtsConfigDir=*|-Dibcsessionid=*|-Dinstall4jType=*) ;;
+		-Dexe4j.isInstall4j=*|-Dtwslaunch.autoupdate.serviceImpl=*) ;;
+		-DjxBrowserKey=*|-Drestart=*) ;;
+		*)
+			vm_options[$index]="$line"
+			((index++))
+			;;
+	esac
 done <<< $(cat ${vmoptions_source})
 
 java_vm_options=${vm_options[*]}
+
+# The properties below are installation data, so they are read from the installation rather
+# than hardcoded: fullVersion and installDir are what the app reads to know what it runs.
+install4j_params="${install4j}/i4jparams.conf"
+
+# Returns the value of an install4j variable declared in i4jparams.conf.
+#
+# @param $1 the variable name, as written in the <variable name="..."> attribute
+# @returns the value on stdout, empty when the variable is not declared
+install4j_variable() {
+	sed -n "s/.*<variable name=\"$1\" value=\"\([^\"]*\)\".*/\1/p" "$install4j_params" 2>/dev/null | head -n 1
+}
+
+full_version=$(install4j_variable fullVersion)
+if [[ -n "$full_version" ]]; then
+	java_vm_options="$java_vm_options -DfullVersion=$full_version"
+fi
+java_vm_options="$java_vm_options -DinstallDir=${program_path}/"
+
+# Deliberately not mirrored from the install4j launcher: hideTryDemo, installer.groupId,
+# installerUrl, installerVersion, mediaFileArch, nightlyEnabled, privateLabel, productName.
+# These are installer metadata of the official package; IBC starts the installed app
+# directly instead of the update stub, and forwards the install's javaOptions.
 java_vm_options="$java_vm_options -Dtwslaunch.autoupdate.serviceImpl=com.ib.tws.twslaunch.install4j.Install4jAutoUpdateService"
-java_vm_options="$java_vm_options -Dchannel=latest"
+java_vm_options="$java_vm_options -Dchannel=stable"
 java_vm_options="$java_vm_options -Dexe4j.isInstall4j=true"
 java_vm_options="$java_vm_options -Dinstall4jType=standalone"
 java_vm_options="$java_vm_options -DjtsConfigDir=${tws_settings_path}"
@@ -317,24 +349,41 @@ java_vm_options="$java_vm_options -DjtsConfigDir=${tws_settings_path}"
 ibc_session_id=$(mktemp -u XXXXXXXX)
 java_vm_options="$java_vm_options -Dibcsessionid=$ibc_session_id"
 
-# The TWS/Gateway desktop login renders passkey (WebAuthn) second-factor
-# authentication in an embedded browser (JxBrowser). The official install4j
-# launcher starts the JVM with -DjxBrowserKey=<license key>; IBC builds its own
-# java command and so omits it. Without the key, JxBrowser cannot initialise
-# (IllegalArgumentException in EngineOptions.licenseKey -> "Failed to create
-# browser") and passkey login fails. As IBKR Securities Japan makes passkey the
-# only login 2FA from 2026-06-30, IBC must pass this key too. It is embedded in
-# the install and is version-specific, so read it dynamically rather than
-# hardcoding. This does NOT bypass 2FA - the user still completes the passkey
-# ceremony.
-if [[ -z "$jxbrowser_key" && -r "${install4j}/i4jparams.conf" ]]; then
-	# The key sits in i4jparams.conf as -DjxBrowserKey=<key>" (terminated by a
-	# quote/space); capture it up to that terminator so the whole key is taken
-	# regardless of its characters.
-	jxbrowser_key=$(grep -aoE 'DjxBrowserKey=[^" ]+' "${install4j}/i4jparams.conf" | head -n 1 | sed 's/^DjxBrowserKey=//')
+# The install4j launcher hands the JVM the options TWS/Gateway needs (module
+# exports, --enable-native-access, the JxBrowser key, XML limits) through the
+# javaOptions variable. IBC builds its own java command and must pass the same
+# set, otherwise JxBrowser cannot initialise (passkey login fails) and newer
+# versions miss exports they need. The value is version-specific, so read it
+# from the installation rather than hardcoding it.
+extra_java_options=""
+if [[ -r "$install4j_params" ]]; then
+	java_options_line=$(grep '<variable name="javaOptions"' "$install4j_params" | head -n 1)
+	extra_java_options="${java_options_line#*value=\"}"
+	extra_java_options="${extra_java_options%%\"*}"
 fi
-if [[ -n "$jxbrowser_key" ]]; then
-	java_vm_options="$java_vm_options -DjxBrowserKey=$jxbrowser_key"
+if [[ -n "$extra_java_options" ]]; then
+	echo "Using the JVM options from $install4j_params"
+else
+	echo "No javaOptions variable in $install4j_params: passing the module exports and JxBrowser key IBC needs"
+	# The TWS/Gateway desktop login renders passkey (WebAuthn) second-factor
+	# authentication in an embedded browser (JxBrowser). The official install4j
+	# launcher starts the JVM with -DjxBrowserKey=<license key>; IBC builds its own
+	# java command and so omits it. Without the key, JxBrowser cannot initialise
+	# (IllegalArgumentException in EngineOptions.licenseKey -> "Failed to create
+	# browser") and passkey login fails. As IBKR Securities Japan makes passkey the
+	# only login 2FA from 2026-06-30, IBC must pass this key too. It is embedded in
+	# the install and is version-specific, so read it dynamically rather than
+	# hardcoding. This does NOT bypass 2FA - the user still completes the passkey
+	# ceremony.
+	if [[ -z "$jxbrowser_key" && -r "$install4j_params" ]]; then
+		# The key sits in i4jparams.conf as -DjxBrowserKey=<key>" (terminated by a
+		# quote/space); capture it up to that terminator so the whole key is taken
+		# regardless of its characters.
+		jxbrowser_key=$(grep -aoE 'DjxBrowserKey=[^" ]+' "$install4j_params" | head -n 1 | sed 's/^DjxBrowserKey=//')
+	fi
+	if [[ -n "$jxbrowser_key" ]]; then
+		java_vm_options="$java_vm_options -DjxBrowserKey=$jxbrowser_key"
+	fi
 fi
 
 echo -e "Java VM Options=$java_vm_options$autorestart_option"
@@ -422,6 +471,11 @@ fi
 if [[ ! -n "$java_path" ]]; then
 	java_path=$(read_from_config "$install4j/inst_jre.cfg")
 fi
+if [[ ! -n "$java_path" ]]; then
+	if [[ -e "$install4j/../jre/bin/java" ]]; then
+		java_path="$install4j/../jre/bin"
+	fi
+fi
 
 # alternatively use installed java
 if [[ ! -n "$java_path" ]]; then
@@ -474,27 +528,29 @@ if [[ -e "${program_path}/tws" ]]; then mv "${program_path}/tws" "${program_path
 if [[ -e "${program_path}/ibgateway" ]]; then mv "${program_path}/ibgateway" "${program_path}/ibgateway1"; fi
 echo
 
-if [[ $useJava8 != "yes" ]]; then
-moduleAccess="--add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-exports=java.base/sun.util=ALL-UNNAMED --add-exports=java.desktop/com.sun.java.swing.plaf.motif=ALL-UNNAMED --add-opens=java.desktop/java.awt=ALL-UNNAMED --add-opens=java.desktop/java.awt.dnd=ALL-UNNAMED --add-opens=java.desktop/javax.swing=ALL-UNNAMED --add-opens=java.desktop/javax.swing.event=ALL-UNNAMED --add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED --add-opens=java.desktop/javax.swing.table=ALL-UNNAMED --add-opens=java.desktop/sun.awt=ALL-UNNAMED --add-exports=java.desktop/sun.awt.X11=ALL-UNNAMED --add-exports=java.desktop/sun.swing=ALL-UNNAMED --add-opens=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED --add-exports=javafx.media/com.sun.media.jfxmedia=ALL-UNNAMED --add-exports=javafx.media/com.sun.media.jfxmedia.events=ALL-UNNAMED --add-exports=javafx.media/com.sun.media.jfxmedia.locator=ALL-UNNAMED --add-exports=javafx.media/com.sun.media.jfxmediaimpl=ALL-UNNAMED --add-exports=javafx.web/com.sun.javafx.webkit=ALL-UNNAMED --add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED"
+# An installation that has no javaOptions variable still needs the module
+# exports IBC's own Swing inspection relies on, on every Java but 8.
+if [[ -z "$extra_java_options" && $useJava8 != "yes" ]]; then
+extra_java_options="--add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-exports=java.base/sun.util=ALL-UNNAMED --add-exports=java.desktop/com.sun.java.swing.plaf.motif=ALL-UNNAMED --add-opens=java.desktop/java.awt=ALL-UNNAMED --add-opens=java.desktop/java.awt.dnd=ALL-UNNAMED --add-opens=java.desktop/javax.swing=ALL-UNNAMED --add-opens=java.desktop/javax.swing.event=ALL-UNNAMED --add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED --add-opens=java.desktop/javax.swing.table=ALL-UNNAMED --add-opens=java.desktop/sun.awt=ALL-UNNAMED --add-exports=java.desktop/sun.awt.X11=ALL-UNNAMED --add-exports=java.desktop/sun.swing=ALL-UNNAMED --add-opens=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED --add-exports=javafx.media/com.sun.media.jfxmedia=ALL-UNNAMED --add-exports=javafx.media/com.sun.media.jfxmedia.events=ALL-UNNAMED --add-exports=javafx.media/com.sun.media.jfxmedia.locator=ALL-UNNAMED --add-exports=javafx.media/com.sun.media.jfxmediaimpl=ALL-UNNAMED --add-exports=javafx.web/com.sun.javafx.webkit=ALL-UNNAMED --add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED"
 fi
 
 while :
 do
 	echo "Starting $program with this command:"
-	echo -e "\"$java_path/java\" $moduleAccess -cp \"$ibc_classpath\" $java_vm_options$autorestart_option $entry_point \"$ibc_ini\" $hidden_credentials ${mode}"
+	echo -e "\"$java_path/java\" $extra_java_options -cp \"$ibc_classpath\" $java_vm_options$autorestart_option $entry_point \"$ibc_ini\" $hidden_credentials ${mode}"
 	echo
 
 	# forward signals (see https://veithen.github.io/2014/11/16/sigterm-propagation.html)
 	trap 'kill -TERM $PID' TERM INT
 
 	if [[ -n $got_fix_credentials && -n $got_api_credentials ]]; then
-		"$java_path/java" $moduleAccess -cp "$ibc_classpath" $java_vm_options$autorestart_option $entry_point "$ibc_ini" "$fix_user_id" "$fix_password" "$ib_user_id" "$ib_password" ${mode} 2>/dev/null &
+		"$java_path/java" $extra_java_options -cp "$ibc_classpath" $java_vm_options$autorestart_option $entry_point "$ibc_ini" "$fix_user_id" "$fix_password" "$ib_user_id" "$ib_password" ${mode} 2>/dev/null &
 	elif  [[ -n $got_fix_credentials ]]; then
-		"$java_path/java" $moduleAccess -cp "$ibc_classpath" $java_vm_options$autorestart_option $entry_point "$ibc_ini" "$fix_user_id" "$fix_password" ${mode} 2>/dev/null &
+		"$java_path/java" $extra_java_options -cp "$ibc_classpath" $java_vm_options$autorestart_option $entry_point "$ibc_ini" "$fix_user_id" "$fix_password" ${mode} 2>/dev/null &
 	elif [[ -n $got_api_credentials ]]; then
-		"$java_path/java" $moduleAccess -cp "$ibc_classpath" $java_vm_options$autorestart_option $entry_point "$ibc_ini" "$ib_user_id" "$ib_password" ${mode} 2>/dev/null &
+		"$java_path/java" $extra_java_options -cp "$ibc_classpath" $java_vm_options$autorestart_option $entry_point "$ibc_ini" "$ib_user_id" "$ib_password" ${mode} 2>/dev/null &
 	else
-		"$java_path/java" $moduleAccess -cp "$ibc_classpath" $java_vm_options$autorestart_option $entry_point "$ibc_ini" ${mode} 2>/dev/null &
+		"$java_path/java" $extra_java_options -cp "$ibc_classpath" $java_vm_options$autorestart_option $entry_point "$ibc_ini" ${mode} 2>/dev/null &
 	fi
 
 	PID=$!

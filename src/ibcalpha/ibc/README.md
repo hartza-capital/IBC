@@ -46,7 +46,7 @@ design (only what other packages need is `public`).
 | `ConfigDialogManager` | Abstract accessor for the Global Configuration dialog.              |
 | `CommandServer`       | TCP server for remote commands.                                     |
 
-### Window and dialog handlers (33 classes)
+### Window and dialog handlers (34 classes)
 
 All implement `WindowHandler` and are registered, in priority order, by
 `IbcTws.createWindowHandlers()`. `AbstractLoginHandler` is their abstract login
@@ -196,7 +196,7 @@ depth-first order. `remove` is unsupported.
 
 ## Window and Dialog Handlers
 
-All 33 handlers implement `WindowHandler`. Registration order matters: the first
+All 34 handlers implement `WindowHandler`. Registration order matters: the first
 recognising handler wins. `SecondFactorAuthenticationDialogHandler` is
 deliberately registered before `SecurityCodeDialogHandler` because both dialogs
 contain an "Enter Read Only" button.
@@ -205,6 +205,7 @@ contain an "Enter Read Only" button.
 | ------------------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
 | `AcceptIncomingConnectionDialogHandler`           | JDialog, label "Accept incoming connection"                                          | Per `AcceptIncomingConnectionAction` (`accept`/`reject`/`manual`): OK/Yes or No.        |
 | `ApiChangeConfirmationDialogHandler`              | JDialog, label "apply the new socket port setting"                                   | Clicks Yes when an API config change confirmation is expected.                          |
+| `AutoRestartConfirmationDialogHandler`            | JDialog, text pane or option pane message "trading platform restart automatically"   | Confirms the automatic restart (OK).                                                    |
 | `BidAskLastSizeDisplayUpdateDialogHandler`        | JDialog "Bid, Ask and Last Size Display Update"                                      | Per `AcceptBidAskLastSizeDisplayUpdateNotification` (`accept`/`defer`/`ignore`).        |
 | `BlindTradingWarningDialogHandler`                | Order Preview, labels "blind trading" + confirm                                      | Per `AllowBlindTrading`: Override and Transmit / Yes.                                   |
 | `CryptoOrderConfirmationDialogHandler`            | JDialog "Cryptocurrency order confirmation"                                          | Per `ConfirmCryptoCurrencyOrders`: Transmit or Cancel.                                  |
@@ -231,8 +232,7 @@ contain an "Enter Read Only" button.
 | `SecondFactorAuthenticationDialogHandler`         | JFrame/JDialog "Second Factor Authentication" or "Security Code Card Authentication" | Read-only login, device selection, or automatic TOTP submission (see Login).            |
 | `SecurityCodeDialogHandler`                       | JDialog with an "Enter Read Only" button                                             | Starts read-only login when `ReadOnlyLogin` is set.                                     |
 | `ShutdownProgressDialogHandler`                   | JDialog "Shutdown progress"                                                          | Shuts down the thread pools and the command server.                                     |
-| `SplashFrameHandler`                              | JFrame "Starting application..."                                                     | Uses the splash close to mark Gateway startup finished.                                 |
-| `TipOfTheDayDialogHandler`                        | JDialog "Tip of the Day"                                                             | Closes the dialog.                                                                      |
+| `SplashFrameHandler`                              | JFrame "Starting application"                                                        | Uses the splash close to mark Gateway startup finished.                                 |
 | `TooManyFailedLoginAttemptsDialogHandler`         | JDialog text area "Too many failed login attempts"                                   | Per `ReloginAfterSecondFactorAuthenticationTimeout`: schedules a re-login, else OK.     |
 | `TradesFrameHandler`                              | JFrame "Trades"                                                                      | Per `ShowAllTrades`: configures the Trades window and re-opens it if closed.            |
 | `TradingLoginHandoffDialogHandler`                | JDialog "Trading Login Handoff"                                                      | Per `ExistingSessionDetectedAction`: take over this session or hand off.                |
@@ -282,7 +282,7 @@ with `IBAPIUserName()`/`IBAPIPassword()`.
 ### GatewayLoginFrameHandler
 
 Package-private final subclass for IB Gateway. Selects the gateway mode
-(`FIX CTCI` when `FIX` is set, else `IB API`/`TWS/API`) and, when a "Trading
+(`FIX CTCI` when `FIX` is set, else `IB API`) and, when a "Trading
 Mode" label is present, the trading mode. In FIX mode fields 0..3 are FIX
 user/password then API user/password; otherwise fields 0/1 are API
 user/password.
@@ -500,8 +500,8 @@ Calling `getConfigDialog` from the EDT throws `IllegalStateException`.
 ### GetConfigDialogTask
 
 Package-private `Callable<JDialog>` that opens the dialog through the menu:
-`Configure > Settings` on Gateway; `Edit > Global Configuration...` (TWS
-Classic) or `File > Global Configuration...` (TWS Mosaic). It waits for
+`Configure > Settings` on Gateway; `Edit > Global Configuration` (TWS
+Classic) or `File > Global Configuration` (TWS Mosaic). It waits for
 `SessionManager.awaitReady()`.
 
 | Method            | Parameters               | Returns   | Description                                                                           |

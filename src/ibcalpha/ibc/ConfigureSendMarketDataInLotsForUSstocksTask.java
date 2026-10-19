@@ -47,10 +47,10 @@ public class ConfigureSendMarketDataInLotsForUSstocksTask implements Configurati
     }
 
     /**
-     * Configures the Send Market Data In Lots setting for US stocks.
+     * Applies the Send Market Data In Lots setting for US stocks to the Global Configuration
+     * dialog.
      *
-     * Opens the API settings section and sets the checkbox to the specified value.
-     * On older TWS versions that lack this setting, logs an error but does not fail.
+     * <p>When the checkbox is absent, logs an error and leaves the dialog unchanged.</p>
      */
     @Override
     public void run() {

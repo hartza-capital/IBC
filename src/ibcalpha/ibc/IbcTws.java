@@ -187,7 +187,6 @@ public class IbcTws {
         windowHandlers.add(new NewerVersionDialogHandler());
         windowHandlers.add(new NewerVersionFrameHandler());
         windowHandlers.add(new NotCurrentlyAvailableDialogHandler());
-        windowHandlers.add(new TipOfTheDayDialogHandler());
         windowHandlers.add(new NSEComplianceFrameHandler());
         windowHandlers.add(new PasswordExpiryWarningFrameHandler());
         windowHandlers.add(new GlobalConfigurationDialogHandler());
@@ -211,6 +210,7 @@ public class IbcTws {
         windowHandlers.add(new BidAskLastSizeDisplayUpdateDialogHandler());
         windowHandlers.add(new LoginErrorDialogHandler());
         windowHandlers.add(new CryptoOrderConfirmationDialogHandler());
+        windowHandlers.add(new AutoRestartConfirmationDialogHandler());
         windowHandlers.add(new RestartConfirmationDialogHandler());
         windowHandlers.add(new ResetOrderIdConfirmationDialogHandler());
         windowHandlers.add(new ReconnectDataOrAccountConfirmationDialogHandler());

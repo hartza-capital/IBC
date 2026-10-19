@@ -46,6 +46,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.ListModel;
 import javax.swing.MenuElement;
+import javax.swing.text.JTextComponent;
 import javax.swing.tree.TreeModel;
 
 /**
@@ -150,14 +151,11 @@ class SwingUtils {
     }
 
     /**
-     * Traverses a container hierarchy and returns the Component with
-     * the given text.
-     * @param container
-     *  the Container to search in
-     * @param text
-     *  the label of the Component to be found
-     * @return
-     *  the Component, if it was found;  otherwise null
+     * Finds the component whose name matches the given text, ignoring case.
+     *
+     * @param container the container whose component tree is searched
+     * @param text the component name to match, ignoring case
+     * @return the matching component, or null if no component has that name
      */
     static Component findComponent(Container container, String text) {
         ComponentIterator iter = new ComponentIterator(container);
@@ -188,14 +186,11 @@ class SwingUtils {
     }
 
     /**
-     * Traverses a container hierarchy and returns the JTextLabel
-     * that contains the given substring.
-     * @param container
-     *  the Container to search in
-     * @param text
-     *  the substring to find in a JLabel
-     * @return
-     *  the JLabel, if it was found;  otherwise null
+     * Finds the label whose text contains the given substring, ignoring case.
+     *
+     * @param container the container whose component tree is searched
+     * @param text the substring to look for in label text, ignoring case
+     * @return the label containing the substring, or null if none does
      */
     static JLabel findLabel(Container container, String text) {
         ComponentIterator iter = new ComponentIterator(container);
@@ -275,22 +270,23 @@ class SwingUtils {
     }
 
     /**
-     * Concatenates the text of every JTextArea in the container, one per line.
+     * Concatenates the text of every text component in the container, one per line.
+     * Components that have not been given a document yet are skipped.
      *
      * @param container the Container to search in
-     * @return the text areas' contents separated by line breaks, or an empty string if none
+     * @return the components' contents separated by line breaks, or an empty string if none
      */
     static String getTexts(Container container) {
         ComponentIterator iter = new ComponentIterator(container);
         String s = "";
         while (iter.hasNext()) {
             Component component = iter.next();
-            if (component instanceof JTextArea) {
-                String content = ((JTextArea)component).getText();
-                if (content != null) {
-                    if (s.length() != 0) s += NEWLINE;
-                    s += content;
-                }
+            if (component instanceof JTextComponent) {
+                JTextComponent textComponent = (JTextComponent)component;
+                if (textComponent.getDocument() == null) continue;
+                String content = textComponent.getText();
+                if (s.length() != 0) s += NEWLINE;
+                s += content;
             }
         }
         return s;
@@ -736,6 +732,7 @@ class SwingUtils {
         }
     }
 
+    /** Title reported for a window that has none. */
     static final String NO_TITLE = "** no title **"; 
       /**
        * Returns the title of a dialog or frame window.

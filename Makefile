@@ -1,8 +1,11 @@
-.PHONY: init check-env check-jdk dev jar dist clean rebuild checkstyle test format deps-update plugins-update update deps-upgrade
+.PHONY: init check-env check-jdk dev jar dist clean rebuild checkstyle test format deps-update plugins-update update deps-upgrade docker-verify docker-smoke userguide
 
 # Maven version pinned by the wrapper. Source of truth for `make init`; the
-# generated .mvn/wrapper/maven-wrapper.properties carries it to ./mvnw.
-MAVEN_VERSION := 3.9.16
+# generated .mvn/wrapper/maven-wrapper.properties carries it to ./mvnw. The
+# checksum is the SHA-256 of apache-maven-$(MAVEN_VERSION)-bin.zip, so init
+# regenerates the same file - wrapper properties included - without dropping it.
+MAVEN_VERSION := 3.10.0
+MAVEN_DISTRIBUTION_SHA256 := 1f6d9909266510f039f59aa0e13dcd2c66da85f043e56276e41f2918f8bddaff
 
 # The pom compiles with <release>25</release>; an older javac fails with
 # "release version 25 not supported" and no hint about the cause.
@@ -39,7 +42,9 @@ init:
 		echo "  brew install maven   (or run ./mvnw, which needs no system mvn)"; \
 		exit 1; \
 	}
-	@mvn -N -B org.apache.maven.plugins:maven-wrapper-plugin:wrapper -Dmaven=$(MAVEN_VERSION)
+	@mvn -N -B org.apache.maven.plugins:maven-wrapper-plugin:wrapper \
+		-Dmaven=$(MAVEN_VERSION) \
+		-DdistributionSha256Sum=$(MAVEN_DISTRIBUTION_SHA256)
 
 check-env:
 	@test -n "$$IBC_BIN" || (echo "Error: environment variable 'IBC_BIN' not set (set it to the directory containing the TWS/Gateway jar files)" && exit 1)
@@ -100,8 +105,19 @@ clean:
 checkstyle: check-jdk
 	@./mvnw -q checkstyle:check
 
+# -q keeps the per-class noise out, but it also swallows the summary: print the
+# totals from the reports of this run, so a green run shows what it ran.
 test: check-env check-jdk
-	@./mvnw -q -B test
+	@rm -rf target/surefire-reports; \
+	./mvnw -q -B test; \
+	status=$$?; \
+	reports=$$(ls target/surefire-reports/*.txt 2>/dev/null | grep -v '[-]output[.]txt'); \
+	if [ -n "$$reports" ]; then \
+		awk -F'[:,]' '/Tests run:/ {t+=$$2; f+=$$4; e+=$$6; s+=$$8} END {printf "Tests run: %d, Failures: %d, Errors: %d, Skipped: %d\n", t, f, e, s}' $$reports; \
+	else \
+		echo "No test report in target/surefire-reports"; \
+	fi; \
+	exit $$status
 
 # clean and package in one Maven invocation: expressed as two prerequisites
 # (clean, dist) a parallel make runs them concurrently, and clean then deletes
@@ -110,6 +126,34 @@ test: check-env check-jdk
 # every test stub.
 rebuild: check-env check-jdk
 	@./mvnw -B clean package
+
+# Docker release checks, see docker/README.md. `docker-verify` only needs a
+# Docker daemon; `docker-smoke` also pulls the amd64 Gateway image and drives
+# the Gateway installed in it with the IBC built from this tree.
+docker-verify:
+	@docker compose run --rm --build verify
+
+docker-smoke:
+	@docker compose run --rm --build smoke
+
+# Regenerates resources/userguide.pdf from docs/userguide.md. pandoc and a LaTeX
+# engine (tectonic) are documentation tooling, not part of the Java build, so no
+# other target depends on this one.
+userguide:
+	@command -v pandoc >/dev/null 2>&1 || { \
+		echo "Error: 'pandoc' is not on PATH."; \
+		echo "  brew install pandoc tectonic"; \
+		exit 1; \
+	}
+	@pandoc docs/userguide.md -o resources/userguide.pdf \
+		--pdf-engine=tectonic \
+		-H docs/userguide-header.tex \
+		-V documentclass=article \
+		-V fontsize=10pt \
+		-V geometry:margin=1in \
+		-V colorlinks=true \
+		-V linkcolor=RoyalBlue \
+		-V urlcolor=RoyalBlue
 
 # Both ignore files: .gitignore keeps target/ and dist/ out, .prettierignore is
 # what lefthook passes on staged files - using only one of them means `make
@@ -123,28 +167,38 @@ format:
 	@prettier --write "**/*.md" "**/*.json" \
 		--ignore-path .gitignore --ignore-path .prettierignore
 
-# Pre-release filter shared by every versions:* target. Case-insensitive ((?i))
-# and tolerant of separators, so milestones such as 3.6.0-M1 and release
-# candidates such as 4.0.0-rc-2 are never proposed as upgrades.
-PRERELEASE_FILTER := (?i).*-(alpha|beta|rc|cr|m)[-._]?[0-9]*.*
+# Any version that is not a release: milestones, alphas, betas, release candidates,
+# early access, snapshots, previews. Case-insensitive and separator-tolerant, so
+# 3.6.0-M1, 4.0.0-rc-2 and 1.2.0.beta3 are all matched.
+PRERELEASE := ([-.](alpha|beta|rc|cr|m|ea|snapshot|preview)[-._]?[0-9])
+
+# Prints a versions:* report with the build boilerplate removed and every pre-release
+# candidate dropped. The goal's own -DignoredVersions is accepted and ignored by the
+# plugin (measured on versions-maven-plugin 2.23.0: -DignoredVersions=4.0.0-beta-1
+# still lists it), so the filtering is done on the report text.
+# $1 = Maven goal to run.
+VERSIONS_REPORT = report=$$(mktemp) && \
+	{ ./mvnw -B $(1) > $$report 2>&1 || { cat $$report; rm -f $$report; exit 1; }; } && \
+	sed -n 's/^\[INFO\] //p' $$report \
+		| grep -vE '^([[:space:]]*from pom\.xml|Scanning for projects|Building |---|BUILD |Total time|Finished at|Loaded [0-9]+ auto-discovered prefixes|Download(ing|ed) (from|to)|Progress \(|$$)' \
+		| grep -viE '$(PRERELEASE)'; \
+	rm -f $$report
 
 deps-update:
-	@./mvnw versions:display-dependency-updates \
-		-DallowSnapshots=false \
-		-DignoredVersions="$(PRERELEASE_FILTER)"
+	@$(call VERSIONS_REPORT,versions:display-dependency-updates)
 
 plugins-update:
-	@./mvnw versions:display-plugin-updates \
-		-DallowSnapshots=false \
-		-DignoredVersions="$(PRERELEASE_FILTER)"
+	@$(call VERSIONS_REPORT,versions:display-plugin-updates)
 
 update: deps-update plugins-update
 
 # Rewrites pom.xml in place (dependencies and plugins). Review the diff: this is
-# the only target that mutates a tracked file.
+# the only target that mutates a tracked file. It cannot land a pre-release: the
+# goal resolves Maven's "release" metadata, which excludes alpha/beta/rc (measured
+# on maven-clean-plugin, whose 4.0.0-beta-* are never proposed here).
 deps-upgrade:
 	@./mvnw versions:use-latest-releases \
 		-DallowSnapshots=false \
-		-DignoredVersions="$(PRERELEASE_FILTER)" \
+		-DignoredVersions="$(PRERELEASE)" \
 		-DprocessDependencies=true \
 		-DprocessPlugins=true

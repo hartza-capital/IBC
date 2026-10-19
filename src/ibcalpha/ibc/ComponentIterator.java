@@ -31,8 +31,10 @@ import java.util.NoSuchElementException;
  */
 class ComponentIterator implements Iterator<Component> {
 
+    /** Component states still to be visited, innermost last. */
     Deque<NodeState> mStack = new ArrayDeque<>();
 
+    /** Component returned by the next call to {@link #next()}, or null when none is pending. */
     Component mCurrent;
 
     /**
@@ -109,7 +111,8 @@ class ComponentIterator implements Iterator<Component> {
     }
 
     /**
-     * Iteration state for one component in the component tree.
+     * Traversal state for one component in the tree, recording how much of its subtree has been
+     * visited.
      */
     private class NodeState {
         /** Index of the next sub-component to visit. */

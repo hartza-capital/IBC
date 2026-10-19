@@ -57,9 +57,9 @@ class GetConfigDialogTask implements Callable<JDialog>{
         Utils.logToConsole("Invoking config dialog menu");
         if (SessionManager.isGateway()) {
             if (!Utils.invokeMenuItem(mainForm, new String[] {"Configure", "Settings"})) throw new IbcException("'Configure > Settings' menu item");
-        } else if (Utils.invokeMenuItem(mainForm, new String[] {"Edit", "Global Configuration..."})) {
+        } else if (Utils.invokeMenuItem(mainForm, new String[] {"Edit", "Global Configuration"})) {
             // TWS's Classic layout
-        } else if (Utils.invokeMenuItem(mainForm, new String[] {"File", "Global Configuration..."})) {
+        } else if (Utils.invokeMenuItem(mainForm, new String[] {"File", "Global Configuration"})) {
             // TWS's Mosaic layout
         } else {
             throw new IbcException("'Edit > Global Configuration' or 'File > Global Configuration' menu items");

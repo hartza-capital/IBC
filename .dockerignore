@@ -1,0 +1,10 @@
+.git
+.gitignore
+target
+dist
+.vscode
+.repowise
+.repowise-workspace
+**/.DS_Store
+resources/IBC.jar
+resources/version
