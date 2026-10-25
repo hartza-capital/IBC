@@ -25,11 +25,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * Provides a shared single-threaded scheduled executor for delayed and periodic tasks.
  */
 public class MyScheduledExecutorService {
-    /**
-     * Creates a single-threaded scheduled executor for delayed and periodic
-     * task execution. This static initializer provides a shared scheduled
-     * executor instance for use throughout the application.
-     */
+    /** Shared single-threaded scheduled executor, created when this class is initialised. */
     private static final ScheduledExecutorService instance = Executors.newScheduledThreadPool(1);
 
     /**

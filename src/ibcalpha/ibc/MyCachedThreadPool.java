@@ -25,11 +25,7 @@ import java.util.concurrent.Executors;
  * Provides a shared cached thread pool for concurrent task execution.
  */
 public class MyCachedThreadPool {
-    /**
-     * Creates a new cached thread pool for concurrent task execution.
-     * This static initializer provides a shared thread pool instance for use
-     * throughout the application.
-     */
+    /** Shared pool, created when this class is initialised. */
     private static final ExecutorService instance = Executors.newCachedThreadPool();
 
     /**

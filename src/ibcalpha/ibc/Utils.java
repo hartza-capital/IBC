@@ -164,8 +164,8 @@ class Utils {
 
     /**
      * Writes a plain one-line text message to the console.
-     * @param msg
-     * The message to be written
+     *
+     * @param msg the message to be written
      */
     static void logRawToConsole(String msg) {
         getOutStream().println(msg);
@@ -173,8 +173,8 @@ class Utils {
 
     /**
      * Writes a text message prefixed with the current time to the console.
-     * @param msg
-     * The message to be written
+     *
+     * @param msg the message to be written
      */
     static void logToConsole(String msg) {
         getOutStream().println(formatMessage(msg));
@@ -219,12 +219,10 @@ class Utils {
     }
 
     /**
-     * sleeps for millis milliseconds, approximately.
-     * 
-     * Note that this method swallows the InterruptedException that may
-     * result from a call to sleep().
-     * @param millis
-     * the number of milliseconds to sleep for
+     * Sleeps for the given number of milliseconds, approximately. Any
+     * InterruptedException raised by the sleep is swallowed.
+     *
+     * @param millis the number of milliseconds to sleep for
      */
     static void pause(int millis) {
         try {

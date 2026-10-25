@@ -33,22 +33,15 @@ import java.util.concurrent.TimeUnit;
  * the SaveTwsSettingsAt setting.
  */
 class TwsSettingsSaver {
-    /**
-     * Singleton instance responsible for scheduling automatic TWS/Gateway
-     * settings saves.
-     */
+    /** Singleton instance that schedules the automatic settings saves. */
     private static final TwsSettingsSaver instance = new TwsSettingsSaver();
-    /**
-     * Format of the hh:mm times configured for automatic settings saving.
-     * Immutable, so it is safe to share with the scheduler thread.
-     */
+    /** Format of the hh:mm times configured for automatic settings saving. */
     private static final DateTimeFormatter TIME_OF_DAY_FORMATTER =
             DateTimeFormatter.ofPattern("H:mm");
 
 
     /**
-     * Private constructor prevents external instantiation of this singleton
-     * scheduler.
+     * Prevents instantiation from outside this class.
      */
     private TwsSettingsSaver() {};
 

@@ -25,14 +25,8 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 
 /**
- * Window handler for the warning dialog TWS/Gateway displays at the login of a
- * paper-trading account, whose title is the vendor's plain "Warning" caption.
- *
- * <p>{@link NonBrokerageAccountDialogHandler} identifies that dialog by the text it
- * carries and runs first; this handler is the fallback for the case where the text
- * is rendered from HTML and cannot be read. The dialog is then recognised by its
- * title alone, and the acknowledgement button by its caption. A dialog that does not
- * offer that caption is left on display rather than dismissed blindly.</p>
+ * Fallback window handler for the paper-trading login warning dialog, recognised by
+ * its plain "Warning" title and dismissed through its acknowledgement button.
  */
 public class LoginWarningDialogHandler implements WindowHandler {
 

@@ -120,6 +120,12 @@ class ComponentIterator implements Iterator<Component> {
         /** Sub-components of the component, or null if it is not a container. */
         Component[] subComponents;
 
+        /**
+         * Creates the traversal state for a component, positioned before its first
+         * sub-component.
+         *
+         * @param component the component whose subtree is traversed
+         */
         NodeState(Component component) {
             synchronized (component.getTreeLock()){
                 this.index = 0;

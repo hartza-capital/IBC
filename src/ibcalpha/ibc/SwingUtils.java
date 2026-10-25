@@ -60,12 +60,10 @@ class SwingUtils {
 
     /**
      * Performs a click on the button labelled with the specified text.
-     * @param window
-     *  The window containing the button.
-     * @param buttonText
-     *  The button's label.
-     * @return
-     *  true if the button was found;  false if the button was not found
+     *
+     * @param window the window containing the button
+     * @param buttonText the button's label
+     * @return true if the button was found; false if the button was not found
      */
     static boolean clickButton(final Window window, final String buttonText) {
         final JButton button = findButton(window, buttonText);
@@ -91,14 +89,11 @@ class SwingUtils {
     }
 
     /**
-     * Traverses a container hierarchy and returns the button with
-     * the given text.
-     * @param container
-     *  the Container to search in
-     * @param text
-     *  the label of the button to be found
-     * @return
-     *  the button, if was found;  otherwise null
+     * Traverses a container hierarchy and returns the button with the given text.
+     *
+     * @param container the Container to search in
+     * @param text the label of the button to be found
+     * @return the button, if was found; otherwise null
      */
     static JButton findButton(Container container, String text) {
         ComponentIterator iter = new ComponentIterator(container);
@@ -110,14 +105,11 @@ class SwingUtils {
     }
 
     /**
-     * Traverses a container hierarchy and returns the checkbox with
-     * the given text.
-     * @param container
-     *  the Container to search in
-     * @param text
-     *  the label of the checkbox to be found
-     * @return
-     *  the checkbox, if it was found;  otherwise null
+     * Traverses a container hierarchy and returns the checkbox with the given text.
+     *
+     * @param container the Container to search in
+     * @param text the label of the checkbox to be found
+     * @return the checkbox, if it was found; otherwise null
      */
     static JCheckBox findCheckBox(Container container, String text) {
         ComponentIterator iter = new ComponentIterator(container);
@@ -132,13 +124,9 @@ class SwingUtils {
      * Traverses a container hierarchy and returns the ith JComboBox
      * (0 based indexing).
      *
-     * @param container
-     *  the Container to search in
-     * @param ith
-     *   specifies which JComboBox to return (the first one is specified by 0,
-     * the next by 1, etc)
-     * @return
-     *  the required JComboBox if it is found, otherwise null
+     * @param container the Container to search in
+     * @param ith specifies which JComboBox to return (the first one is specified by 0, the next by 1, etc)
+     * @return the required JComboBox if it is found, otherwise null
      */
     static JComboBox<?> findComboBox(Container container, int ith) {
         ComponentIterator iter = new ComponentIterator(container);
@@ -167,14 +155,12 @@ class SwingUtils {
     }
 
     /**
-     * Traverses a container hierarchy and returns the radio button with
-     * the given text.
-     * @param container
-     *  the Container to search in
-     * @param text
-     *  the label of the radio button to be found
-     * @return
-     *  the radio button, if it was found;  otherwise null
+     * Traverses a container hierarchy and returns the radio button with the given
+     * text.
+     *
+     * @param container the Container to search in
+     * @param text the label of the radio button to be found
+     * @return the radio button, if it was found; otherwise null
      */
     static JRadioButton findRadioButton(Container container, String text) {
         ComponentIterator iter = new ComponentIterator(container);
@@ -202,16 +188,11 @@ class SwingUtils {
     }
 
     /**
-     * Traverses a container hierarchy and returns the ith JList
-     * (0 based indexing).
+     * Traverses a container hierarchy and returns the ith JList (0 based indexing).
      *
-     * @param container
-     *  the Container to search in
-     * @param ith
-     *   specifies which JList to return (the first one is specified by 0,
-     * the next by 1, etc)
-     * @return
-     *  the required JList if it is found, otherwise null
+     * @param container the Container to search in
+     * @param ith specifies which JList to return (the first one is specified by 0, the next by 1, etc)
+     * @return the required JList if it is found, otherwise null
      */
     static JList<?> findList(Container container, int ith) {
         ComponentIterator iter = new ComponentIterator(container);
@@ -224,14 +205,12 @@ class SwingUtils {
     }
 
     /**
-     * Traverses a container hierarchy and returns the JTextArea
-     * that contains the given substring.
-     * @param container
-     *  the Container to search in
-     * @param text
-     *  the substring to find in a JTextArea
-     * @return
-     *  the JTextArea, if it was found;  otherwise null
+     * Traverses a container hierarchy and returns the JTextArea that contains the
+     * given substring.
+     *
+     * @param container the Container to search in
+     * @param text the substring to find in a JTextArea
+     * @return the JTextArea, if it was found; otherwise null
      */
     static JTextArea findTextArea(Container container, String text) {
         ComponentIterator iter = new ComponentIterator(container);
@@ -293,16 +272,12 @@ class SwingUtils {
     }
 
     /**
-     * Traverses a container hierarchy and returns the ith JTextField
-     * (0 based indexing).
+     * Traverses a container hierarchy and returns the ith JTextField (0 based
+     * indexing).
      *
-     * @param container
-     *  the Container to search in
-     * @param ith
-     *   specifies which JTextField to return (the first one is specified by 0,
-     * the next by 1, etc)
-     * @return
-     *  the required JTextField if it is found, otherwise null
+     * @param container the Container to search in
+     * @param ith specifies which JTextField to return (the first one is specified by 0, the next by 1, etc)
+     * @return the required JTextField if it is found, otherwise null
      */
     static JTextField findTextField(Container container, int ith) {
         ComponentIterator iter = new ComponentIterator(container);
@@ -354,12 +329,10 @@ class SwingUtils {
     }
 
     /**
-     * Traverses a container hierarchy and returns the first JMenuBar
-     * it finds.
-     * @param container
-     *  the Container to search in
-     * @return
-     * the first JMenuBar found, if any; otherwise null
+     * Traverses a container hierarchy and returns the first JMenuBar it finds.
+     *
+     * @param container the Container to search in
+     * @return the first JMenuBar found, if any; otherwise null
      */
     static JMenuBar findMenuBar(Container container) {
         ComponentIterator iter = new ComponentIterator(container);
@@ -374,13 +347,9 @@ class SwingUtils {
      * Traverses a container hierarchy and returns the ith JMenuBar
      * (0 based indexing).
      *
-     * @param container
-     *  the Container to search in
-     * @param ith
-     *   specifies which JMenuBar to return (the first one is specified by 0,
-     * the next by 1, etc)
-     * @return
-     *  the required JMenuBar if it is found, otherwise null
+     * @param container the Container to search in
+     * @param ith specifies which JMenuBar to return (the first one is specified by 0, the next by 1, etc)
+     * @return the required JMenuBar if it is found, otherwise null
      */
     static JMenuBar findMenuBar(Container container, int ith) {
         ComponentIterator iter = new ComponentIterator(container);
@@ -393,14 +362,11 @@ class SwingUtils {
     }
 
     /**
-     * Searches a MenuElement's subelements for the JMenuItem with
-     * the given text.
-     * @param container
-     *  the MenuElement to search in
-     * @param text
-     *  the label of the JMenuItem to be found
-     * @return
-     *  the JMenuItem, if it was found;  otherwise null
+     * Searches a MenuElement's subelements for the JMenuItem with the given text.
+     *
+     * @param container the MenuElement to search in
+     * @param text the label of the JMenuItem to be found
+     * @return the JMenuItem, if it was found; otherwise null
      */
     static JMenuItem findMenuItem(MenuElement container, String text) {
         MenuElement[] elements = container.getSubElements();
@@ -422,16 +388,13 @@ class SwingUtils {
     }
 
     /**
-     * Traverses a container hierarchy and returns the JMenuItem with
-     * the given path from the first JMenuBar encountered, or null if the 
-     * first JMenuBar doesn't contain an item with that path
+     * Traverses a container hierarchy and returns the JMenuItem with the given path
+     * from the first JMenuBar encountered, or null if the first JMenuBar doesn't
+     * contain an item with that path.
      *
-     * @param container
-     *  the Container to search in
-     * @param path
-     *  the required menu path
-     * @return
-     *  the JMenuItem at the specified path, if found; otherwise null
+     * @param container the Container to search in
+     * @param path the required menu path
+     * @return the JMenuItem at the specified path, if found; otherwise null
      */
     static JMenuItem findMenuItem(Container container, String[] path) {
         if (path.length == 0) return null;
@@ -443,15 +406,12 @@ class SwingUtils {
     }
 
     /**
-     * Traverses a container hierarchy and returns the JMenuItem with
-     * the given path from the first JMenuBar that contains it
+     * Traverses a container hierarchy and returns the JMenuItem with the given path
+     * from the first JMenuBar that contains it.
      *
-     * @param container
-     *  the Container to search in
-     * @param path
-     *  the required menu path
-     * @return
-     *  the JMenuItem at the specified path, if found; otherwise null
+     * @param container the Container to search in
+     * @param path the required menu path
+     * @return the JMenuItem at the specified path, if found; otherwise null
      */
     static JMenuItem findMenuItemInAnyMenuBar(Container container, String[] path) {
         if (path.length == 0) return null;
@@ -471,14 +431,11 @@ class SwingUtils {
     }
 
     /**
-     * Traverses a JMenubar's menu structure for a JMenuItem with
-     * the specified path
-     * @param menuBar
-     * the JMenuBar to search
-     * @param path
-     * the required menu path
-     * @return
-     *  the JMenuItem at the specified path, if found; otherwise null
+     * Traverses a JMenubar's menu structure for a JMenuItem with the specified path.
+     *
+     * @param menuBar the JMenuBar to search
+     * @param path the required menu path
+     * @return the JMenuItem at the specified path, if found; otherwise null
      */
     static JMenuItem findMenuItem(JMenuBar menuBar, String[] path) {
         if (path.length == 0) return null;
@@ -492,12 +449,10 @@ class SwingUtils {
     }
 
     /**
-     * Traverses a container hierarchy and returns the first JOptionPane
-     * it finds.
-     * @param container
-     *  the Container to search in
-     * @return
-     *  the first JOptionPane, if one was found;  otherwise null
+     * Traverses a container hierarchy and returns the first JOptionPane it finds.
+     *
+     * @param container the Container to search in
+     * @return the first JOptionPane, if one was found; otherwise null
      */
     static JOptionPane findOptionPane(Container container) {
         ComponentIterator iter = new ComponentIterator(container);
@@ -509,12 +464,10 @@ class SwingUtils {
     }
 
     /**
-     * Traverses a container hierarchy and returns the first JTree
-     * it finds.
-     * @param container
-     *  the Container to search in
-     * @return
-     *  the first JTree, if one was found;  otherwise null
+     * Traverses a container hierarchy and returns the first JTree it finds.
+     *
+     * @param container the Container to search in
+     * @return the first JTree, if one was found; otherwise null
      */
     static JTree findTree(Container container) {
         ComponentIterator iter = new ComponentIterator(container);
@@ -526,15 +479,13 @@ class SwingUtils {
     }
 
     /**
-     * Returns the node with the given text below the given node in the specified TreeModel
-     * @param model
-     *  the TreeModel to search
-     * @param node
-     *  the node to search below
-     * @param text
-     *  the text associated with the required node
-     * @return
-     * the required node, if found; otherwise null
+     * Returns the node with the given text below the given node in the specified
+     * TreeModel.
+     *
+     * @param model the TreeModel to search
+     * @param node the node to search below
+     * @param text the text associated with the required node
+     * @return the required node, if found; otherwise null
      */
     static Object findChildNode(TreeModel model, Object node, String text) {
         for (int i = 0; i < model.getChildCount(node); i++) {
@@ -546,13 +497,10 @@ class SwingUtils {
 
     /**
      * Indicates whether the specified JButton is enabled.
-     * @param window
-     * the window in which to search for the required JButton
-     * @param buttonText
-     * the label of the required JButton
-     * @return
-     * true if the JButton is enabled; false if there is no such JButton, or it
-     * is disabled
+     *
+     * @param window the window in which to search for the required JButton
+     * @param buttonText the label of the required JButton
+     * @return true if the JButton is enabled; false if there is no such JButton, or it is disabled
      */
     static boolean isButtonEnabled(final Window window, final String buttonText) {
         final JButton button = findButton(window, buttonText);
@@ -618,14 +566,11 @@ class SwingUtils {
 
     /**
      * Sets or clears the specified JCheckBox.
-     * @param window
-     * the window in which to search for the required JCheckBox
-     * @param buttonText
-     * the label for the required JCheckBox
-     * @param value
-     * true to set the JCheckBox; false to clear it
-     * @return
-     * true if the JCheckBox was found; otherwise false
+     *
+     * @param window the window in which to search for the required JCheckBox
+     * @param buttonText the label for the required JCheckBox
+     * @param value true to set the JCheckBox; false to clear it
+     * @return true if the JCheckBox was found; otherwise false
      */
     static boolean setCheckBoxSelected(Window window, String buttonText, final boolean value) {
         final JCheckBox cb = findCheckBox(window, buttonText);
@@ -673,12 +618,10 @@ class SwingUtils {
 
     /**
      * Indicates whether the specified window's title contains the given string.
-     * @param window
-     * the window to be checked
-     * @param text
-     * the text to be searched for
-     * @return
-     * true if the window's title contains text, otherwise false
+     *
+     * @param window the window to be checked
+     * @param text the text to be searched for
+     * @return true if the window's title contains text, otherwise false
      */
     static boolean titleContains(Window window, String text) {
         String title = getWindowTitle(window);
@@ -687,12 +630,10 @@ class SwingUtils {
 
     /**
      * Indicates whether the specified window's title is the same as the given string.
-     * @param window
-     * the window to be checked
-     * @param text
-     * the text to be searched for
-     * @return
-     * true if the window's title equals text, otherwise false
+     *
+     * @param window the window to be checked
+     * @param text the text to be searched for
+     * @return true if the window's title equals text, otherwise false
      */
     static boolean titleEquals(Window window, String text) {
         String title = getWindowTitle(window);
