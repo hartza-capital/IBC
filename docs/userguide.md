@@ -306,7 +306,11 @@ the default if the setting is absent.
 `AcceptNonBrokerageAccountWarning`
 : Logging in to a paper-trading account raises a dialog confirming that it is
 not a brokerage account, and TWS blocks API connections until it is accepted.
-`yes` (the default) accepts it automatically; `no` leaves it to you.
+`yes` (the default) accepts it automatically; `no` leaves it to you. The dialog
+is normally identified by the text it carries; when that text is rendered in a
+way IBC cannot read, it is recognised by its `Warning` title instead and the
+acknowledgement is clicked by its caption. A dialog offering no such button is
+left on display rather than another button being clicked.
 
 `AcceptIncomingConnectionAction`
 : It is safest to set this to `reject` and to list the permitted API addresses

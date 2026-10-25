@@ -202,6 +202,9 @@ public class IbcTws {
 
         windowHandlers.add(new ReloginDialogHandler());
         windowHandlers.add(new NonBrokerageAccountDialogHandler());
+        // after NonBrokerageAccountDialogHandler: that one identifies the warning by
+        // its body text and releases the Gateway barrier, so it must match first
+        windowHandlers.add(new LoginWarningDialogHandler());
         windowHandlers.add(new ExitConfirmationDialogHandler());
         windowHandlers.add(new TradingLoginHandoffDialogHandler());
         windowHandlers.add(new LoginFailedDialogHandler());

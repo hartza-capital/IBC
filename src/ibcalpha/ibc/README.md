@@ -46,7 +46,7 @@ design (only what other packages need is `public`).
 | `ConfigDialogManager` | Abstract accessor for the Global Configuration dialog.              |
 | `CommandServer`       | TCP server for remote commands.                                     |
 
-### Window and dialog handlers (34 classes)
+### Window and dialog handlers (35 classes)
 
 All implement `WindowHandler` and are registered, in priority order, by
 `IbcTws.createWindowHandlers()`. `AbstractLoginHandler` is their abstract login
@@ -196,10 +196,12 @@ depth-first order. `remove` is unsupported.
 
 ## Window and Dialog Handlers
 
-All 34 handlers implement `WindowHandler`. Registration order matters: the first
+All 35 handlers implement `WindowHandler`. Registration order matters: the first
 recognising handler wins. `SecondFactorAuthenticationDialogHandler` is
 deliberately registered before `SecurityCodeDialogHandler` because both dialogs
-contain an "Enter Read Only" button.
+contain an "Enter Read Only" button, and `LoginWarningDialogHandler` after
+`NonBrokerageAccountDialogHandler` because the latter identifies that dialog by
+its body text and releases the Gateway initialisation barrier.
 
 | Handler                                           | Recognises (title / label)                                                           | Action                                                                                  |
 | ------------------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
@@ -218,6 +220,7 @@ contain an "Enter Read Only" button.
 | `LoginErrorDialogHandler`                         | JDialog "Login Error"                                                                | Logs the message, OK, then cold restart.                                                |
 | `LoginFailedDialogHandler`                        | JDialog "Login failed"                                                               | Logs the failure and initiates a cold restart.                                          |
 | `LoginFrameHandler`                               | JFrame "New Login"/"Login" with a login button                                       | TWS login flow (see Login).                                                             |
+| `LoginWarningDialogHandler`                       | JDialog "Warning"                                                                    | Fallback for the paper-trading warning; clicks `I understand and accept`.               |
 | `MainWindowFrameHandler`                          | JFrame (TWS main window)                                                             | Registers the main window via `SessionManager.setMainWindow`.                           |
 | `NewerVersionDialogHandler`                       | JDialog with label "Newer Version"                                                   | OK, or No (Linux: decline the upgrade).                                                 |
 | `NewerVersionFrameHandler`                        | JFrame with label "Newer Version"                                                    | Dismisses the newer-version notice.                                                     |
