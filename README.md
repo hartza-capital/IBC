@@ -264,12 +264,14 @@ command it runs, with the credentials replaced by `***`.
 
 - [`docs/userguide.md`](docs/userguide.md) — the User Guide for end users,
   rendered to `resources/userguide.pdf` by `make userguide`.
-- [`src/ibcalpha/ibc/README.md`](src/ibcalpha/ibc/README.md) — the package
-  reference: every class, its role and its public surface.
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — build from source, the `WindowHandler`
   pattern and the PR checklist.
 - [`AGENTS.md`](AGENTS.md) — architecture notes, conventions and pitfalls for
-  coding agents working in this repository.
+  coding agents working in this repository, plus the `## Documentation Index`
+  naming each unit's note.
+- The Obsidian vault (MCP server `obsidian`, `vault_read`) — the functional
+  notes: the repo note is `IBC/IBC.md` and the automation engine's note is
+  `IBC/src/ibcalpha/ibc.md`.
 
 ## Licence
 
