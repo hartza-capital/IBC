@@ -300,7 +300,7 @@ echo Generating the JAVA VM options
 
 declare -a vm_options
 index=0
-while read line; do
+while IFS= read -r line; do
 	# Keep every parameter the vendor ships in the vmoptions file, -D ones included: they
 	# are what the official launcher passes. Only the properties IBC sets itself further
 	# down are dropped, because a second value for the same key would be ambiguous.
@@ -314,12 +314,13 @@ while read line; do
 			((index++))
 			;;
 	esac
-done <<< $(cat ${vmoptions_source})
+done < "${vmoptions_source}"
 
 java_vm_options=${vm_options[*]}
 
 # The properties below are installation data, so they are read from the installation rather
-# than hardcoded: fullVersion and installDir are what the app reads to know what it runs.
+# than hardcoded: fullVersion, channel and installDir are what the app reads to know what
+# it runs, and which channel it updates from.
 install4j_params="${install4j}/i4jparams.conf"
 
 # Returns the value of an install4j variable declared in i4jparams.conf.
@@ -334,6 +335,15 @@ full_version=$(install4j_variable fullVersion)
 if [[ -n "$full_version" ]]; then
 	java_vm_options="$java_vm_options -DfullVersion=$full_version"
 fi
+
+# A "latest" build told it runs "stable" reads the wrong channel. Installations that
+# declare no channel (older releases) get the stable one.
+update_channel=$(install4j_variable channel)
+if [[ -z "$update_channel" ]]; then
+	update_channel=stable
+fi
+java_vm_options="$java_vm_options -Dchannel=$update_channel"
+
 java_vm_options="$java_vm_options -DinstallDir=${program_path}/"
 
 # Deliberately not mirrored from the install4j launcher: hideTryDemo, installer.groupId,
@@ -341,7 +351,6 @@ java_vm_options="$java_vm_options -DinstallDir=${program_path}/"
 # These are installer metadata of the official package; IBC starts the installed app
 # directly instead of the update stub, and forwards the install's javaOptions.
 java_vm_options="$java_vm_options -Dtwslaunch.autoupdate.serviceImpl=com.ib.tws.twslaunch.install4j.Install4jAutoUpdateService"
-java_vm_options="$java_vm_options -Dchannel=stable"
 java_vm_options="$java_vm_options -Dexe4j.isInstall4j=true"
 java_vm_options="$java_vm_options -Dinstall4jType=standalone"
 java_vm_options="$java_vm_options -DjtsConfigDir=${tws_settings_path}"
@@ -477,14 +486,16 @@ if [[ ! -n "$java_path" ]]; then
 	fi
 fi
 
-# alternatively use installed java
+# alternatively use installed java. Both branches resolve to the directory holding the
+# executable: every later use of java_path appends /java to it, so keeping the path to the
+# executable itself would make the check below reject the very java that was just found.
 if [[ ! -n "$java_path" ]]; then
 	if type -p java > /dev/null; then
 		echo Found java executable in PATH
-		java_path=$(which java)
+		java_path=$(dirname "$(type -p java)")
 	elif [[ -n "$JAVA_HOME" ]] && [[ -x "$JAVA_HOME/bin/java" ]];  then
 		echo Found java executable in JAVA_HOME
-		java_path="$JAVA_HOME/bin/java"
+		java_path="$JAVA_HOME/bin"
 	fi
 fi
 
