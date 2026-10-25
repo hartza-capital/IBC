@@ -1,0 +1,90 @@
+{
+  "generated_for": "IB Gateway 10.50 (.1f) 20261005 16:18:53",
+  "note": "Accepted drift. Remove an entry to make the audit fail on it again.",
+  "accepted": [
+    {
+      "kind": "launcher",
+      "file": "ibcstart.sh",
+      "needle": "hideTryDemo",
+      "status": "ABSENT",
+      "detail": "launcher passes -DhideTryDemo='false'"
+    },
+    {
+      "kind": "launcher",
+      "file": "ibcstart.sh",
+      "needle": "installer.groupId",
+      "status": "ABSENT",
+      "detail": "launcher passes -Dinstaller.groupId=''"
+    },
+    {
+      "kind": "launcher",
+      "file": "ibcstart.sh",
+      "needle": "installerUrl",
+      "status": "ABSENT",
+      "detail": "launcher passes -DinstallerUrl='https://download2.interactivebrokers.com/installers/ibgateway/stable-standalone/ibgateway-stable-standalone-linux-x64.sh'"
+    },
+    {
+      "kind": "launcher",
+      "file": "ibcstart.sh",
+      "needle": "installerVersion",
+      "status": "ABSENT",
+      "detail": "launcher passes -DinstallerVersion='4.155'"
+    },
+    {
+      "kind": "launcher",
+      "file": "ibcstart.sh",
+      "needle": "jdk.xml.elementAttributeLimit",
+      "status": "VIA_JAVAOPTIONS",
+      "detail": "-Djdk.xml.elementAttributeLimit comes from the installation's javaOptions"
+    },
+    {
+      "kind": "launcher",
+      "file": "ibcstart.sh",
+      "needle": "jdk.xml.maxGeneralEntitySizeLimit",
+      "status": "VIA_JAVAOPTIONS",
+      "detail": "-Djdk.xml.maxGeneralEntitySizeLimit comes from the installation's javaOptions"
+    },
+    {
+      "kind": "launcher",
+      "file": "ibcstart.sh",
+      "needle": "jdk.xml.totalEntitySizeLimit",
+      "status": "VIA_JAVAOPTIONS",
+      "detail": "-Djdk.xml.totalEntitySizeLimit comes from the installation's javaOptions"
+    },
+    {
+      "kind": "launcher",
+      "file": "ibcstart.sh",
+      "needle": "jxBrowserKey",
+      "status": "VIA_JAVAOPTIONS",
+      "detail": "-DjxBrowserKey comes from the installation's javaOptions"
+    },
+    {
+      "kind": "launcher",
+      "file": "ibcstart.sh",
+      "needle": "mediaFileArch",
+      "status": "ABSENT",
+      "detail": "launcher passes -DmediaFileArch='linux-x64'"
+    },
+    {
+      "kind": "launcher",
+      "file": "ibcstart.sh",
+      "needle": "nightlyEnabled",
+      "status": "ABSENT",
+      "detail": "launcher passes -DnightlyEnabled='true'"
+    },
+    {
+      "kind": "launcher",
+      "file": "ibcstart.sh",
+      "needle": "privateLabel",
+      "status": "ABSENT",
+      "detail": "launcher passes -DprivateLabel='ib'"
+    },
+    {
+      "kind": "launcher",
+      "file": "ibcstart.sh",
+      "needle": "productName",
+      "status": "ABSENT",
+      "detail": "launcher passes -DproductName='IB'"
+    }
+  ]
+}

@@ -95,31 +95,16 @@ public class DefaultLoginManager extends LoginManager {
     /** True when the FIX credentials were supplied as command-line arguments. */
     private final boolean fixCredentialsFromArgs;
 
-    /**
-     * IBAPI username - can either be supplied from the .ini file or as args[1]
-     * NB: if IBAPI username is supplied in args[1], then the password must
-     * be in args[2]. If IBAPI username is supplied in .ini, then the password must
-     * also be in .ini.
-     */
+    /** IBAPI username, from the settings file or command-line argument 1. */
     private volatile String IBAPIUserName;
 
-    /**
-     * IBAPI password - can either be supplied from the .ini file or as args[2]
-     */
+    /** IBAPI password, from the settings file or command-line argument 2. */
     private volatile String IBAPIPassword;
 
-    /**
-     * FIX username - can either be supplied from the .ini file or as args[1]
-     * NB: if username is supplied in args[1], then the password must
-     * be in args[2], and the IBAPI username and password may be in 
-     * args[3] and args[4]. If username is supplied in .ini, then the password must
-     * also be in .ini.
-     */
+    /** FIX username, from the settings file or command-line argument 1. */
     private volatile String FIXUserName;
 
-    /**
-     * FIX password - can either be supplied from the .ini file or as args[2]
-     */
+    /** FIX password, from the settings file or command-line argument 2. */
     private volatile String FIXPassword;
 
 

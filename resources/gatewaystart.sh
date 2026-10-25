@@ -18,7 +18,7 @@
 #=============================================================================+
 
 
-TWS_MAJOR_VRSN=1019
+TWS_MAJOR_VRSN=1050
 IBC_INI=~/ibc/config.ini
 TRADING_MODE=
 TWOFA_TIMEOUT_ACTION=exit
@@ -47,9 +47,9 @@ HIDE=
 #     icon on the desktop, then click Help > About IB Gateway. In the
 #     displayed information you'll see a line similar to this:
 #
-#       Build 10.45.1g, May 27, 2026 4:00:50 PM
+#       Build 10.50.1f, Oct 5, 2026 4:18:53 PM
 #
-#     The major version number is 1045 (ie ignore the period after the first
+#     The major version number is 1050 (ie ignore the period after the first
 #     part of the version number).
 #
 #     Do not include the rest of the version number in this setting.

@@ -26,6 +26,7 @@ import javax.swing.SwingUtilities;
  * the caller is already on that thread.
  */
 class GuiExecutor implements Executor {
+    /** Shared executor instance returned by {@link #instance()}. */
     private static final GuiExecutor instance = new GuiExecutor();
 
     /**

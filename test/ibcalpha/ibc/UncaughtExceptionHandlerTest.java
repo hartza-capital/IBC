@@ -10,7 +10,6 @@ import org.mockito.MockedStatic;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.verify;
 
 class UncaughtExceptionHandlerTest {
 

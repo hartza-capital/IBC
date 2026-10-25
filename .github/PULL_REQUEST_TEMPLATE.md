@@ -14,10 +14,11 @@
 
 ## Test plan
 
-<!-- Replace with the commands that actually apply to this repo. -->
+<!-- Replace with the commands that actually apply to this repo: `make help`
+     lists every target the sync deployed. -->
 
-- [ ] Lint passes (`./mvnw -B checkstyle:check`)
-- [ ] Tests pass (`./mvnw -B test`)
-- [ ] Formatting passes (`prettier --check` on the changed `.md`/`.json` files)
+- [ ] Lint passes (`make lint`)
+- [ ] Tests pass (`make test`)
+- [ ] Formatting passes (`make format-check`)
 
 - [ ] Manual testing:

@@ -32,8 +32,10 @@ import javax.swing.event.ChangeListener;
  */
 public class TradesFrameHandler implements WindowHandler {
 
+    /** True once the first open event of the Trades window has been processed. */
     boolean firstTradesWindowOpened;
 
+    /** True while the Trades window is to show all trades. */
     boolean showAllTrades;
 
     /**

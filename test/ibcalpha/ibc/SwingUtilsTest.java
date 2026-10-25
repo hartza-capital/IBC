@@ -11,7 +11,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.JToggleButton;
 
 import org.junit.jupiter.api.Test;
@@ -50,6 +52,20 @@ class SwingUtilsTest {
 
         assertEquals(cb, SwingUtils.findCheckBox(panel, "enable"));
         assertNull(SwingUtils.findCheckBox(panel, "Disable"));
+    }
+
+    /**
+     * Shows that a caption differing only by its final period does not match, which is why
+     * the precaution literals must carry the punctuation the installed build uses.
+     */
+    @Test
+    void findCheckBoxRequiresExactPunctuation() {
+        JPanel panel = new JPanel();
+        JCheckBox bondWarning = new JCheckBox("Bypass Bond warning for API Orders");
+        panel.add(bondWarning);
+
+        assertEquals(bondWarning, SwingUtils.findCheckBox(panel, "BYPASS BOND WARNING FOR API ORDERS"));
+        assertNull(SwingUtils.findCheckBox(panel, "Bypass Bond warning for API Orders."));
     }
 
     @Test
@@ -102,6 +118,23 @@ class SwingUtilsTest {
         String texts = SwingUtils.getLabelTexts(panel);
         assertTrue(texts.contains("One"));
         assertTrue(texts.contains("Two"));
+    }
+
+    @Test
+    void getTextsJoinsEveryTextComponent() {
+        JPanel panel = new JPanel();
+        JTextArea textArea = new JTextArea("area text");
+        JTextPane textPane = new JTextPane();
+        textPane.setText("pane text");
+        panel.add(textArea);
+        panel.add(textPane);
+        panel.add(new JTextField("field text"));
+
+        String texts = SwingUtils.getTexts(panel);
+
+        assertTrue(texts.contains("area text"));
+        assertTrue(texts.contains("pane text"));
+        assertTrue(texts.contains("field text"));
     }
 
     @Test

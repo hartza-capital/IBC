@@ -42,6 +42,7 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
      */
     private SecondFactorAuthenticationDialogHandler() {};
 
+    /** Shared handler instance returned by {@link #getInstance()}. */
     static SecondFactorAuthenticationDialogHandler _secondFactorAuthenticationDialogHandler = new SecondFactorAuthenticationDialogHandler();
 
     /**
@@ -131,12 +132,8 @@ public class SecondFactorAuthenticationDialogHandler implements WindowHandler {
     }
 
     /**
-     * Moves the login state to TWO_FA_IN_PROGRESS, then fills the dialog with a
-     * generated TOTP code and submits it.
-     *
-     * <p>The dialog is only submitted once the passcode has actually been
-     * written: submitting an empty field spends a failed login attempt, and
-     * IBKR locks the account after a few of them.
+     * Moves the login state to TWO_FA_IN_PROGRESS and submits the dialog once a generated TOTP
+     * code has been entered.
      *
      * @param window the 2FA dialog
      */
